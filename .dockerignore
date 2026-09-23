@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+.pnpm-store
+.npm
+.yarn
+
+# SvelteKit & Build Outputs
+.svelte-kit
+build
+dist
+
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Docker Files
+Dockerfile
+Dockerignore
+docker-compose*
+
+# Documentation and Logs
+README.md
+LICENSE
+*.log
+.npmrc
+
+# Output
+.vercel
+.netlify
+.wrangler
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+prisma/src/generated/prisma
+
+# local configurations
+.agents
+.claude
+.windsurf
+.npmrc
+.vscode
+
