@@ -2,6 +2,8 @@
 	import { signIn } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { Section, Register } from "flowbite-svelte-blocks";
+	import { Button, Checkbox, Label, Input } from "flowbite-svelte";
 
 	let email = $state('');
 	let password = $state('');
@@ -16,7 +18,6 @@
 		loading = true;
 
 		const { error } = await signIn.email({ email, password });
-
 		loading = false;
 		if (error) {
 			errorMessage = error.message ?? 'Sign in failed';
@@ -34,52 +35,35 @@
 	}
 </script>
 
-<h1>Sign in</h1>
+<Section name="login">
+  <Register href="/">
+    {#snippet top()}
+      <img class="mr-2 h-8 w-8" src="/images/logo.svg" alt="logo" />
+      Flowbite
+    {/snippet}
+    <div class="space-y-4 p-6 sm:p-8 md:space-y-6">
+      <form class="flex flex-col space-y-6" onsubmit={handlePasswordLogin}>
+        <h3 class="p-0 text-xl font-medium text-gray-900 dark:text-white">Change Password</h3>
+        <Label class="space-y-2">
+          <span>Your email</span>
+          <Input type="email" name="email" placeholder="name@company.com" required bind:value={email} />
+        </Label>
+        <Label class="space-y-2">
+          <span>Your password</span>
+          <Input type="password" name="password" placeholder="•••••" required bind:value={password} />
+        </Label>
+		<!-- craig switch this to toaster -->
+		{#if errorMessage}
+			<p class="error text-sm font-light text-gray-500 dark:text-gray-400">{errorMessage}</p>
+		{/if}
+        <Button type="submit" disabled={loading} class="w-full1">Sign in</Button> <!-- needs styling -->
+        <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+          Don’t have an account yet? <a href="/register" class="text-primary-600 dark:text-primary-500 font-medium hover:underline">Sign up</a>
+        </p>
+      </form>
+		<button type="button" onclick={handleGoogleLogin}>Continue with Google</button>
+		<button type="button" onclick={handleMicrosoftLogin}>Continue with Microsoft</button>
 
-<form onsubmit={handlePasswordLogin}>
-	<label>
-		Email
-		<input type="email" bind:value={email} required autocomplete="email" />
-	</label>
-	<label>
-		Password
-		<input type="password" bind:value={password} required autocomplete="current-password" />
-	</label>
-
-	{#if errorMessage}
-		<p class="error">{errorMessage}</p>
-	{/if}
-
-	<button type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
-</form>
-
-<div class="divider">or</div>
-
-<button type="button" onclick={handleGoogleLogin}>Continue with Google</button>
-<button type="button" onclick={handleMicrosoftLogin}>Continue with Microsoft</button>
-
-<p><a href="/register">Need an account? Register</a></p>
-
-<style>
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		max-width: 320px;
-	}
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-	.error {
-		color: #b00020;
-	}
-	.divider {
-		margin: 1rem 0;
-		color: #888;
-	}
-	button {
-		margin-bottom: 0.5rem;
-	}
-</style>
+    </div>
+  </Register>
+</Section>
