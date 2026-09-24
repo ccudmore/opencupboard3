@@ -5,5 +5,6 @@ console.log('CRAIG10');
 console.log(locals.user)
 	return {
 		user: locals.user
+//		session: await locals.auth()
 	};
 };
