@@ -111,7 +111,6 @@ model Permission {
 
   roles RolePermission[]
   protectedRoutes String[]
-  action     String?
 
   @@map("permission")
 }

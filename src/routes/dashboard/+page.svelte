@@ -16,7 +16,6 @@
 
 {#if data.user}
         <p>Signed in as <strong>{data.user.email}</strong> (roles: {data.user.roles.join(', ') || 'none'}).</p>
-        <p>Signed in as <strong>{data.user.email}</strong> (permissions: {data.user.permissions[0].path || 'none'}).</p>
 
         <p><a href="/dashboard">Go to your dashboard →</a></p>
 {:else}

@@ -73,16 +73,17 @@ async function createUserWithRoles(
 }
 
 const permissionData: Prisma.PermissionCreateInput[] = [
-  { name: 'Log in', protectedRoutes: ['/'], action:'all'},
-  { name: 'Manage guests', description: '', protectedRoutes: ['/guests'], action:'all'},
-  { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin'], action:'all'},
-  { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers'], action:'all'},
-  { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory'], action:'all'},
-  { name: 'Manage donors', description: '', protectedRoutes: ['/donors'], action:'all'},
+  { name: 'Log in', protectedRoutes: ['/']},
+  { name: 'Manage guests', description: '', protectedRoutes: ['/guests']},
+  { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin']},
+  { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers']},
+  { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory']},
+  { name: 'Manage donors', description: '', protectedRoutes: ['/donors']},
+  { name: 'View dashboard', description: '', protectedRoutes: ['/dashboard']},
 ]
 
 const roleData: SeedRole[] = [
-{roleName: 'Administrator', permissionNames: ['Log in', 'Manage guests', 'Manage system configuration', 'Manage volunteers', 'Manage inventory', 'Manage donors']},
+{roleName: 'Administrator', permissionNames: ['Log in', 'Manage guests', 'Manage system configuration', 'Manage volunteers', 'Manage inventory', 'Manage donors', 'View dashboard']},
 {roleName: 'User', permissionNames: ['Log in']},
 {roleName: 'Guest Manager', permissionNames: ['Log in', 'Manage guests']},
 {roleName: 'Volunteer Manager', permissionNames: ['Log in', 'Manage volunteers']},

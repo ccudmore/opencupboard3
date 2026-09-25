@@ -4,7 +4,7 @@ export type AuthedUser = {
         name: string;
         email: string;
         roles: string[];
-		permissions: {path: string, name: string, action: string}[]
+//		permissions: {path: string, name: string, action: string}[]
 //		permissions: string[];
 };
 
