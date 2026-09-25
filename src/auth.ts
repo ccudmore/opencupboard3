@@ -37,15 +37,18 @@ export const auth = betterAuth({
 	// Every new user (password or OAuth signup) starts as a plain "user".
 	// Promote people to "manager"/"admin" via the admin console or directly
 	// in the database/Prisma Studio.
+	// craig - needs to fix this
+	/*
 	user: {
 		additionalFields: {
 			role: {
-				type: 'string',
-				defaultValue: 'user',
+				type: 'string[]',
+				defaultValue: ['login'],
 				input: false // never trust a client-supplied role at signup
 			}
 		}
 	},
+	*/
 
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days

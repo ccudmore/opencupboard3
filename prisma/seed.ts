@@ -1,7 +1,6 @@
 import { PrismaClient, Prisma } from "./src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { randomUUID } from "node:crypto";
-import bcrypt from 'bcryptjs'
 import { hashPassword } from "better-auth/crypto";
 
 const DEFAULT_ADMIN_PASSWORD = "password"
@@ -74,12 +73,12 @@ async function createUserWithRoles(
 }
 
 const permissionData: Prisma.PermissionCreateInput[] = [
-  { name: 'Log in', protectedRoutes: ['/']},
-  { name: 'Manage guests', description: '', protectedRoutes: ['/guests']},
-  { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin']},
-  { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers']},
-  { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory']},
-  { name: 'Manage donors', description: '', protectedRoutes: ['/donors']},
+  { name: 'Log in', protectedRoutes: ['/'], action:'all'},
+  { name: 'Manage guests', description: '', protectedRoutes: ['/guests'], action:'all'},
+  { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin'], action:'all'},
+  { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers'], action:'all'},
+  { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory'], action:'all'},
+  { name: 'Manage donors', description: '', protectedRoutes: ['/donors'], action:'all'},
 ]
 
 const roleData: SeedRole[] = [
@@ -93,11 +92,10 @@ const roleData: SeedRole[] = [
 
 const seedUsers: SeedUser[] = [
   { data: { name: "Alice", email: "alice@prisma.io", }, roleNames: ["Administrator"], },
-  { data: { name: "CraigC", email: "craig@cudmore.ca", }, roleNames: ["Administrator"], },
+  { data: { name: "CraigC", email: "craig@cudmore.ca", }, roleNames: ["Administrator", "User", "Guest Manager"], },
   { data: { name: "CraigC2", email: "craig.cudmore@gmail.com", }, roleNames: ["User"], },
   { data: { name: "LindaC", email: "linda@cudmore.ca", }, roleNames: ["User", "Guest Manager"], },
 ];
-
 
 const householdData: Prisma.HouseholdCreateInput[] = [
   {

@@ -110,7 +110,8 @@ model Permission {
   createdAt   DateTime @default(now())
 
   roles RolePermission[]
-  protectedRoutes String[] 
+  protectedRoutes String[]
+  action     String?
 
   @@map("permission")
 }
