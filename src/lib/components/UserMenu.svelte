@@ -5,24 +5,23 @@
 	import { signOut } from '$lib/auth-client';
     import { goto, invalidateAll } from '$app/navigation';
 
-    const user = {
+   const user = $derived({
         name: page?.data?.user?.name ?? "",
         email: page?.data?.user?.email ?? "",
         avatar: page?.data?.user?.image ?? "",
-    }
+    });
 
-    console.log('CRAIG3')
-    console.log(page.data.user)
     async function doSignout() {
         await signOut();
         await invalidateAll();
-        await goto('/login');
+        await goto('/login');  
     }
 
 </script>
 <button class="ms-3 rounded-full ring-gray-400 focus:ring-4 dark:ring-gray-600">
     <Avatar size="sm" src={user.avatar} tabindex={0} />
 </button>
+
 <Dropdown simple> <!-- craig want bottom-end in here -->
 {#if page?.data?.user}
     <DropdownHeader>

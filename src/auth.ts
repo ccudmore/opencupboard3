@@ -26,8 +26,6 @@ export const auth = betterAuth({
 			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       		scope: ["openid", "email", "profile"],
   			mapProfileToUser: (profile) => {
-				console.log('CRAIG0')
-				console.log(profile.picture)
     			return {
       				image: profile.picture ?? "/default-avatar.png",
     			};

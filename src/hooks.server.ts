@@ -6,7 +6,6 @@ import { building } from '$app/environment'
 import { redirect, error } from '@sveltejs/kit';
 import prisma from "$lib/prisma"
 import { sequence } from '@sveltejs/kit/hooks';
-import { avatar } from 'flowbite-svelte';
 
 function haveCommonElement(arr1: string[], arr2: string[]): boolean {
   const set2 = new Set(arr2);
@@ -20,8 +19,6 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             where: { userId: authSession.user.id },
             select: { role: { select: { name: true, id: true } } }
         });
-        console.log('CRAIG1')
-        console.log(authSession.user)
         event.locals.user = {
             id: authSession.user.id,
             name: authSession.user.name,
