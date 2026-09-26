@@ -14,7 +14,7 @@ const prisma = new PrismaClient({
 });
 
 type SeedUser = {
-  data: { name: string; email: string; };
+  data: { name: string; email: string; image: string };
   roleNames: string[];
 };
 
@@ -42,7 +42,7 @@ async function createRoleWithNewPermissions(roleName: string, permissionNames: s
 }
 
 async function createUserWithRoles(
-	data: { name: string; email: string; },
+	data: { name: string; email: string; image: string },
 	roleNames: string[]
 ) {
 	const user = await prisma.user.create({
@@ -92,10 +92,10 @@ const roleData: SeedRole[] = [
 ];
 
 const seedUsers: SeedUser[] = [
-  { data: { name: "Alice", email: "alice@prisma.io", }, roleNames: ["Administrator"], },
-  { data: { name: "CraigC", email: "craig@cudmore.ca", }, roleNames: ["Administrator", "User", "Guest Manager"], },
-  { data: { name: "CraigC2", email: "craig.cudmore@gmail.com", }, roleNames: ["User"], },
-  { data: { name: "LindaC", email: "linda@cudmore.ca", }, roleNames: ["User", "Guest Manager"], },
+  { data: { name: "Alice", email: "alice@prisma.io", image: ''}, roleNames: ["Administrator"], },
+  { data: { name: "CraigC", email: "craig@cudmore.ca", image: 'https://lh3.googleusercontent.com/a/ACg8ocI7EteRgKFDjpb5KHFiJVE1gDAlX-JB68IhU_7D7sHuDQ_TEQ=s96-c', }, roleNames: ["Administrator", "User", "Guest Manager"], },
+  { data: { name: "CraigC2", email: "craig.cudmore@gmail.com", image: ''}, roleNames: ["User"], },
+  { data: { name: "LindaC", email: "linda@cudmore.ca", image: ''}, roleNames: ["User", "Guest Manager"], },
 ];
 
 const householdData: Prisma.HouseholdCreateInput[] = [

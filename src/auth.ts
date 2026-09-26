@@ -23,7 +23,15 @@ export const auth = betterAuth({
 	socialProviders: {
 		google: {
 			clientId: env.GOOGLE_CLIENT_ID as string,
-			clientSecret: env.GOOGLE_CLIENT_SECRET as string
+			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+      		scope: ["openid", "email", "profile"],
+  			mapProfileToUser: (profile) => {
+				console.log('CRAIG0')
+				console.log(profile.picture)
+    			return {
+      				image: profile.picture ?? "/default-avatar.png",
+    			};
+  			},			
 		},
 		microsoft: {
 			clientId: env.MICROSOFT_CLIENT_ID as string,

@@ -4,8 +4,7 @@ export type AuthedUser = {
         name: string;
         email: string;
         roles: string[];
-//		permissions: {path: string, name: string, action: string}[]
-//		permissions: string[];
+        image: string;
 };
 
 declare global {
@@ -14,7 +13,8 @@ declare global {
         interface Locals {
             user: AuthedUser | null;
             session: { id: string; expiresAt: Date } | null;
-		}		// interface PageData {}
+		}
+        // interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
 	}

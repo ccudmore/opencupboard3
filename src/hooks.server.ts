@@ -6,6 +6,7 @@ import { building } from '$app/environment'
 import { redirect, error } from '@sveltejs/kit';
 import prisma from "$lib/prisma"
 import { sequence } from '@sveltejs/kit/hooks';
+import { avatar } from 'flowbite-svelte';
 
 function haveCommonElement(arr1: string[], arr2: string[]): boolean {
   const set2 = new Set(arr2);
@@ -19,10 +20,13 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             where: { userId: authSession.user.id },
             select: { role: { select: { name: true, id: true } } }
         });
+        console.log('CRAIG1')
+        console.log(authSession.user)
         event.locals.user = {
             id: authSession.user.id,
             name: authSession.user.name,
             email: authSession.user.email,
+            image: authSession.user.image,
             roles: roleRows.map((r) => r.role.name),
         };
         event.locals.session = {
@@ -52,7 +56,7 @@ async function authorizationHandle({event, resolve} : {event:any, resolve:any}) 
     })).flatMap((item) => item.roles.map((role) => role.role.name));
 
     // static list of routes that will never need authentication
-    const publicRoutes = ['/login'] 
+    const publicRoutes = ['/login', '/register', '/public' ] 
 
     // If the path has at least one role requirement & its not on the static public link, check if the user can access it
     if (rolesThatContainPathPermissions.length > 0 && ! publicRoutes.includes(event.url.pathname)) {
@@ -66,8 +70,6 @@ async function authorizationHandle({event, resolve} : {event:any, resolve:any}) 
                 throw error(403, `This page requires one of "${rolesThatContainPathPermissions.join(",")}" permission`);
             }
         }
-    } else {
-        console.log('page doesnt need authentication or its login - let it pass')
     }
 
     return resolve(event)
