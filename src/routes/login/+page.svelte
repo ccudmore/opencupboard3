@@ -10,7 +10,7 @@
 	let errorMessage = $state('');
 	let loading = $state(false);
 
-	const redirectTo = page.url.searchParams.get('redirectTo') || '/dashboard';
+	const redirectTo = page.url.searchParams.get('redirectTo') || '/';
 
 	async function handlePasswordLogin(e: SubmitEvent) {
 		e.preventDefault();

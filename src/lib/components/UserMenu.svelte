@@ -22,8 +22,7 @@
     <Avatar size="sm" src={user.avatar} tabindex={0} />
 </button>
 
-<Dropdown simple> <!-- craig want bottom-end in here -->
-{#if page?.data?.user}
+<Dropdown simple class="bottom-end">
     <DropdownHeader>
         <span class="block text-sm">{user.name}</span>
         <span class="block truncate text-sm font-medium">{user.email}</span>
@@ -48,13 +47,4 @@
         {/snippet}
         Sign out
     </DropdownItem>
-{:else}
-    <DropdownItem as="a" href="/login">
-        {#snippet icon()}
-            <LockOutline class="h-50 w-50 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
-        {/snippet}
-        Sign in
-    </DropdownItem>
-{/if}
-
 </Dropdown>
