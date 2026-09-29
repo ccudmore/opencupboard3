@@ -1,9 +1,8 @@
 import type { Handle } from '@sveltejs/kit';
 
-import { auth } from "./auth";
+import { auth } from "$lib/server/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from '$app/environment'
-import { redirect, error } from '@sveltejs/kit';
 import prisma from "$lib/prisma"
 import { sequence } from '@sveltejs/kit/hooks';
 

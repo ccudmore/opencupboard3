@@ -1,13 +1,13 @@
   import { CogOutline, ChartPieOutline, CalendarEditOutline, ProfileCardOutline, AwardOutline } from "flowbite-svelte-icons";
 
   const availableApps = {
-    guests: {name: "Guests", label: "Guests", href: "/Households", icon: ProfileCardOutline, subContent: ""},
-    calendar: {name: "Calendar", label: "Calendar", href: "/Event", icon: CalendarEditOutline, subContent: ""},
-    volunteers: {name: "Volunteers", label: "Volunteers", href: "/Volunteers", icon: AwardOutline, subContent: ""},
-    reports: {name: "Reports", label: "Reports", href: "/Reports", icon: ChartPieOutline, subContent: ""},
-    admin: {name: "Admin", label: "Admin", href: "/Admin", icon: CogOutline, subContent: ""},
-    donors: {name: "Donors", label: "Donors", href: "/Donors", icon: CogOutline, subContent: ""},
-    inventory: {name: "Inventory", label: "Inventory", href: "/Inventory", icon: CogOutline, subContent: ""},
+    guests: {name: "Guests", label: "Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
+    calendar: {name: "Calendar", label: "Calendar", href: "/event", icon: CalendarEditOutline, subContent: ""},
+    volunteers: {name: "Volunteers", label: "Volunteers", href: "/volunteers", icon: AwardOutline, subContent: ""},
+    reports: {name: "Reports", label: "Reports", href: "/reports", icon: ChartPieOutline, subContent: ""},
+    admin: {name: "Admin", label: "Admin", href: "/admin", icon: CogOutline, subContent: ""},
+    donors: {name: "Donors", label: "Donors", href: "/donors", icon: CogOutline, subContent: ""},
+    inventory: {name: "Inventory", label: "Inventory", href: "/inventory", icon: CogOutline, subContent: ""},
   }
 
 export function getPermittedApps(roles: string[] | null | undefined) {
