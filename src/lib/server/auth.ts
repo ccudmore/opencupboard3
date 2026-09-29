@@ -3,11 +3,23 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
-//import type { RequestEvent } from '@sveltejs/kit';
 
+function uploadImageToStorage(img: string) {
+	return null
+}
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
 	secret: env.BETTER_AUTH_SECRET,
+
+	account: {
+		accountLinking: {
+			enabled: true,
+			trustedProviders: ["google", "microsoft", ],
+			allowDifferentEmails: false,
+			updateUserInfoOnLink: true,
+		},
+	},
+	encryptOAuthTokens: true,
 
 	database: prismaAdapter(prisma, {
 		provider: 'postgresql'
@@ -24,21 +36,23 @@ export const auth = betterAuth({
 
 	socialProviders: {
 		google: {
+			prompt: "select_account",
 			clientId: env.GOOGLE_CLIENT_ID as string,
 			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       		scope: ["openid", "email", "profile"],
   			mapProfileToUser: (profile) => {
     			return {
-      				image: profile.picture ?? "/default-avatar.png",
+      				image: profile.picture ?? "/images/default-avatar.png",
     			};
   			},			
 		},
 		microsoft: {
+			prompt: "select_account",
 			clientId: env.MICROSOFT_CLIENT_ID as string,
 			clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
 			// "common" allows both personal and work/school Microsoft accounts.
 			// Set MICROSOFT_TENANT_ID to a specific tenant GUID to restrict it.
-			tenantId: env.MICROSOFT_TENANT_ID || 'common'
+			tenantId: env.MICROSOFT_TENANT_ID || 'common',
 		}
 	},
 	session: {

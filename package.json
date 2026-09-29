@@ -11,9 +11,9 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"db:seed": "prisma db seed"
-  	},
-  	"prisma": {
-    	"seed": "tsx prisma/seed.ts"
+	},
+	"prisma": {
+		"seed": "tsx prisma/seed.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.5.7",
@@ -39,6 +39,7 @@
 		"dotenv": "^18.0.3",
 		"flowbite-svelte-blocks": "^2.1.0",
 		"pg": "^8.23.0",
+		"svelte-sonner": "^1.2.1",
 		"tailwindcss": "^4.3.3"
 	}
 }

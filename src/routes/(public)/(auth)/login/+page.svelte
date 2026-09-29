@@ -120,7 +120,7 @@
 				<span class="text-xs uppercase text-gray-400">or continue with</span>
 				<div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
 			</div>
-
+<!-- craig clean this up -->
 			<div class="space-y-3">
 				<Button color="alternative" class="w-full" onclick={() => handleSocialLogin('google')}>
 					<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
