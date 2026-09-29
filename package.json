@@ -10,7 +10,11 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"db:seed": "prisma db seed"
+		"db:seed": "prisma db seed",
+		"db:generate": "prisma generate",
+    	"db:migrate": "prisma migrate dev",
+    	"db:push": "prisma db push",
+    	"db:studio": "prisma studio"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"
