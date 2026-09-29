@@ -4,3 +4,9 @@
 /* ... */
 @source "../node_modules/flowbite-svelte/dist";
 @source "../node_modules/flowbite-svelte-icons/dist";
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white;
+  }
+}

@@ -3,12 +3,15 @@
 	import { EnvelopeSolid, LockSolid } from 'flowbite-svelte-icons';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public'
 
 	let email = $state('');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let errorMessage = $state('');
 	let loading = $state(false);
+
+	const organizationName = env.PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard'
 
 	async function handleRegister(e: SubmitEvent) {
 		e.preventDefault();
@@ -55,8 +58,11 @@
 	</div>
 
 	<!-- Logo: compact strip on mobile, full left half from md up -->
-	<div class="flex h-24 w-full flex-shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
-		<img src="/logo.svg" alt="Company logo" class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
+	<div class="flex h-24 w-full shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
+		<div class="w-full max-w-sm space-y-6 flex flex-col items-center">
+			<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{organizationName}</h1>
+			<img src="/images/logo.svg" alt="Organization logo" class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
+		</div>
 	</div>
 
 	<!-- Registration controls: takes remaining space on mobile, right half from md up -->

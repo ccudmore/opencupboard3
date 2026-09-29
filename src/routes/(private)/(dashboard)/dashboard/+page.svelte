@@ -2,18 +2,7 @@
         import type { PageData } from './$types';
         let { data }: { data: PageData } = $props();
 </script>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
 <h1>SvelteKit + Prisma 7 + Better Auth</h1>
-
-
-
-
-
 {#if data.user}
         <p>Signed in as <strong>{data.user.email}</strong> (roles: {data.user.roles.join(', ') || 'none'}).</p>
 
