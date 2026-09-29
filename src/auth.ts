@@ -79,11 +79,8 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
 
   console.log('CRAIG6-check')
   if (!haveCommonElement(allowedRoles, user.roles)) {
-//  if (!allowedRoles.includes(user.roles)) {
-console.log('craig - check - failed')
     throw error(403, 'You do not have permission to view this page');
   }
-console.log('craig - check - pass')
 
   return user;
 }

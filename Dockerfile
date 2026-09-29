@@ -17,6 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .
 
+ENV BETTER_AUTH_SECRET=build-placeholder
 RUN npm run build
 
 # --- Production image ---
