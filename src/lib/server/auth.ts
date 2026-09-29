@@ -41,23 +41,6 @@ export const auth = betterAuth({
 			tenantId: env.MICROSOFT_TENANT_ID || 'common'
 		}
 	},
-
-	// Every new user (password or OAuth signup) starts as a plain "user".
-	// Promote people to "manager"/"admin" via the admin console or directly
-	// in the database/Prisma Studio.
-	// craig - needs to fix this
-	/*
-	user: {
-		additionalFields: {
-			role: {
-				type: 'string[]',
-				defaultValue: ['login'],
-				input: false // never trust a client-supplied role at signup
-			}
-		}
-	},
-	*/
-
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 		updateAge: 60 * 60 * 24 // refresh once per day of activity
@@ -77,7 +60,6 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
   }
 
-  console.log('CRAIG6-check allowed roles - user has '+user.roles.join(",")+ ' and requires '+allowedRoles.join(","))
   if (!haveCommonElement(allowedRoles, user.roles)) {
     throw error(403, 'You do not have permission to view this page');
   }

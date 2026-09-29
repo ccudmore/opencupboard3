@@ -53,7 +53,7 @@
 
 	<!-- Logo: compact strip on mobile, full left half from md up -->
 	<div class="flex h-24 w-full shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
-		<img src="/logo.svg" alt="Company logo" class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
+		<img src="/images/logo.svg" alt="Organization logo" class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
 	</div>
 
 	<!-- Login controls: takes remaining space on mobile, right half from md up -->

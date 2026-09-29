@@ -6,8 +6,8 @@
 <Navbar class="mx-10 sm:mx-0">
   <NavDrawer/>
   <NavBrand href="/" class="mx-10">
-    <img src="/images/flowbite-svelte-icon-logo.svg" class="me-2.5 h-6 sm:h-8" alt="Flowbite Logo" />
-    <span class="ml-px self-center text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white"> The Community Table </span>
+    <img src="/images/logo.svg" class="me-2.5 h-6 sm:h-8" alt="Organization Logo" />
+    <span class="ml-px self-center text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">Open Cupboard</span>
   </NavBrand>
     <div class="hidden lg:block lg:ps-3">
       <form>

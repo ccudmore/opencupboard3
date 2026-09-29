@@ -4,11 +4,12 @@
 	import type { LayoutData } from './$types';
 	import '../app.css';
 	import { Navbar } from '$lib'
-    import favicon from '$lib/assets/favicon.svg';
+//    import favicon from '$lib/assets/favicon.svg';
     import { page } from "$app/state";
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
 
+	const favicon = '/images/logo.svg'
 	async function handleSignOut() {
 		await signOut();
 		await invalidateAll();

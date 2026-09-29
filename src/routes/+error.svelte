@@ -1,4 +1,3 @@
-<!-- src/routes/+error.svelte -->
 <script>
   import { page } from '$app/state';
 </script>
