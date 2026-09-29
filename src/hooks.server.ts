@@ -30,8 +30,6 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             id: authSession.session.id,
             expiresAt: authSession.session.expiresAt
         };
-        console.log('CRAIG0 - in hooks')
-        console.log(event.locals.user)
     } else {
         event.locals.user = null;
         event.locals.session = null;
@@ -39,6 +37,8 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
     return resolve(event)
 }
 
+// Authorization is now done in the +layout.server.ts at the route group level
+/*
 async function authorizationHandle({event, resolve} : {event:any, resolve:any}) {
     // Get the list of the names of all roles that have a permission to allow access to this path
     const rolesThatContainPathPermissions = (await prisma.permission.findMany({
@@ -73,6 +73,7 @@ async function authorizationHandle({event, resolve} : {event:any, resolve:any}) 
 
     return resolve(event)
 }
+*/
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });

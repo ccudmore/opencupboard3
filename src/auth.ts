@@ -3,7 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
-import type { RequestEvent } from '@sveltejs/kit';
+//import type { RequestEvent } from '@sveltejs/kit';
 
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
@@ -77,7 +77,7 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
   }
 
-  console.log('CRAIG6-check')
+  console.log('CRAIG6-check allowed roles - user has '+user.roles.join(",")+ ' and requires '+allowedRoles.join(","))
   if (!haveCommonElement(allowedRoles, user.roles)) {
     throw error(403, 'You do not have permission to view this page');
   }
@@ -85,4 +85,4 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
   return user;
 }
 
-export type Session = typeof auth.$Infer.Session;
+//export type Session = typeof auth.$Infer.Session;

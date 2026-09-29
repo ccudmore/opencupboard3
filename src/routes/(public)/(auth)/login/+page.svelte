@@ -3,12 +3,15 @@
 	import { EnvelopeSolid, LockSolid } from 'flowbite-svelte-icons';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 
 	let email = $state('');
 	let password = $state('');
 	let errorMessage = $state('');
 	let loading = $state(false);
 
+	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
+	
 	async function handleEmailLogin(e: SubmitEvent) {
 		e.preventDefault();
 		errorMessage = '';
@@ -26,14 +29,14 @@
 			return;
 		}
 
-		await goto('/');
+		await goto(redirectTo);
 	}
 
 	async function handleSocialLogin(provider: 'google' | 'microsoft') {
 		errorMessage = '';
 		await authClient.signIn.social({
 			provider,
-			callbackURL: '/'
+			callbackURL: redirectTo
 		});
 	}
 </script>
@@ -49,7 +52,7 @@
 	</div>
 
 	<!-- Logo: compact strip on mobile, full left half from md up -->
-	<div class="flex h-24 w-full flex-shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
+	<div class="flex h-24 w-full shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
 		<img src="/logo.svg" alt="Company logo" class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
 	</div>
 
