@@ -2,6 +2,8 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
+import { error, redirect } from '@sveltejs/kit';
+import type { RequestEvent } from '@sveltejs/kit';
 
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
@@ -61,5 +63,29 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24 // refresh once per day of activity
 	}
 });
+
+
+function haveCommonElement(arr1: string[], arr2: string[]): boolean {
+  const set2 = new Set(arr2);
+  return arr1.some(element => set2.has(element));
+}
+
+export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[]) {
+  const user = locals.user;
+
+  if (!user) {
+    throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+  }
+
+  console.log('CRAIG6-check')
+  if (!haveCommonElement(allowedRoles, user.roles)) {
+//  if (!allowedRoles.includes(user.roles)) {
+console.log('craig - check - failed')
+    throw error(403, 'You do not have permission to view this page');
+  }
+console.log('craig - check - pass')
+
+  return user;
+}
 
 export type Session = typeof auth.$Infer.Session;

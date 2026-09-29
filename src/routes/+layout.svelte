@@ -17,11 +17,11 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{#if page?.data?.user}
 <header class="fixed top-0 z-40 mx-auto w-full flex-none border-b border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800">
+{#if page?.data?.user}
   <Navbar/>
-</header>
 {/if}
+</header>
 
 <div class="bg-gray-50 p-0 dark:bg-gray-800">
   {@render children?.()}

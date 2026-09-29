@@ -30,6 +30,8 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             id: authSession.session.id,
             expiresAt: authSession.session.expiresAt
         };
+        console.log('CRAIG0 - in hooks')
+        console.log(event.locals.user)
     } else {
         event.locals.user = null;
         event.locals.session = null;
@@ -76,4 +78,5 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });
 };
 
-export const handle: Handle = sequence(handleAuthentication, authorizationHandle, handleBetterAuth);
+export const handle: Handle = sequence(handleAuthentication, handleBetterAuth);
+//export const handle: Handle = sequence(handleAuthentication, authorizationHandle, handleBetterAuth);
