@@ -2,17 +2,26 @@ import { error, json } from '@sveltejs/kit';
 import { requireRole } from '$lib/server/auth';
 import { searchGuests, parseGuestSearchParams } from '$lib/server/queries/guests';
 
-const LIMIT = 25;
-
 export async function GET({ url, locals }) {
-
-	// craig requeires some cleanup and possibly permission checks
+	// craig requires permission checks
+	let destinationArray = [];
+	const urlbase = new URL(url);
 	try {
-		const results2 = await searchGuests({ ...parseGuestSearchParams(url.searchParams), activeOnly: true });
-		type Result = { id: number; name: string; category: string };
+		const guestResults = await searchGuests(parseGuestSearchParams(url.searchParams) );
 
-		const results3 = results2.guests.map((g: { id: any; fullName: any; }) => ({ id: g.id, name: g.fullName, category: 'guest' })) ;
-		return json({ results: results3 });
+		const transformedGuests = guestResults.guests.map(guest => {
+  			return {
+				id: guest.id,
+    			URL: `${urlbase.origin}/households/${guest.householdMembershipId}`, 
+    			desc1: guest.fullName,
+    			desc2: guest.memberOf.street,
+    			desc3: guest.phone,
+				category: 'Client'
+  			};
+		});
+		destinationArray.push(...transformedGuests);
+
+		return json({ results: destinationArray });
 	} catch (e) {
 		console.error('Search query failed', e);
 		error(500, 'Search failed');

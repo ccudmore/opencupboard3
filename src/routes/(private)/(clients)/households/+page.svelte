@@ -9,6 +9,8 @@
 		TableHead,
 		TableHeadCell,
 		TableSearch,
+		Table,
+		Search,
 		Toggle,
 	} from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -54,31 +56,33 @@
 </script>
 
 <svelte:head>
-	<title>Guests</title>
+	<title>Households</title>
 </svelte:head>
 
 <Section name="advancedTable" sectionClass="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-<TableSearch
-  placeholder="Search"
-  hoverable={true}
-  bind:inputValue={searchTerm}
-  classes="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden flex flex-col md:flex-row md:items-center gap-3 p-4 w-full md:flex-1 relative"
->
-  {#snippet header()}
-    <div class="flex shrink-0 items-center gap-3">
-      <Button color="alternative" class="hover:text-gray-900 dark:hover:text-white text-gray-500 dark:text-gray-300">
-        <PlusOutline class="mr-2 h-3.5 w-3.5 text-gray-500 dark:text-gray-300" />Add household
-      </Button>
-      <Toggle
-        color="green"
-        class="whitespace-nowrap"
-        bind:checked={activeOnly}
-        onchange={(e) => onToggle((e.target as HTMLInputElement).checked)}
-      >
-        Active only
-      </Toggle>
-    </div>
-  {/snippet}
+  <div class="overflow-hidden bg-white shadow-md sm:rounded-lg dark:bg-gray-800">
+	<div class="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+  <div class="w-full md:w-64">
+    <Search bind:value={searchTerm} placeholder="Search" size="md" />
+  </div>
+
+  <div class="flex shrink-0 items-center gap-4 md:ml-auto">
+    <Button color="alternative" class="shrink-0 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+      <PlusOutline class="mr-2 h-3.5 w-3.5" />Add household
+    </Button>
+    <Toggle
+      color="green"
+      class="whitespace-nowrap"
+      bind:checked={activeOnly}
+      onchange={(e) => onToggle((e.target as HTMLInputElement).checked)}
+    >
+      Active only
+    </Toggle>
+  </div>
+</div>
+
+
+    <Table hoverable={true}>
     <TableHead>
       <TableHeadCell class="px-4 py-3" scope="col">Name</TableHeadCell>
       <TableHeadCell class="px-4 py-3" scope="col">Address</TableHeadCell>
@@ -88,9 +92,9 @@
     </TableHead>
     <TableBody class="divide-y">
       	{#each data.guests as guest (guest.id)}
-          <TableBodyRow>
+          <TableBodyRow onclick={(e) => goto(`households/${guest.memberOf?.id}`)}>
             <TableBodyCell class="px-4 py-3">{guest.firstName} {guest.lastName}</TableBodyCell>
-            <TableBodyCell class="px-4 py-3">{guest.memberOf?.street}</TableBodyCell>
+			<TableBodyCell class="px-4 py-3">{guest.memberOf?.street}</TableBodyCell>
             <TableBodyCell class="px-4 py-3">{guest.phone}</TableBodyCell>
             <TableBodyCell class="px-4 py-3">{guest.email}</TableBodyCell>
             <TableBodyCell class="px-4 py-3">{guest.memberOf?.status}</TableBodyCell>
@@ -103,8 +107,9 @@
 			    </TableBodyRow>
         {/each}
     </TableBody>
-    {#snippet footer()}
+	</Table>
+    <div class="p-4">
 	    <SearchPagination page={data.page} pageSize={data.pageSize} total={data.total} onpage={go} />
-    {/snippet}
-  </TableSearch>
+    </div>
+	</div>	
 </Section>

@@ -2,9 +2,16 @@
 	import { onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Search, Dropdown } from 'flowbite-svelte';
+    import { hostname } from 'zod';
 
-	type Result = { id: number; name: string; category: string };
-
+	type Result = {
+		id: string;
+		URL: string;
+		desc1: string;
+		desc2: string;
+		desc3: string;
+		category: string;
+	};
 	let query = $state('');
 	let results = $state<Result[]>([]);
 	let open = $state(false);
@@ -20,6 +27,8 @@
 	let timer: ReturnType<typeof setTimeout>;
 
 	const listId = 'search-results';
+
+	const SEARCH_PAGE_SIZE = 10;
 
 	// Flowbite makes its trigger element focusable (tabindex=0). We only use the
 	// wrapper as the anchor, so take it back out of the tab order.
@@ -55,11 +64,13 @@
 		errorMessage = '';
 
 		try {
-			const res = await fetch(`/search?q=${encodeURIComponent(q)}`, {
+			const params = new URLSearchParams({ q, s: 'active', pageSize: SEARCH_PAGE_SIZE.toString() });
+			const res = await fetch(`/search?${params}`, {
 				signal: ctrl.signal
 			});
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data: { results: Result[] } = await res.json();
+			console.log('Search results', data.results);
 			results = data.results;
 		} catch (e) {
 			if ((e as Error).name === 'AbortError') return;
@@ -72,8 +83,8 @@
 
 	function select(r: Result) {
 		open = false;
-		query = r.name;
-		goto(`/items/${r.id}`); // craig - change to wherever a result should lead
+//		goto(`${r.URL}`); // craig - Need the base URL
+		goto(r.URL);
 	}
 
 	function onKeydown(e: KeyboardEvent) {
@@ -167,7 +178,7 @@
 					onpointerenter={() => (active = i)}
 					onclick={() => select(r)}
 				>
-					<span>{r.name}</span>
+					<span>{r.desc1}<br>{r.desc2}<br>{r.desc3}</span>
 					<span class="whitespace-nowrap text-gray-500 dark:text-gray-300">{r.category}</span>
 				</li>
 			{/each}

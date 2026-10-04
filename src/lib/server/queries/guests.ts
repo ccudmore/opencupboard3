@@ -16,7 +16,6 @@ export async function searchGuests({
   page = 1,
   pageSize = GUEST_PAGE_SIZE
 }: SearchGuestsOptions = {}) {
-    console.log('searchGuests', { q, activeOnly, page, pageSize });
   const term = q.trim();
   const safePage = Math.max(1, page);
 
@@ -45,7 +44,6 @@ export async function searchGuests({
     AND: [searchFilter, statusFilter, primaryUserFilter]
   };
 
-  console.log(where)
   const [guests, total] = await Promise.all([
     prisma.guest.findMany({
       where,
@@ -65,6 +63,7 @@ export function parseGuestSearchParams(params: URLSearchParams): SearchGuestsOpt
   return {
     q: params.get('q')?.trim() ?? '',
     activeOnly: params.get('s') === 'active',
-    page: Math.max(1, Number(params.get('page')) || 1)
+    page: Math.max(1, Number(params.get('page')) || 1),
+    pageSize: params.get('pageSize') ? Math.max(1, Number(params.get('pageSize'))) : GUEST_PAGE_SIZE
   };
 }
