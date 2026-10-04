@@ -39,14 +39,13 @@ export async function searchGuests({
     ? { memberOf: { status: 'Active' } }
     : {};
 
-  const primaryUserFilter: Prisma.GuestWhereInput = activeOnly
-    ? { relationship: 'Primary' }
-    : {};
+  const primaryUserFilter: Prisma.GuestWhereInput = { relationship: 'Primary' };
 
   const where: Prisma.GuestWhereInput = {
     AND: [searchFilter, statusFilter, primaryUserFilter]
   };
 
+  console.log(where)
   const [guests, total] = await Promise.all([
     prisma.guest.findMany({
       where,
