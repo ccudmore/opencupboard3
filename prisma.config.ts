@@ -11,3 +11,6 @@ export default defineConfig({
     url: env("DATABASE_URL"),
   },
 });
+
+// craig come back here
+//if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

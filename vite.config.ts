@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
-                tailwindcss(),
+        tailwindcss(),
 		sveltekit({
 			alias: {
         		$prisma: 'prisma/src/generated/prisma',

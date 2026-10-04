@@ -12,9 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"db:seed": "prisma db seed",
 		"db:generate": "prisma generate",
-    	"db:migrate": "prisma migrate dev",
-    	"db:push": "prisma db push",
-    	"db:studio": "prisma studio"
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push",
+		"db:studio": "prisma studio"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"
@@ -42,8 +42,11 @@
 		"better-auth": "^1.7.5",
 		"dotenv": "^18.0.3",
 		"flowbite-svelte-blocks": "^2.1.0",
+		"maplibre-gl": "^6.11.2",
 		"pg": "^8.23.0",
 		"svelte-sonner": "^1.2.1",
-		"tailwindcss": "^4.3.3"
+		"sveltekit-superforms": "^2.31.0",
+		"tailwindcss": "^4.3.3",
+		"zod": "^4.6.5"
 	}
 }
