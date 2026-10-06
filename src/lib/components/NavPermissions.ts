@@ -1,7 +1,7 @@
   import { CogOutline, ChartPieOutline, CalendarEditOutline, ProfileCardOutline, AwardOutline } from "flowbite-svelte-icons";
 
   const availableApps = {
-    guests: {name: "Guests", label: "Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
+    guests: {name: "Houesholds and Guests", label: "Households and Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
     calendar: {name: "Calendar", label: "Calendar", href: "/event", icon: CalendarEditOutline, subContent: ""},
     volunteers: {name: "Volunteers", label: "Volunteers", href: "/volunteers", icon: AwardOutline, subContent: ""},
     reports: {name: "Reports", label: "Reports", href: "/reports", icon: ChartPieOutline, subContent: ""},
