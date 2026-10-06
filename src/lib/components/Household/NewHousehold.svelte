@@ -1,162 +1,143 @@
 <script lang="ts">
-  import { enhance, applyAction } from '$app/forms';
-  import type { SubmitFunction } from '@sveltejs/kit';
-  import { Modal, Label, Input, Helper, Button, Alert, Tags, Textarea } from 'flowbite-svelte';
+	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
+	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import { Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
+	import { newHouseholdSchema } from '$lib/formschemas/household';
+    import { toast } from "svelte-sonner";
+  import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
 
-  type Household = { id: string; name: string; address: string };
+let {
+		data,
+		open = $bindable(false)
+	}: { data: SuperValidated<Infer<typeof newHouseholdSchema>>; open: boolean } = $props();
 
-  // `open` is bindable so a button outside the component can toggle it.
-  // `action` defaults to the current page's `createHousehold` action; pass an
-  // absolute path (e.g. "/households?/createHousehold") if it lives elsewhere.
-  let {
-    open = $bindable(false),
-    action = '?/createHousehold',
-    onsaved
-  }: {
-    open?: boolean;
-    action?: string;
-    onsaved?: (household: Household) => void;
-  } = $props();
+	// superForm only needs the initial value; it manages its own state afterwards
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, submitting, message, reset } = superForm(data, {
+		validators: zod4Client(newHouseholdSchema),
+		resetForm: true,
+		onError({ result }) {
+			toast(`Error: ${result.error.message}`);
+		},
+		onUpdated({ form }) {
+			toast('updated '+form.data.firstName)
+			if (form.valid) open = false;
+		}
+	});
 
-  let name = $state('');
-  let address = $state('');
-  let submitted = $state(false);
-  let saving = $state(false);
-  let serverError = $state('');
-  let serverFieldErrors = $state<{ name?: string; address?: string }>({});
-    let dietaryOptions= ['Halal', 'Kosher', 'Lactose Free', 'Gluten Free']
-    let languagesSpoken= ['English', 'French', 'Arabic', 'Spanish']
-      let householdTags1 = $state([]); 
-      let householdTags2 = $state([]); 
-
-  const clientErrors = $derived({
-    name: name.trim() ? '' : 'Household name is required.',
-    address: address.trim() ? '' : 'Address is required.'
-  });
-//  const isValid = true;
-  const isValid = $derived(!clientErrors.name && !clientErrors.address);
-
-  const nameError = $derived(submitted ? clientErrors.name || serverFieldErrors.name || '' : '');
-//  const addressError = '';
-  
-  const addressError = $derived(
-    submitted ? clientErrors.address || serverFieldErrors.address || '' : ''
-  );
-  
-
-  // Reset the form whenever the dialog closes.
-  $effect(() => {
-    if (!open) {
-        name = '';
-      address = '';
-      submitted = false;
-      serverError = '';
-      serverFieldErrors = {};
-    }
-  });
-
-  const handleSubmit: SubmitFunction = ({ cancel }) => {
-    submitted = true;
-    serverError = '';
-    serverFieldErrors = {};
-
-    if (!isValid) {
-      cancel(); // client-side validation failed: don't hit the server
-      return;
-    }
-
-    saving = true;
-
-    return async ({ result, update }) => {
-      saving = false;
-
-      if (result.type === 'success') {
-        onsaved?.(result.data?.household as Household);
-        await update(); // re-runs load() functions so lists refresh
-        open = false;
-      } else if (result.type === 'failure') {
-        serverFieldErrors = result.data?.errors ?? {};
-        serverError = result.data?.message ?? '';
-      } else {
-        await applyAction(result); // redirect or unexpected error
-      }
-    };
-  };
+	const languages = ['English', 'French', 'Arabic', 'Mandarin', 'Spanish', 'Somali'].map((l) => ({
+		value: l,
+		name: l
+	}));
+	const dietary = ['Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-free', 'Dairy-free'].map((d) => ({
+		value: d,
+		name: d
+	}));
 </script>
 
-<Modal title="New household" bind:open autoclose={false} size="md">
-  <form
-    id="new-household-form"
-    method="POST"
-    {action}
-    use:enhance={handleSubmit}
-    novalidate
-    class="flex flex-col gap-4"
-  >
-    {#if serverError}
-      <Alert color="red">{serverError}</Alert>
-    {/if}
+<Modal title="New household" bind:open size="lg" onclose={() => reset()}>
+	<form method="POST" action="?/createHousehold" use:enhance class="grid grid-cols-1 gap-4 md:grid-cols-2">
+		{#if $message}
+			<Alert color="red" class="md:col-span-2">{$message}</Alert>
+		{/if}
 
-<!---->
-    <div>
-      <Label for="household-name" class="mb-2">Household name</Label>
-      <Input
-        id="household-name"
-        name="name"
-        bind:value={name}
-        required
-        aria-invalid={!!nameError}
-        color={nameError ? 'red' : undefined}
-      />
-      {#if nameError}
-        <Helper class="mt-2" color="red">{nameError}</Helper>
-      {/if}
-    </div>
+		<div>
+			<Label for="firstName" class="mb-1">First name</Label>
+			<Input id="firstName" name="firstName" bind:value={$form.firstName}
+				color={$errors.firstName ? 'red' : undefined} />
+			{#if $errors.firstName}<Helper color="red">{$errors.firstName}</Helper>{/if}
+		</div>
 
-    <div>
-      <Label for="household-address" class="mb-2">Address</Label>
-      <Input
-        id="household-address"
-        name="address"
-        bind:value={address}
-        required
-        aria-invalid={!!addressError}
-        color={addressError ? 'red' : undefined}
-      />
-    </div>
+		<div>
+			<Label for="lastName" class="mb-1">Last name</Label>
+			<Input id="lastName" name="lastName" bind:value={$form.lastName}
+				color={$errors.lastName ? 'red' : undefined} />
+			{#if $errors.lastName}<Helper color="red">{$errors.lastName}</Helper>{/if}
+		</div>
 
-<!---->
-    
-    <Input type="text" id="firstName" name="firstName" placeholder="First Name" class="w-100"/>
-    <Input type="text" id="lastName" name="lastName" placeholder="Last Name" />
-    <br>
-    <Input type="street" id="street" name="street" placeholder="Street Address"  />
-    <Input type="street2" id="street2" name="street2" placeholder="Street Address"/>
-    <Input type="text" id="city" name="city" placeholder="City" />
-    <Input type="text" id="postalCode" name="postalCode" placeholder="Postal Code" />
-    <Input type="text" id="email" name="email" placeholder="Email Address" />
-    <Input type="text" id="phone" name="phone" placeholder="Telephone Number" />
-    <Tags bind:value={householdTags1} placeholder="Languages spoken" class="mt-5 mb-3" showHelper availableTags={languagesSpoken} unique/>
+		<div>
+			<Label for="email" class="mb-1">Email</Label>
+			<Input id="email" name="email" type="email" bind:value={$form.email}
+				color={$errors.email ? 'red' : undefined} />
+			{#if $errors.email}<Helper color="red">{$errors.email}</Helper>{/if}
+		</div>
 
-    <Tags bind:value={householdTags2} placeholder="Dietary restrictions" class="mt-5 mb-3" showHelper availableTags={dietaryOptions} unique/>
-    <Textarea id="pets" class="w-full" name="pets" placeholder="Pets" />
-    <Textarea id="notes" class="w-full" name="notes" placeholder="Notes" />
-    <Textarea id="howHeard" class="w-full" name="howHeard" placeholder="How did you hear about us?" />
+		<div>
+			<Label for="phone" class="mb-1">Phone</Label>
+			<Input id="phone" name="phone" type="tel" bind:value={$form.phone}
+				color={$errors.phone ? 'red' : undefined} />
+			{#if $errors.phone}<Helper color="red">{$errors.phone}</Helper>{/if}
+		</div>
 
+		<div class="md:col-span-2">
+			<Label for="street" class="mb-1">Street</Label>
+			<Input id="street" name="street" bind:value={$form.street}
+				color={$errors.street ? 'red' : undefined} />
+			{#if $errors.street}<Helper color="red">{$errors.street}</Helper>{/if}
+		</div>
 
+		<div class="md:col-span-2">
+			<Label for="street2" class="mb-1">Street 2 (optional)</Label>
+			<Input id="street2" name="street2" bind:value={$form.street2} />
+		</div>
 
+		<div>
+			<Label for="city" class="mb-1">City</Label>
+			<Input id="city" name="city" bind:value={$form.city}
+				color={$errors.city ? 'red' : undefined} />
+			{#if $errors.city}<Helper color="red">{$errors.city}</Helper>{/if}
+		</div>
 
+		<div>
+			<Label for="province" class="mb-1">Province</Label>
+			<Input id="province" name="province" bind:value={$form.province} />
+		</div>
 
+		<div>
+			<Label for="postalCode" class="mb-1">Postal code</Label>
+			<Input id="postalCode" name="postalCode" bind:value={$form.postalCode}
+				color={$errors.postalCode ? 'red' : undefined} />
+			{#if $errors.postalCode}<Helper color="red">Enter a valid Canadian postal code</Helper>{/if}
+		</div>
 
-      {#if addressError}
-        <Helper class="mt-2" color="red">{addressError}</Helper>
-      {/if}
-  </form>
+		<div>
+			<Label for="country" class="mb-1">Country</Label>
+			<Input id="country" name="country" bind:value={$form.country} />
+		</div>
 
-  {#snippet footer()}
-      <Button type="submit" form="new-household-form" disabled={saving} color="alternative" class="shrink-0 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
-      {saving ? 'Saving…' : 'Save'}
-    </Button>
-    <Button color="alternative" onclick={() => (open = false)} disabled={saving}>Cancel</Button>
-  {/snippet}
+		<div>
+			<Label class="mb-1">Languages spoken</Label>
+			<MultiSelect items={languages} bind:value={$form.languagesSpoken} />
+			{#each $form.languagesSpoken as l}<input type="hidden" name="languagesSpoken" value={l} />{/each}
+		</div>
+
+		<div>
+			<Label class="mb-1">Dietary restrictions</Label>
+			<MultiSelect items={dietary} bind:value={$form.dietaryRestrictions} />
+			{#each $form.dietaryRestrictions as d}<input type="hidden" name="dietaryRestrictions" value={d} />{/each}
+		</div>
+
+		<div>
+			<Label for="pets" class="mb-1">Pets</Label>
+			<Input id="pets" name="pets" bind:value={$form.pets} />
+		</div>
+
+		<div>
+			<Label for="howHeard" class="mb-1">How did you hear about us?</Label>
+			<Input id="howHeard" name="howHeard" bind:value={$form.howHeard} />
+		</div>
+
+		<div class="md:col-span-2">
+			<Label for="notes" class="mb-1">Notes</Label>
+			<Textarea id="notes" name="notes" class="w-full" rows={3} bind:value={$form.notes} />
+		</div>
+
+		<div class="flex justify-end gap-2 md:col-span-2">
+			<Button color="alternative" onclick={() => (open = false)}>Cancel</Button>
+			<Button type="submit" disabled={$submitting} color="alternative">
+				{$submitting ? 'Saving…' : 'Save'}
+			</Button>
+		</div>
+	</form>
 </Modal>
+<!--SuperDebug data={form}/-->

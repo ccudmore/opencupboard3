@@ -2,35 +2,65 @@ import type { PageServerLoad } from './$types';
 import { searchGuests, parseGuestSearchParams } from '$lib/server/queries/guests';
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import type { Prisma } from '$prisma/client';
 import prisma from '$lib/prisma';
+import { superValidate, setError, message } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+import { newHouseholdSchema } from '$lib/formschemas/household';
+import { redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ url }) => {
-  return searchGuests(parseGuestSearchParams(url.searchParams));
+	const result = await searchGuests(parseGuestSearchParams(url.searchParams));
+	const form = await superValidate(zod4(newHouseholdSchema));
+
+	return { ...result, form };
 };
+
+function generateRandomString(length: number): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
 
 export const actions: Actions = {
   createHousehold: async ({ request, locals }) => {
-    // if (!locals.user) return fail(401, { message: 'Not signed in.' }); // wire to Better Auth craig
+    const form = await superValidate(request, zod4(newHouseholdSchema));
+		if (!form.valid) return fail(400, { form });
 
-    console.log('Creating new household...');
-    const data = await request.formData();
-    console.log(data);
-    const name = String(data.get('name') ?? '').trim();
-    const address = String(data.get('address') ?? '').trim();
-
-    const errors: { name?: string; address?: string } = {};
-    if (!name) errors.name = 'Household name is required.';
-    if (!address) errors.address = 'Address is required.';
-    if (errors.name || errors.address) return fail(400, { errors });
+    let uniqueFound: boolean = false;
+    let candidate: string = ""
+    do {
+      candidate=generateRandomString(4)
+        const count = await prisma.household.count( {
+          where: {
+            uniqueId: {equals: candidate}
+          }
+        } )
+      uniqueFound = (count == 0)
+    } while(!uniqueFound)
+    let newHosuehold = null
 
     try {
-//      const household = await prisma.household.create({ data: { name, address } });
-//      return { household };
-return null;
-    } catch (e) {
-      console.error(e);
-      return fail(500, { message: 'Could not save the household. Please try again.' });
+  	  const { firstName, lastName, email, phone, postalCode, ...householdWithoutMembers } = form.data;
+		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: 'session?.user?.name',
+        members: {create: {
+          firstName: firstName,
+          lastName: lastName,
+          fullName: firstName + ' ' + lastName,
+          email: email,
+          phone: phone,
+          relationship: 'Primary'}
+        }
+      }
+      newHosuehold = await prisma.household.create({
+                                data: household })
+    } catch (err) {
+      console.log('CRAIG ERROR')
+      console.error(err)
+      return message(form, 'Could not save the household. Please try again.', { status: 500 });
     }
-  }
+    throw redirect(303, '/households/'+newHosuehold.id)
+  },
 };

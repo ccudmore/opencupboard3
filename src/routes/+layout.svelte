@@ -7,9 +7,7 @@
     import { page } from "$app/state";
 	import { Toaster } from 'svelte-sonner';
 
-
 	let headerHeight = $state(0);
-
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
 
