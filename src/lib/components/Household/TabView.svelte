@@ -9,7 +9,7 @@
   import { env } from '$env/dynamic/public';
 
 	let { form, errors, constraints} = $props()
-  const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Speial Requests"
+  const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Special Requests"
 
 </script>
 

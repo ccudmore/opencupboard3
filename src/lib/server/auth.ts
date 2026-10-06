@@ -4,9 +4,6 @@ import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
 
-function uploadImageToStorage(img: string) {
-	return null
-}
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
 	secret: env.BETTER_AUTH_SECRET,
@@ -81,4 +78,4 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
   return user;
 }
 
-//export type Session = typeof auth.$Infer.Session;
+export type Session = typeof auth.$Infer.Session;

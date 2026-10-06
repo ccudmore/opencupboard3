@@ -6,7 +6,7 @@
 	import HouseholdAppointments from "$lib/components/Household/Appointments.svelte";
 	import { env } from '$env/dynamic/public';
 
-	const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Speial Requests"
+	const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Special Requests"
 
 	let { form, errors, constraints} = $props()
 </script>

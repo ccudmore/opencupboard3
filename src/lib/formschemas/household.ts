@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const householdSchema = z.object({
+export const householdSchema = z.object({
     id: z.string(),
     street: z.string().min(1),
     street2: z.string(),

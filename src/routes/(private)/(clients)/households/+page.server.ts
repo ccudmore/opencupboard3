@@ -40,11 +40,11 @@ export const actions: Actions = {
         } )
       uniqueFound = (count == 0)
     } while(!uniqueFound)
-    let newHosuehold = null
 
+    let newHosuehold = null
     try {
   	  const { firstName, lastName, email, phone, postalCode, ...householdWithoutMembers } = form.data;
-		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: 'session?.user?.name',
+		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: locals.user.name,
         members: {create: {
           firstName: firstName,
           lastName: lastName,
@@ -57,7 +57,6 @@ export const actions: Actions = {
       newHosuehold = await prisma.household.create({
                                 data: household })
     } catch (err) {
-      console.log('CRAIG ERROR')
       console.error(err)
       return message(form, 'Could not save the household. Please try again.', { status: 500 });
     }
