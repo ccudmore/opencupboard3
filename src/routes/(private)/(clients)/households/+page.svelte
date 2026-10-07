@@ -34,7 +34,7 @@
 		const params = new URLSearchParams();
 		if (q) params.set('q', q);
 		if (page > 1) params.set('page', String(page));
-		params.set('s', active ? 'active' : '');
+		if (!active) params.set('shownonactive','')
 		return `?${params.toString()}`;
 	}
 
@@ -69,11 +69,11 @@
       <HomeOutline class="me-2 h-4 w-4" />
     {/snippet}Home
   </BreadcrumbItem>
-  <BreadcrumbItem href="/Households">
+  <BreadcrumbItem href="/households">
     {#snippet icon()}
       <ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
     {/snippet}
-    Household and Guests
+    Households
   </BreadcrumbItem>
 </Breadcrumb>
 <Section name="advancedTable" sectionClass="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
@@ -106,21 +106,32 @@
       <TableHeadCell class="px-4 py-3" scope="col">Status</TableHeadCell>
     </TableHead>
     <TableBody class="divide-y">
-      	{#each data.guests as guest (guest.id)}
-          <TableBodyRow onclick={(e) => goto(`households/${guest.memberOf?.id}`)}>
-            <TableBodyCell class="px-4 py-3">{guest.firstName} {guest.lastName}</TableBodyCell>
-			<TableBodyCell class="px-4 py-3">{guest.memberOf?.street}</TableBodyCell>
-            <TableBodyCell class="px-4 py-3">{guest.phone}</TableBodyCell>
-            <TableBodyCell class="px-4 py-3">{guest.email}</TableBodyCell>
-            <TableBodyCell class="px-4 py-3">{guest.memberOf?.status}</TableBodyCell>
-          </TableBodyRow>
-		    {:else}
-			    <TableBodyRow>
-				    <TableBodyCell colspan={5} class="py-8 text-center">
-					      {data.q ? `No guests match "${data.q}".` : 'No guests yet.'}
-				    </TableBodyCell>
-			    </TableBodyRow>
-        {/each}
+      	{#each data.households as household (household.id)}
+			<TableBodyRow onclick={(e) => goto(`households/${household.id}`)}>
+				<TableBodyCell class="px-4 py-3">
+      				{#each household.members as member (member.id)}
+						{member.firstName} {member.lastName}<br>
+					{/each}
+				</TableBodyCell>
+				<TableBodyCell class="px-4 py-3">
+					{household.street}<br>
+				</TableBodyCell>
+				<TableBodyCell class="px-4 py-3">
+      				{#each household.members as member (member.id)}
+						{member.phone}<br>
+					{/each}
+				</TableBodyCell>
+				<TableBodyCell class="px-4 py-3">
+      				{#each household.members as member (member.id)}
+						{member.email}<br>
+					{/each}
+				</TableBodyCell>
+				<TableBodyCell class="px-4 py-3">
+					{household.status}<br>
+				</TableBodyCell>
+			</TableBodyRow>
+
+		{/each}
     </TableBody>
 	</Table>
     <div class="p-4">

@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { searchGuests, parseGuestSearchParams } from '$lib/server/queries/guests';
+import { searchHousehold, parseHouseholdSearchParams } from '$lib/server/queries/household';
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import prisma from '$lib/prisma';
@@ -9,7 +9,7 @@ import { newHouseholdSchema } from '$lib/formschemas/household';
 import { redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ url }) => {
-	const result = await searchGuests(parseGuestSearchParams(url.searchParams));
+	const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
 	const form = await superValidate(zod4(newHouseholdSchema));
 
 	return { ...result, form };
@@ -43,7 +43,7 @@ export const actions: Actions = {
 
     let newHosuehold = null
     try {
-  	  const { firstName, lastName, email, phone, postalCode, ...householdWithoutMembers } = form.data;
+  	  const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
 		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: locals.user.name,
         members: {create: {
           firstName: firstName,
@@ -51,6 +51,7 @@ export const actions: Actions = {
           fullName: firstName + ' ' + lastName,
           email: email,
           phone: phone,
+          createdBy: locals.user.name,
           relationship: 'Primary'}
         }
       }

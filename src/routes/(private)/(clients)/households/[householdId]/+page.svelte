@@ -33,11 +33,17 @@
   		applyAction: true, // don't reload the page after the update
   		invalidateAll: 'force',
   		resetForm: true,
+		onSubmit() {
+			    $form.members = $form.members.map((c) => ({
+      ...c,
+      fullName: `${c.firstName} ${c.lastName}`.trim()
+    }));
+			
+		},
 		onResult({ result }) {
             if (result.type === 'success') {
                 handleSuccess();
             } else if (result.type === 'error' || result.type === 'failure') {
-				console.log($errors.members)
 				handleError()
             }
         },
@@ -46,6 +52,7 @@
 	function close() {
 		goto('/households');
 	}
+
 	function confirmDelete() {
 		openComfirmDeleteModal=true
 	}

@@ -40,6 +40,7 @@
 
 	const validRelationships = [
     	{ value: "Primary", name: "Primary" },
+    	{ value: "Spouse", name: "Spouse" },
     	{ value: "Parent", name: "Parent" },
     	{ value: "Child", name: "Child" },
     	{ value: "Grandparent", name: "Grandparent" },

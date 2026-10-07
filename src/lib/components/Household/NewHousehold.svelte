@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import { Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
+	import { PhoneInput, Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
 	import { newHouseholdSchema } from '$lib/formschemas/household';
     import { toast } from "svelte-sonner";
   import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
@@ -13,7 +13,7 @@ let {
 
 	// superForm only needs the initial value; it manages its own state afterwards
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, submitting, message, reset } = superForm(data, {
+	const { form, errors, enhance, submitting, message, reset, constraints } = superForm(data, {
 		validators: zod4Client(newHouseholdSchema),
 		resetForm: true,
 		onError({ result }) {
@@ -64,7 +64,18 @@ let {
 
 		<div>
 			<Label for="phone" class="mb-1">Phone</Label>
+			<!--
 			<Input id="phone" name="phone" type="tel" bind:value={$form.phone}
+				color={$errors.phone ? 'red' : undefined} />
+				-->
+				<!---
+				<PhoneInput id="phone" name="phone" type="tel" oninput={(e: Event) => ($form.phone = (e.currentTarget as HTMLInputElement).value)}
+		-->
+			<input
+    			type="tel"
+    			name="phone"
+    			bind:value={$form.phone}
+    			{...$constraints.phone}
 				color={$errors.phone ? 'red' : undefined} />
 			{#if $errors.phone}<Helper color="red">{$errors.phone}</Helper>{/if}
 		</div>
