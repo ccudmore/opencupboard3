@@ -71,6 +71,14 @@
 		toggleMemberDrawer(openMemberRow||0)
 	}
 
+	async function validateMemberUpdate(openMemberRow: number) {
+    	const result = await validateForm({ update: true });
+		console.log(result)
+    	if (result.valid) {
+			toggleMemberDrawer(openMemberRow)
+    	}
+	}
+
 	/*
 	function deleteHouseholdMember() {
 		const result = confirm("Confirm deleting husehold member?")
@@ -86,7 +94,7 @@
 		toggleMemberDrawer($form.members.length-1)
 		form.set($form) // trigger reactivation
 	}
-    	let { form, errors, constraints} = $props()
+    let { form, errors, constraints, validateForm} = $props()
 
 </script>
 
@@ -205,7 +213,7 @@
 		Added on {formattedDate($form.members[openMemberRow].createdAt)} by { $form.members[openMemberRow].createdBy}
 	  	<div class="mt-0 pl-10 pb-10">
 			<ButtonGroup class="*:ring-primary-700!">
-				<Button outline color="dark" onclick={() => toggleMemberDrawer(openMemberRow||0)}>Update</Button>
+				<Button outline color="dark" onclick={() => validateMemberUpdate(openMemberRow||0)}>Update</Button>
 				<Button outline color="dark" onclick={confirmDelete}>Delete</Button>
 			</ButtonGroup>
 		</div>

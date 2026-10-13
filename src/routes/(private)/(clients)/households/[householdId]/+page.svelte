@@ -11,6 +11,8 @@
 	import Topper from "$lib/components/Household/Topper.svelte";
 	import {formattedDate} from "$lib/utils"
   	import { slide } from "svelte/transition";
+	import { zod4 } from 'sveltekit-superforms/adapters';
+	import { householdSchema } from '$lib/formschemas/household';
 
 	let { data } = $props()
   	let openComfirmDeleteModal = $state(false);
@@ -26,19 +28,19 @@
 	
 	// superForm only needs the initial value; it manages its own state afterwards
 	// svelte-ignore state_referenced_locally
-	const {form, errors, enhance, constraints, tainted } = superForm(data.form,
+	const {form, errors, enhance, constraints, tainted, isTainted, validateForm } = superForm(data.form,
 	{
 		taintedMessage: "Are you sure you want to leave? Your work will not be saved.",
         dataType: 'json',
   		applyAction: true, // don't reload the page after the update
   		invalidateAll: 'force',
   		resetForm: true,
+		validators: zod4(householdSchema),
 		onSubmit() {
-			    $form.members = $form.members.map((c) => ({
-      ...c,
-      fullName: `${c.firstName} ${c.lastName}`.trim()
-    }));
-			
+			$form.members = $form.members.map((c) => ({
+      		...c,
+      		fullName: `${c.firstName} ${c.lastName}`.trim()
+    		}));
 		},
 		onResult({ result }) {
             if (result.type === 'success') {
@@ -59,7 +61,7 @@
 
 	async function actionDelete({ action }: { action: string }) {
 
-		if (action === 'yes') {
+		if (action === 'yes') { // craig - can this be done a an action?
     		const res = await fetch('?/deleteHousehold', {
  		    	method: 'POST',
       			headers: { 'Content-Type': 'multipart/form-data' },
@@ -92,19 +94,25 @@
   		</BreadcrumbItem>
 	</Breadcrumb>
 	<Topper form={form} errors={errors} constraints={constraints}/>
-	{#if tainted}
-		You have unsaved changes.
-	{/if}
+{#if isTainted($tainted)}
+    <div
+        role="status"
+        class="mx-4 my-3 flex items-center gap-3 rounded-lg border-l-4 border-amber-500 bg-amber-100 px-4 py-3 text-base font-semibold text-amber-900 shadow-md
+               md:mx-6
+               dark:border-amber-400 dark:bg-amber-900/50 dark:text-amber-100"
+    >
+        <ExclamationCircleOutline class="h-6 w-6 shrink-0 text-amber-600 dark:text-amber-300" />
+        <span>You have unsaved changes.</span>
+    </div>
+{/if}
 	<form action="?/updateHousehold" method="POST" class="p-2" use:enhance>
 		<Input type="hidden" id="id" name="id" value={data.household.id} />
 		<!--SuperDebug data={$form}/-->
-		<ButtonGroup class="*:ring-primary-700!">
-			<Button outline color="dark" type="submit">Save</Button>
-			<Button outline color="dark" onclick={confirmDelete}>Delete</Button>
-			<Button outline color="dark" onclick={close}>Close</Button>
-			<!--Button outline color="dark" onclick={dump}>Dump</Button-->
-		</ButtonGroup>
-		<TabView form={form} errors={errors} constraints={constraints}/>
+<ButtonGroup class="mb-4 shadow-sm">
+    <Button color="blue" size="lg" type="submit" class="px-6 font-semibold">Save</Button>
+    <Button color="red" size="lg" onclick={confirmDelete} class="px-6 font-semibold">Delete</Button>
+    <Button color="alternative" size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
+</ButtonGroup>		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
 	</form>
 
 	Created by: {data.household.createdBy} on {formattedDate(data.household.createdAt)}

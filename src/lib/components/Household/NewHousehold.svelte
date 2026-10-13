@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import { PhoneInput, Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
+	import { Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
 	import { newHouseholdSchema } from '$lib/formschemas/household';
     import { toast } from "svelte-sonner";
   import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
@@ -64,19 +64,13 @@ let {
 
 		<div>
 			<Label for="phone" class="mb-1">Phone</Label>
-			<!--
-			<Input id="phone" name="phone" type="tel" bind:value={$form.phone}
-				color={$errors.phone ? 'red' : undefined} />
-				-->
-				<!---
-				<PhoneInput id="phone" name="phone" type="tel" oninput={(e: Event) => ($form.phone = (e.currentTarget as HTMLInputElement).value)}
-		-->
 			<input
     			type="tel"
     			name="phone"
     			bind:value={$form.phone}
     			{...$constraints.phone}
-				color={$errors.phone ? 'red' : undefined} />
+				color={$errors.phone ? 'red' : undefined}
+				required={false} />
 			{#if $errors.phone}<Helper color="red">{$errors.phone}</Helper>{/if}
 		</div>
 

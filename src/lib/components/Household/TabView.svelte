@@ -5,10 +5,10 @@
 	import HouseholdMembers from "$lib/components/Household/Members.svelte";
 	import HouseholdAppointments from "$lib/components/Household/Appointments.svelte";
 	import { Tabs, TabItem } from "flowbite-svelte";
-	import Map from "$lib/components/Map.svelte";
   import { env } from '$env/dynamic/public';
+	import AddressMap from "$lib/components/Household/AddressMap.svelte";
 
-	let { form, errors, constraints} = $props()
+	let { form, errors, constraints, validateForm} = $props()
   const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Special Requests"
 
 const active =
@@ -27,8 +27,7 @@ const active =
 <Tabs
   tabStyle="none"
   divider={false}
-  ulClass="inline-flex gap-1 p-1 rounded-xl bg-gray-100 border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
-  contentClass="mt-3 p-4 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+  class="mt-3 p-4 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
 >
   <TabItem open title="Address" activeClass={active} inactiveClass={inactive}>
 		<HouseholdAddress form={form} errors={errors} constraints={constraints}/>
@@ -40,13 +39,13 @@ const active =
 		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} title={title}/>
   </TabItem>
   <TabItem title="Household Members" activeClass={active} inactiveClass={inactive}>
-		<HouseholdMembers form={form} errors={errors} constraints={constraints}/>
+		<HouseholdMembers form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
   </TabItem>
   <TabItem title="Appointments" activeClass={active} inactiveClass={inactive}>
 		<HouseholdAppointments form={form} errors={errors} constraints={constraints}/>
   </TabItem>
   <TabItem title="Map" activeClass={active} inactiveClass={inactive}>
-    <Map street={$form.street} street2={$form.street2} city={$form.city} province={$form.province} country={$form.country}/>
+    <AddressMap street={$form.street} street2={$form.street2} city={$form.city} province={$form.province} country={$form.country}/>
   </TabItem>
 </Tabs>
 </div>

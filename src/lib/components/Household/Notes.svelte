@@ -27,7 +27,7 @@
 	let { form, errors, constraints} = $props()
 </script>   
 <Label for="dietaryRestrictions" class="mb-2">Dietary Restrictions</Label>
-<Tags id="dietaryRestrictions" class="mt-5 mb-3" bind:value={$form.dietaryRestrictions} showHelper availableTags={dietaryOptions} unique/>
+<Tags id="dietaryRestrictions" class="mt-5 mb-3" bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/>
 <Label for="preferredServiceTypes" class="mb-2">Service Type</Label>
 <MultiSelect class="mb-2" items={deliveryTypes} bind:value={$form.preferredServiceTypes} />
 <Label for="preferredTimeOfDay" class="mb-2">Prefered Service Time</Label>

@@ -1,20 +1,21 @@
 import { z } from 'zod';
 
-const CA_POSTAL = /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i;
-//const NANP = /^(?:\+?1[ .-]?)?\(?([2-9]\d{2})\)?[ .-]?([2-9]\d{2})[ .-]?(\d{4})$/;
-const NANP = /^(?:\+?1[\s.-]?)?\(?([2-9]\d{2})\)?[\s.-]?([2-9]\d{2})[\s.-]?(\d{4})$/;
-const phoneRegex = new RegExp(
-  /^([+]?[\s0-9]+)?([-_\s]?[(]?[0-9]?[)]?([-_\s]?[0-9]+)+)$/
-);
+// Canadian postal code: A1A 1A1
+// First letter excludes D, F, I, O, Q, U, W, Z; the other letters exclude D, F, I, O, Q, U
+const POSTAL_REGEX = /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/;
 
-export function parseNanp(input: string) {
-  const m = input.trim().match(NANP);
-  if (!m) return null;
-  const [, area, exchange, line] = m;
-  // N11 codes (211, 311, 411, 911...) aren't valid area codes or exchanges
-  if (area.endsWith('11') || exchange.endsWith('11')) return null;
-  return `+1${area}${exchange}${line}`; // E.164
-}
+// Strips everything except digits, and drops a leading country code "1"
+const normalizePhone = (value: string): string => {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) {
+    digits = digits.slice(1);
+  }
+  return digits;
+};
+
+// Uppercases and strips everything except letters and digits
+const normalizePostal = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 
 export const householdSchema = z.object({
     id: z.string(),
@@ -23,9 +24,15 @@ export const householdSchema = z.object({
     city: z.string(),
     province: z.string().default('Ontario'),
     country: z.string().default('Canada'),
-    postalCode: z.string().toUpperCase(),
-//    postalCode: z.string().toUpperCase().regex(CA_POSTAL),
-//        /^[ABCEGHJ-NPRSTVXYabceghj-nprstvxy]\d[ABCEGHJ-NPRSTV-Zabcegh-nprstv-z][ -]?\d[ABCEGHJ-NPRSTV-Zabceghj-nprstv-z]\d$/),
+    postalCode: z
+        .string()
+        .trim()
+        .optional()
+        .transform((val) => (val ? normalizePostal(val) : ''))
+        .refine((code) => code === '' || POSTAL_REGEX.test(code), {
+            message: 'Enter a valid postal code (e.g. A1A 1A1)'
+        })
+        .transform((code) => (code ? `${code.slice(0, 3)} ${code.slice(3)}` : '')),
     status: z.string().default('Active'),
     dietaryRestrictions: z.string().array().default([]),
     pets: z.string().optional(),
@@ -60,29 +67,18 @@ export const householdSchema = z.object({
             lastName: z.string().min(1), 
             fullName: z.string().min(1), 
             idChecked: z.string().optional().nullable(),
-            email: z.string().trim().toLowerCase().email('Enter a valid email').max(254, 'Email is too long'),
-//            phone: z.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/, 'invalid'),
-/*
-            phone: z.string()
+            email: z.email('Enter a valid email').optional().or(z.literal('')),
+            phone: z
+                .string()
                 .trim()
-                .regex(NANP, 'Enter a valid phone number, e.g. (613) 555-0123')
-                .transform((val) => {
-                    const [, area, exchange, line] = val.match(NANP)!;
-                    return `+1${area}${exchange}${line}`; // E.164
-                }),
-                */
-               /*
-               phone: z
-    .string()
-    .min(1, 'Phone number is required')
-    .refine((v) => parseNanp(v) !== null, {
-      message: 'Enter a valid US or Canadian phone number'
-    }),
-    */
-   phone: z
-    .string()
-    .min(1, { message: 'Phone number is required' })
-    .regex(phoneRegex, { message: 'Invalid phone number format' }),
+                .optional()
+                .transform((val) => (val ? normalizePhone(val) : ''))
+                .refine((digits) => digits === '' || /^[2-9]\d{2}[2-9]\d{6}$/.test(digits), {
+                    message: 'Enter a valid North American phone number (e.g. 613-555-1234)'
+                })
+                .transform((digits) =>
+                    digits ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : ''
+                ),
             relationship: z.string().optional(),
             birthYear: z.int().optional().nullable(),
             idCheckDate: z.date().optional().nullable(),

@@ -18,8 +18,8 @@ export async function searchHousehold({
   pageSize = GUEST_PAGE_SIZE
 }: SearchHouseholdOptions = {}) {
   const term = q.trim();
+  const compactTerm = term.replace(/\s+/g, '');
 
- // The same guest must be Primary AND match the search
   const guestWhere: Prisma.GuestWhereInput = {
     relationship: 'Primary',
     ...(!showNonActive && { memberOf: { status: 'Active' } }),
@@ -32,52 +32,47 @@ export async function searchHousehold({
         { memberOf: { street: { contains: term, mode: 'insensitive' } } },
         { memberOf: { city: { contains: term, mode: 'insensitive' } } },
         { memberOf: { postalCode: { contains: term, mode: 'insensitive' } } },
-        { memberOf: { postalCode: { contains: term, mode: 'insensitive' } } }
+        { memberOf: { postalCode: { contains: compactTerm, mode: 'insensitive' } } }
       ]
     })
   };
 
-  const orderBy = [
-    { _min: { fullName: 'asc' } },
-    { householdMembershipId: 'asc' } // tie-breaker so paging is stable
-  ] satisfies Prisma.GuestGroupByArgs['orderBy'];
+  // Step 1: ids of all matching households (one row per household)
+  const matches = await prisma.guest.groupBy({
+    by: ['householdMembershipId'],
+    where: guestWhere
+  });
+  const ids = matches.map((m) => m.householdMembershipId);
 
-  // Retrieve all households that have at least one member that meets the search criteria
-
-  // Step 1: one row per household, sorted and paged in the database
-  const [pageRows, allRows] = await Promise.all([
-    prisma.guest.groupBy({
-      by: ['householdMembershipId'],
-      where: guestWhere,
-      _min: { fullName: true },
-      orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    }),
-    prisma.guest.groupBy({
-      by: ['householdMembershipId'],
-      where: guestWhere
-    })
-  ]);
-
-  const ids = pageRows.map((r) => r.householdMembershipId);
-
-  // Step 2: full household records with ALL Primary guests (not just the ones that matched)
+  // Step 2: full households with their Primary members, sorted last then first
   const households = await prisma.household.findMany({
     where: { id: { in: ids } },
     include: {
       members: {
         where: { relationship: 'Primary' },
-        orderBy: [{ lastName: 'asc'}, {firstName: 'asc' }]
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
       }
     }
   });
 
-  // findMany doesn't preserve the `in` order, so restore the sorted order
-  const byId = new Map(households.map((h) => [h.id, h]));
-  const ordered = ids.map((id) => byId.get(id)).filter((h) => h !== undefined);
+  // Step 3: sort households by their first Primary member, then page
+  const cmp = (a?: string, b?: string) =>
+    (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
 
-  return { households: ordered, total: allRows.length, page, pageSize, q: term };
+  households.sort((a, b) => {
+    const ma = a.members[0];
+    const mb = b.members[0];
+    return (
+      cmp(ma?.lastName, mb?.lastName) ||
+      cmp(ma?.firstName, mb?.firstName) ||
+      a.id.localeCompare(b.id) // stable tie-breaker for paging
+    );
+  });
+
+  const total = households.length;
+  const start = (page - 1) * pageSize;
+  
+  return { households: households.slice(start, start + pageSize), total, page, pageSize, q: term };
 }
 
 /** Turns URLSearchParams into SearchGuestsOptions so both callers parse identically. */
