@@ -198,7 +198,6 @@ model Guest {
   //personId        String  @unique
   firstName       String
   lastName        String
-  fullName    String
   email         String?
   phone        String?
   idChecked   String?
@@ -265,7 +264,6 @@ model Volunteer {
   //personId        String  @unique
   firstName       String
   lastName        String
-  fullName        String
   street          String?
   city        String?
   postalCode  String?

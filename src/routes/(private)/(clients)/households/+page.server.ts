@@ -48,7 +48,6 @@ export const actions: Actions = {
         members: {create: {
           firstName: firstName,
           lastName: lastName,
-          fullName: firstName + ' ' + lastName,
           email: email,
           phone: phone,
           createdBy: locals.user.name,

@@ -90,7 +90,7 @@
 	}
 */
 	function addHouseholdMember() {
-		$form.members.push({firstName: '', lastName: '', fullName: ''});
+		$form.members.push({firstName: '', lastName: '',});
 		toggleMemberDrawer($form.members.length-1)
 		form.set($form) // trigger reactivation
 	}

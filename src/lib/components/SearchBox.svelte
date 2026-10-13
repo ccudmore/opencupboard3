@@ -70,7 +70,6 @@
 			});
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data: { results: Result[] } = await res.json();
-			console.log('Search results', data.results);
 			results = data.results;
 		} catch (e) {
 			if ((e as Error).name === 'AbortError') return;

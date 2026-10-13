@@ -29,7 +29,6 @@ export async function searchGuests({
           { memberOf: { city: { contains: term, mode: 'insensitive' } } },
           { memberOf: { postalCode: { contains: term, mode: 'insensitive' } } },
           { email: { contains: term, mode: 'insensitive' } },
-          { fullName: { contains: term, mode: 'insensitive' } }
         ]
       }
     : {};

@@ -30,11 +30,6 @@ export const actions: Actions = {
 		const formData = await superValidate(request, zod4(householdSchema));
 		if (!formData.valid) return fail(400, { formData });
 
-		formData.data.members = formData.data.members.map((m) => ({
-        	...m,
-        	fullName: `${m.firstName} ${m.lastName}`.trim(),
-	    }));
-
 		const {id,members,datedRequests,appointmentBookings,...householdWithoutIds} = formData.data
 		try {
 			await prisma.household.update({

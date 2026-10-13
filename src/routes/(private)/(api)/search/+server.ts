@@ -13,7 +13,7 @@ export async function GET({ url, locals }) {
   			return {
 				id: guest.id,
     			URL: `${urlbase.origin}/households/${guest.householdMembershipId}`, 
-    			desc1: guest.fullName,
+    			desc1: `${guest.firstName} ${guest.firstName}`,
     			desc2: guest.memberOf.street,
     			desc3: guest.phone,
 				category: 'Client'

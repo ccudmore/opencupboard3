@@ -65,7 +65,6 @@ export const householdSchema = z.object({
             id: z.string().optional(),
             firstName: z.string().min(1),   
             lastName: z.string().min(1), 
-            fullName: z.string().min(1), 
             idChecked: z.string().optional().nullable(),
             email: z.email('Enter a valid email').optional().or(z.literal('')),
             phone: z

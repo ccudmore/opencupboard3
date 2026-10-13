@@ -36,12 +36,6 @@
   		invalidateAll: 'force',
   		resetForm: true,
 		validators: zod4(householdSchema),
-		onSubmit() {
-			$form.members = $form.members.map((c) => ({
-      		...c,
-      		fullName: `${c.firstName} ${c.lastName}`.trim()
-    		}));
-		},
 		onResult({ result }) {
             if (result.type === 'success') {
                 handleSuccess();
