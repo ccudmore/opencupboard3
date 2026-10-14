@@ -66,13 +66,13 @@
 
 
 
-        <div
-            class="w-full max-w-xs rounded-lg border-2 border-gray-300 bg-white p-3 shadow-sm
-                   dark:border-gray-600 dark:bg-gray-800"
-        >
-            <Label for="status" class="mb-2 text-base font-bold">Status</Label>
-            <Select id="status" items={householdStatuses} bind:value={$form.status} />
-        </div>
+    <div
+        class="flex w-full max-w-xs items-center gap-3 rounded-lg border-2 border-gray-300 bg-white p-3 shadow-sm
+           dark:border-gray-600 dark:bg-gray-800"
+>
+        <Label for="status" class="shrink-0 text-base font-bold">Status</Label>
+        <Select id="status" class="flex-1" items={householdStatuses} bind:value={$form.status} />
+    </div>
     </div>
 
     <!-- Right column: summary and ID check -->

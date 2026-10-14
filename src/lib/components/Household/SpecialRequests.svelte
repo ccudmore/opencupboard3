@@ -54,8 +54,19 @@
 
 	let { form, errors, constraints, title} = $props()
 </script>
-<Label for="specialRequests" class="mb-2 text-lg font-semibold">{title}</Label>
+<!--Label for="specialRequests" class="mb-2 text-lg font-semibold">{title}</Label-->
+
 <Table striped={true}>
+  	<caption class="bg-white p-5 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
+    	<div class="flex items-center justify-between">
+      		<span>{title}</span>
+      		<Button outline color="dark" onclick={addSpecialRequest}>
+        		New {title}
+      		</Button>
+    	</div>
+  	</caption>
+
+
 	<TableHead>
     	<TableHeadCell>Date</TableHeadCell>
     	<TableHeadCell>Text</TableHeadCell>
@@ -80,10 +91,11 @@
 	</TableBody>
 </Table>
 <Checkbox bind:checked={hideClosedDatedRequests}>Hide closed</Checkbox>
-<Button outline color="dark" onclick={addSpecialRequest}>New {title}</Button><br>
+<!--Button outline color="dark" onclick={addSpecialRequest}>New {title}</Button><br-->
 
-<Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="backdrop:bg-black/50 bg-gray-50 p-1 dark:bg-gray-800">	
-	<div class="mb-2 text-lg font-semibold">{title}</div>
+<Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
+
+	<div class="mb-2 text-lg font-semibol">{title}</div>
     {#if openSpecialRequestRow != null}
   		<div class="mt-0.5 gap-4 pl-10 pt-5 mb-0.5">
 			<div>
@@ -101,8 +113,8 @@
 
 	  	<div class="mt-0 pl-10 pb-10">
 			<ButtonGroup class="*:ring-primary-700!">
-				<Button outline color="dark" onclick={() => toggleSpecialRequestDrawer(openSpecialRequestRow||0)}>Update</Button>
-				<Button outline color="dark" onclick={confirmDelete}>Delete</Button>
+				<Button outline onclick={() => toggleSpecialRequestDrawer(openSpecialRequestRow||0)}>Update</Button>
+				<Button outline onclick={confirmDelete}>Delete</Button>
 			</ButtonGroup>
 		</div>
 	{/if}
@@ -113,8 +125,10 @@
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
     <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this {title}?</h3>
     <div class="space-x-2">
-      <Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
-      <Button type="submit" value="no" color="alternative">No, cancel</Button>
+		<ButtonGroup class="*:ring-primary-700!">
+      		<Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
+      		<Button type="submit" value="no" color="alternative">No, cancel</Button>
+		</ButtonGroup>
     </div>
   </div>
 </Modal>

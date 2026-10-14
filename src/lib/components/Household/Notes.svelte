@@ -26,14 +26,31 @@
 
 	let { form, errors, constraints} = $props()
 </script>   
-<Label for="dietaryRestrictions" class="mb-2">Dietary Restrictions</Label>
-<Tags id="dietaryRestrictions" class="mt-5 mb-3" bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/>
+<Label for="dietaryRestrictions" class="mt-5 mb-3">Dietary Restrictions</Label>
+
+<!--Tags id="dietaryRestrictions" class="mt-5 mb-3 text-gray-900 dark:[&_button]:text-gray-100 dark:[&_ul]:bg-gray-700
+[&_button:hover]:bg-blue-100
+		dark:[&_button:hover]:bg-gray-600" 
+	classes={{
+		tag: "dark:bg-blue-600",                    // the chips you've added
+		span: "dark:text-gray-200",                 // text inside the chips
+		input: "text-gray-900 dark:text-white",
+	}}
+
+ bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/
+ -->
+<Tags id="dietaryRestrictions" class="mt-5 mb-3 text-gray-900 dark:[&_button]:text-gray-200 dark:[&_ul]:bg-gray-700" 
+	classes={{
+		tag: "dark:bg-gray-600",                    // the chips you've added
+		span: "dark:text-gray-200",                 // text inside the chips
+	}}
+ bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/>
 <Label for="preferredServiceTypes" class="mb-2">Service Type</Label>
 <MultiSelect class="mb-2" items={deliveryTypes} bind:value={$form.preferredServiceTypes} />
 <Label for="preferredTimeOfDay" class="mb-2">Prefered Service Time</Label>
 <MultiSelect id="preferredTimeOfDay" placeholder="Preferred times" class="mt-5 mb-3" bind:value={$form.preferredTimeOfDay}   items={deliveryTimes}  />
 <Label for="languagesSpoken" class="mb-2">Languages Spoken</Label>
-<Tags placeholder="Languages spoken" class="mt-5 mb-3" bind:value={$form.languagesSpoken} showHelper availableTags={languagesSpoken} unique/>
+<Tags placeholder="Languages spoken" class="mt-5 mb-3" bind:value={$form.languagesSpoken} showHelper showAvailableTags={true} availableTags={languagesSpoken} unique/>
 <Label for="pets" class="mb-2">Pets</Label>
 <Textarea id="pets" class="w-full" name="pets" bind:value={$form.pets} {...$constraints.pets}/>
 <Label for="notes" class="mb-2">Notes</Label>

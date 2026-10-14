@@ -30,6 +30,18 @@
 		return false
   	};
 
+	function toastMemberErrors(errors: { [s: string]: unknown; } | ArrayLike<unknown>) {
+  		const rows = Object.keys(errors).map((i) => Number(i) + 1);
+		const first = Object.values(errors)[0];
+		const firstFieldErrors = first && typeof first === "object"
+			? Object.values(first as Record<string, unknown>)[0]
+			: undefined;
+		const message = Array.isArray(firstFieldErrors) && typeof firstFieldErrors[0] === "string"
+			? firstFieldErrors[0]
+			: "Validation failed";
+
+  		toast(`${rows.length} rows failed: ${message} (rows ${rows.join(", ")})`);
+	}
 	
     const validIdTypes = [
     	{ value: "Drivers License", name: "Drivers License" },
@@ -73,22 +85,13 @@
 
 	async function validateMemberUpdate(openMemberRow: number) {
     	const result = await validateForm({ update: true });
-		console.log(result)
     	if (result.valid) {
 			toggleMemberDrawer(openMemberRow)
-    	}
+    	} else {
+			toastMemberErrors(result.errors.members)
+		}
 	}
 
-	/*
-	function deleteHouseholdMember() {
-		const result = confirm("Confirm deleting husehold member?")
-		if (result && openMemberRow != null) {
-			$form.members.splice(openMemberRow,1)
-			form.set($form) // trigger reactivation
-		}
-		toggleMemberDrawer(openMemberRow||0)
-	}
-*/
 	function addHouseholdMember() {
 		$form.members.push({firstName: '', lastName: '',});
 		toggleMemberDrawer($form.members.length-1)
@@ -100,8 +103,14 @@
 
 <Table striped={true}>
   	<caption class="bg-white p-5 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
-		Household Members
+    	<div class="flex items-center justify-between">
+      		<span>Household Members</span>
+      		<Button outline color="dark" onclick={addHouseholdMember}>
+        		New Household Member
+      		</Button>
+    	</div>
   	</caption>
+
 	<TableHead>
     	<TableHeadCell>First Name</TableHeadCell>
     	<TableHeadCell>Last Name</TableHeadCell>
@@ -138,20 +147,19 @@
     	{/each}
 	</TableBody>
 </Table>
-<Button outline color="dark" onclick={addHouseholdMember}>New Household Member</Button><br>
 
 <Modal title="Identification Check" form size="xs" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
 	ID type presented<Select class="mb-2" items={validIdTypes} name="idtype"/>
 	{#snippet footer()}
-    	<Button type="submit" value="confirm" color="dark">Confirm</Button>
-    	<Button type="submit" value="cancel" color="alternative">Cancel</Button>
+    	<Button outline type="submit" value="confirm" color="dark">Confirm</Button>
+    	<Button outline type="submit" value="cancel" color="dark">Cancel</Button>
   	{/snippet}
 </Modal>
 
-<Drawer placement="bottom" bind:open={openMemberDrawer} class="backdrop:bg-black/50 bg-gray-50 p-1 dark:bg-gray-800">	
-	<div class="mb-2 text-lg font-semibold">Household Member</div>
-	{#if openMemberRow != null}
-  		<div class="mt-0.5 gap-4 pl-10 pt-5 grid mb-0.5 grid-cols-3">
+<Drawer placement="bottom" bind:open={openMemberDrawer} class="backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
+	<div class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Household Member</div>
+		{#if openMemberRow != null}
+	  		<div class="mt-0.5 gap-4 pl-10 pt-5 grid mb-0.5 grid-cols-3">
 			<div>
 				<Label for="firstName" class="mb-2">First Name</Label>
 				<Input type="text" id="firstName" name="firstName" bind:value={$form.members[openMemberRow].firstName} {...$constraints.members?.firstName} />
@@ -203,18 +211,24 @@
 			</div>
 		</div>
 
-	  	<div class="mt-0 pl-10 pb-5 pt-5">
+		<div class="mt-0 pl-10 pb-5 pt-5">
 			{#if $form.members[openMemberRow].idChecked}
-				<p>ID type {$form.members[openMemberRow].idChecked} checked on {formattedDate($form.members?.[openMemberRow]?.idCheckDate)}</p>
+				<p class="text-gray-500 dark:text-gray-400">
+					ID type {$form.members[openMemberRow].idChecked} checked on {formattedDate($form.members?.[openMemberRow]?.idCheckDate)}
+				</p>
 			{:else}
-				<p class="text-red-500">No ID Provided</p>
+				<p class="text-red-600 dark:text-red-500">No ID Provided</p>
 			{/if}
 		</div>
-		Added on {formattedDate($form.members[openMemberRow].createdAt)} by { $form.members[openMemberRow].createdBy}
-	  	<div class="mt-0 pl-10 pb-10">
+
+		<p class="pl-10 text-sm text-gray-500 dark:text-gray-400">
+			Added on {formattedDate($form.members[openMemberRow].createdAt)} by {$form.members[openMemberRow].createdBy}
+		</p>
+
+		<div class="mt-0 pl-10 pb-10">
 			<ButtonGroup class="*:ring-primary-700!">
-				<Button outline color="dark" onclick={() => validateMemberUpdate(openMemberRow||0)}>Update</Button>
-				<Button outline color="dark" onclick={confirmDelete}>Delete</Button>
+				<Button outline onclick={() => validateMemberUpdate(openMemberRow||0)}>Update</Button>
+				<Button outline onclick={confirmDelete}>Delete</Button>
 			</ButtonGroup>
 		</div>
 	{/if}
@@ -225,8 +239,10 @@
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
     <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this household member?</h3>
     <div class="space-x-2">
-      <Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
-      <Button type="submit" value="no" color="alternative">No, cancel</Button>
+		<ButtonGroup class="*:ring-primary-700!">
+    		<Button type="submit" value="yes" color="red" id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
+    		<Button outline type="submit" value="no" color="dark">No, cancel</Button>
+		</ButtonGroup>
     </div>
   </div>
 </Modal>

@@ -125,7 +125,7 @@
 					</Input>
 				</div>
 
-				<Button type="submit" class="w-full" disabled={loading}>
+				<Button outline color="dark" type="submit" class="w-full" disabled={loading}>
 					{loading ? 'Creating account…' : 'Create account'}
 				</Button>
 			</form>

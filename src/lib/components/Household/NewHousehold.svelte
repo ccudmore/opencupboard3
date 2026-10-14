@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import { Modal, Label, Input, Textarea, MultiSelect, Button, Helper, Alert } from 'flowbite-svelte';
+	import { Modal, Label, Input, Textarea, MultiSelect, Button, ButtonGroup, Helper, Alert } from 'flowbite-svelte';
 	import { newHouseholdSchema } from '$lib/formschemas/household';
     import { toast } from "svelte-sonner";
   import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
@@ -35,7 +35,7 @@ let {
 	}));
 </script>
 
-<Modal title="New household" bind:open size="lg" onclose={() => reset()}>
+<Modal title="New Household" bind:open size="lg" onclose={() => reset()}>
 	<form method="POST" action="?/createHousehold" use:enhance class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#if $message}
 			<Alert color="red" class="md:col-span-2">{$message}</Alert>
@@ -64,7 +64,7 @@ let {
 
 		<div>
 			<Label for="phone" class="mb-1">Phone</Label>
-			<input
+			<Input
     			type="tel"
     			name="phone"
     			bind:value={$form.phone}
@@ -138,10 +138,12 @@ let {
 		</div>
 
 		<div class="flex justify-end gap-2 md:col-span-2">
-			<Button color="alternative" onclick={() => (open = false)}>Cancel</Button>
-			<Button type="submit" disabled={$submitting} color="alternative">
+			<ButtonGroup class="*:ring-primary-700!">
+				<Button outline color="dark" onclick={() => (open = false)}>Cancel</Button>
+				<Button outline color="dark" type="submit" disabled={$submitting}>
 				{$submitting ? 'Saving…' : 'Save'}
 			</Button>
+			</ButtonGroup>
 		</div>
 	</form>
 </Modal>

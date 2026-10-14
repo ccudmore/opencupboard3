@@ -7,6 +7,7 @@
 	import { Tabs, TabItem } from "flowbite-svelte";
   import { env } from '$env/dynamic/public';
 	import AddressMap from "$lib/components/Household/AddressMap.svelte";
+  import { UserCircleSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
 
 	let { form, errors, constraints, validateForm} = $props()
   const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Special Requests"
@@ -25,26 +26,62 @@ const active =
 
 <div>
 <Tabs
-  tabStyle="none"
+  tabStyle="underline"
   divider={false}
   class="mt-3 p-4 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
 >
-  <TabItem open title="Address" activeClass={active} inactiveClass={inactive}>
+
+  <TabItem open>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <AddressBookSolid size="md" />Address
+      </div>
+    {/snippet}
 		<HouseholdAddress form={form} errors={errors} constraints={constraints}/>
   </TabItem>
-  <TabItem title="Additional Information" activeClass={active} inactiveClass={inactive}>
+  
+  <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <InfoCircleSolid size="md" />Additional Information
+      </div>
+    {/snippet}
 		<HouseholdNotes form={form} errors={errors} constraints={constraints}/>
   </TabItem>
-  <TabItem title={title} activeClass={active} inactiveClass={inactive}>
+
+  <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <QuestionCircleSolid size="md" />{title}
+      </div>
+    {/snippet}
 		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} title={title}/>
   </TabItem>
-  <TabItem title="Household Members" activeClass={active} inactiveClass={inactive}>
+
+  <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <UsersGroupSolid size="md" />Household Members
+      </div>
+    {/snippet}
 		<HouseholdMembers form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
   </TabItem>
-  <TabItem title="Appointments" activeClass={active} inactiveClass={inactive}>
+
+  <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <CalendarMonthSolid  size="md" />Appointments
+      </div>
+    {/snippet}
 		<HouseholdAppointments form={form} errors={errors} constraints={constraints}/>
   </TabItem>
-  <TabItem title="Map" activeClass={active} inactiveClass={inactive}>
+
+  <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <MapPinAltSolid size="md" />Map
+      </div>
+    {/snippet}
     <AddressMap street={$form.street} street2={$form.street2} city={$form.city} province={$form.province} country={$form.country}/>
   </TabItem>
 </Tabs>

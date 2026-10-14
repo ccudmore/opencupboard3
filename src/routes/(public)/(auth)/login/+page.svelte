@@ -110,7 +110,7 @@
 					</a>
 				</div>
 
-				<Button type="submit" class="w-full" disabled={loading}>
+				<Button outline color="dark" type="submit" class="w-full" disabled={loading}>
 					{loading ? 'Signing in…' : 'Sign in'}
 				</Button>
 			</form>

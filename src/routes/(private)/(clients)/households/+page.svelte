@@ -84,8 +84,8 @@
   </div>
 
   <div class="flex shrink-0 items-center gap-4 md:ml-auto">
-    <Button color="alternative" class="shrink-0 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" onclick={() => (newModal = true)}>
-      <PlusOutline class="mr-2 h-3.5 w-3.5" />Add household
+    <Button outline color="dark" class="shrink-0" onclick={() => (newModal = true)}>
+      <PlusOutline class="mr-2 h-3.5 w-3.5" />New Household
     </Button>
     <Toggle
       color="green"

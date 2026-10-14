@@ -21,9 +21,52 @@
         toast('Updated successfully!');
     }
 
+type FieldErrors = Record<string, string[]>;
+
+type FormErrors = {
+  members?: Record<string, FieldErrors>;
+  _errors?: string[];
+  [field: string]: unknown;
+};
+
+function toastFormErrors3(errors: FormErrors) {
+  const { members, _errors, ...topLevel } = errors;
+
+  // Form-level errors
+  for (const message of _errors ?? []) {
+    toast('Error saving information'+ message);
+  }
+
+  // Top-level field errors, e.g. street2
+  for (const [field, messages] of Object.entries(topLevel)) {
+    if (Array.isArray(messages)) {
+      toast(`${field}: ${messages.join(", ")}`);
+    }
+  }
+
+  // Per-member errors, grouped into one toast per distinct message
+  if (members) {
+    const byMessage = new Map<string, number[]>();
+
+    for (const [index, fields] of Object.entries(members)) {
+      for (const [field, messages] of Object.entries(fields)) {
+        for (const message of messages) {
+          const key = `${field}: ${message}`;
+          const rows = byMessage.get(key) ?? [];
+          rows.push(Number(index) + 1);
+          byMessage.set(key, rows);
+        }
+      }
+    }
+
+    for (const [key, rows] of byMessage) {
+      toast(`${key} (${rows.length} members: rows ${rows.join(", ")})`);
+    }
+  }
+}
+
     function handleError() {
-		const msg = JSON.stringify($errors.members)
-        toast('Form submission failed and updated with errors! '+msg);
+		toastFormErrors3($errors)
     }
 	
 	// superForm only needs the initial value; it manages its own state afterwards
@@ -102,11 +145,12 @@
 	<form action="?/updateHousehold" method="POST" class="p-2" use:enhance>
 		<Input type="hidden" id="id" name="id" value={data.household.id} />
 		<!--SuperDebug data={$form}/-->
-<ButtonGroup class="mb-4 shadow-sm">
-    <Button color="blue" size="lg" type="submit" class="px-6 font-semibold">Save</Button>
-    <Button color="red" size="lg" onclick={confirmDelete} class="px-6 font-semibold">Delete</Button>
-    <Button color="alternative" size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
-</ButtonGroup>		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
+		<ButtonGroup class="*:ring-primary-700!">
+    		<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
+    		<Button size="lg" color="red" onclick={confirmDelete} class="px-6 font-semibold">Delete</Button>
+    		<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
+		</ButtonGroup>
+		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
 	</form>
 
 	Created by: {data.household.createdBy} on {formattedDate(data.household.createdAt)}
@@ -117,7 +161,7 @@
     <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this household?</h3>
     <div class="space-x-2">
       <Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
-      <Button type="submit" value="no" color="alternative">No, cancel</Button>
+      <Button outline type="submit" value="no" color="dark">No, cancel</Button>
     </div>
   </div>
 </Modal>

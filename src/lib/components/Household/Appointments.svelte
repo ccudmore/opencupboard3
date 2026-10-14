@@ -30,7 +30,12 @@
 
 <Table striped={true}>
   	<caption class="bg-white p-5 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
-		Appointments
+    	<div class="flex items-center justify-between">
+      		<span>Appointments</span>
+      		<Button outline color="dark" onclick={addAppointment}>
+        		New Appointment
+      		</Button>
+    	</div>
   	</caption>
 	<TableHead>
     	<TableHeadCell>Date</TableHeadCell>
@@ -70,4 +75,3 @@
 
 	</TableBody>
 </Table>
-<Button outline color="dark" onclick={addAppointment}>Book Appointment</Button><br>
