@@ -1,25 +1,30 @@
 import type { Prisma } from '$prisma/client';
 import prisma from '$lib/prisma';
 
-export const GUEST_PAGE_SIZE = 10;
+/*
+This is no longer used but is being kept around just in case.
+It's been replaced by household.ts
+*/
 
-export type SearchGuestsOptions = {
+export const CLIENT_PAGE_SIZE = 10;
+
+export type SearchClientsOptions = {
   q?: string;
   activeOnly?: boolean;
   page?: number;
   pageSize?: number;
 };
 
-export async function searchGuests({
+export async function searchClients({
   q = '',
   activeOnly = false,
   page = 1,
-  pageSize = GUEST_PAGE_SIZE
-}: SearchGuestsOptions = {}) {
+  pageSize = CLIENT_PAGE_SIZE
+}: SearchClientsOptions = {}) {
   const term = q.trim();
   const safePage = Math.max(1, page);
 
-  const searchFilter: Prisma.GuestWhereInput = term
+  const searchFilter: Prisma.ClientWhereInput = term
     ? {
         OR: [
           { firstName: { contains: term, mode: 'insensitive' } },
@@ -33,36 +38,36 @@ export async function searchGuests({
       }
     : {};
 
-  const statusFilter: Prisma.GuestWhereInput = activeOnly
+  const statusFilter: Prisma.ClientWhereInput = activeOnly
     ? { memberOf: { status: 'Active' } }
     : {};
 
-  const primaryUserFilter: Prisma.GuestWhereInput = { relationship: 'Primary' };
+  const primaryUserFilter: Prisma.ClientWhereInput = { relationship: 'Primary' };
 
-  const where: Prisma.GuestWhereInput = {
+  const where: Prisma.ClientWhereInput = {
     AND: [searchFilter, statusFilter, primaryUserFilter]
   };
 
-  const [guests, total] = await Promise.all([
-    prisma.guest.findMany({
+  const [clients, total] = await Promise.all([
+    prisma.client.findMany({
       where,
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       skip: (safePage - 1) * pageSize,
       take: pageSize,
       include: { memberOf: true }
     }),
-    prisma.guest.count({ where })
+    prisma.client.count({ where })
   ]);
 
-  return { guests, total, page: safePage, pageSize, q: term };
+  return { clients, total, page: safePage, pageSize, q: term };
 }
 
-/** Turns URLSearchParams into SearchGuestsOptions so both callers parse identically. */
-export function parseGuestSearchParams(params: URLSearchParams): SearchGuestsOptions {
+/** Turns URLSearchParams into SearchClientOptions so both callers parse identically. */
+export function parseClientSearchParams(params: URLSearchParams): SearchClientsOptions {
   return {
     q: params.get('q')?.trim() ?? '',
     activeOnly: params.get('s') === 'active',
     page: Math.max(1, Number(params.get('page')) || 1),
-    pageSize: params.get('pageSize') ? Math.max(1, Number(params.get('pageSize'))) : GUEST_PAGE_SIZE
+    pageSize: params.get('pageSize') ? Math.max(1, Number(params.get('pageSize'))) : CLIENT_PAGE_SIZE
   };
 }

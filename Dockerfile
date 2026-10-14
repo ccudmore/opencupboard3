@@ -17,8 +17,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .
 
-ENV BETTER_AUTH_SECRET=build-placeholder
-RUN npm run build
+RUN BETTER_AUTH_SECRET=build-time-placeholder \
+    BETTER_AUTH_URL=http://localhost:3000 \
+    npm run build
 
 # --- Production image ---
 FROM node:26-alpine AS runner

@@ -20,7 +20,7 @@ export async function searchHousehold({
   const term = q.trim();
   const compactTerm = term.replace(/\s+/g, '');
 
-  const guestWhere: Prisma.GuestWhereInput = {
+  const guestWhere: Prisma.ClientWhereInput = {
     relationship: 'Primary',
     ...(!showNonActive && { memberOf: { status: 'Active' } }),
     ...(term && {
@@ -31,14 +31,13 @@ export async function searchHousehold({
         { phone: { contains: term, mode: 'insensitive' } },
         { memberOf: { street: { contains: term, mode: 'insensitive' } } },
         { memberOf: { city: { contains: term, mode: 'insensitive' } } },
-        { memberOf: { postalCode: { contains: term, mode: 'insensitive' } } },
         { memberOf: { postalCode: { contains: compactTerm, mode: 'insensitive' } } }
       ]
     })
   };
 
   // Step 1: ids of all matching households (one row per household)
-  const matches = await prisma.guest.groupBy({
+  const matches = await prisma.client.groupBy({
     by: ['householdMembershipId'],
     where: guestWhere
   });

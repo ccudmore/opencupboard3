@@ -74,28 +74,30 @@ async function createUserWithRoles(
 
 const permissionData: Prisma.PermissionCreateInput[] = [
   { name: 'Log in', protectedRoutes: ['/']},
-  { name: 'Manage guests', description: '', protectedRoutes: ['/guests']},
+  { name: 'Manage clients', description: '', protectedRoutes: ['/households']},
   { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin']},
   { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers']},
   { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory']},
   { name: 'Manage donors', description: '', protectedRoutes: ['/donors']},
   { name: 'View dashboard', description: '', protectedRoutes: ['/dashboard']},
+  { name: 'Volunteer', description: '', protectedRoutes: ['/volunteer']},
 ]
 
 const roleData: SeedRole[] = [
-{roleName: 'Administrator', permissionNames: ['Log in', 'Manage guests', 'Manage system configuration', 'Manage volunteers', 'Manage inventory', 'Manage donors', 'View dashboard']},
+{roleName: 'Administrator', permissionNames: ['Log in', 'Manage clients', 'Manage system configuration', 'Manage volunteers', 'Manage inventory', 'Manage donors', 'View dashboard', 'Volunteer']},
 {roleName: 'User', permissionNames: ['Log in']},
-{roleName: 'Guest Manager', permissionNames: ['Log in', 'Manage guests']},
+{roleName: 'Client Manager', permissionNames: ['Log in', 'Manage clients']},
 {roleName: 'Volunteer Manager', permissionNames: ['Log in', 'Manage volunteers']},
+{roleName: 'Volunteer', permissionNames: ['Log in', 'Volunteer']},
 {roleName: 'Donor Manager', permissionNames: ['Log in', 'Manage donors']},
 {roleName: 'Inventory Manager', permissionNames: ['Log in', 'Manage inventory']},
 ];
 
 const seedUsers: SeedUser[] = [
   { data: { name: "Alice", email: "alice@prisma.io", image: ''}, roleNames: ["Administrator"], },
-  { data: { name: "CraigC", email: "craig@cudmore.ca", image: 'https://lh3.googleusercontent.com/a/ACg8ocI7EteRgKFDjpb5KHFiJVE1gDAlX-JB68IhU_7D7sHuDQ_TEQ=s96-c', }, roleNames: ["Administrator", "User", "Guest Manager"], },
+  { data: { name: "CraigC", email: "craig@cudmore.ca", image: 'https://lh3.googleusercontent.com/a/ACg8ocI7EteRgKFDjpb5KHFiJVE1gDAlX-JB68IhU_7D7sHuDQ_TEQ=s96-c', }, roleNames: ["Administrator", "User", "Client Manager"], },
   { data: { name: "CraigC2", email: "craig.cudmore@gmail.com", image: ''}, roleNames: ["User"], },
-  { data: { name: "LindaC", email: "linda@cudmore.ca", image: ''}, roleNames: ["User", "Guest Manager"], },
+  { data: { name: "LindaC", email: "linda@cudmore.ca", image: ''}, roleNames: ["User", "Client Manager"], },
 ];
 
 const householdData: Prisma.HouseholdCreateInput[] = [

@@ -3,13 +3,14 @@
   import { DarkMode, NavBrand, Navbar, Search } from 'flowbite-svelte';
   import { env } from '$env/dynamic/public'
   import SearchBox from '$lib/components/SearchBox.svelte';
+  import Logo from '$lib/Logo.svelte'
 
   const organizationName = env.PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard'
 </script>
 <Navbar class="mx-10 sm:mx-0">
   <NavDrawer/>
   <NavBrand href="/" class="mx-10">
-    <img src="/images/logo.svg" class="me-2.5 h-6 sm:h-8" alt="Organization Logo" />
+  	<Logo class="h-8" />
     <span class="ml-px self-center text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">{organizationName}</span>
   </NavBrand>
   <div class="hidden lg:block lg:ps-3">
