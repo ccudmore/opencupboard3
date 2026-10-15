@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 	// Dark uses LOGO_DARK_PATH if set, otherwise the normal logo
 	const path = (dark ? env.LOGO_DARK_PATH : undefined) || env.LOGO_PATH;
-	if (!path) redirect(302, dark ? '/default-logo-dark.svg' : '/default-logo.svg');
+	if (!path) redirect(302, dark ? '/images/default-logo-dark.svg' : '/images/default-logo.svg');
 
 	try {
 		const [data, info] = await Promise.all([readFile(path), stat(path)]);

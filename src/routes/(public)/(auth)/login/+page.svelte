@@ -83,6 +83,7 @@
 						type="email"
 						placeholder="you@example.com"
 						required
+						class="ps-10"
 						bind:value={email}
 					>
 						{#snippet left()}
@@ -98,6 +99,7 @@
 						type="password"
 						placeholder="••••••••"
 						required
+						class="ps-10"
 						bind:value={password}
 					>
 						{#snippet left()}

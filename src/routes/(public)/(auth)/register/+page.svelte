@@ -87,6 +87,7 @@
 						placeholder="you@example.com"
 						required
 						bind:value={email}
+						class="ps-10"
 					>
 						{#snippet left()}
 							<EnvelopeSolid class="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -103,6 +104,7 @@
 						required
 						minlength={8}
 						bind:value={password}
+						class="ps-10"
 					>
 						{#snippet left()}
 							<LockSolid class="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -118,6 +120,7 @@
 						placeholder="••••••••"
 						required
 						minlength={8}
+						class="ps-10"
 						bind:value={confirmPassword}
 					>
 						{#snippet left()}

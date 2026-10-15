@@ -1,5 +1,5 @@
 x-app-env: &app-env
-  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
   ORIGIN: ${ORIGIN:-http://localhost:3000}
 #  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${ORIGIN:-http://localhost:3000}}
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
@@ -32,9 +32,9 @@ services:
   # `prisma db push` is idempotent, so it is safe on every `up`.
   # Requires the image to contain the Prisma CLI and prisma/schema.prisma.
   db-push:
-    image: craigcudmore/opencupboard3:20261015
-    pull_policy: always
-#    pull_policy: never
+    image: opencupboard3
+#    pull_policy: always
+    pull_policy: never
     # Clear any ENTRYPOINT baked into the image so it doesn't start the server
 ##      && npx prisma migrate deploy
     entrypoint: []
@@ -57,10 +57,10 @@ services:
     restart: "no"
 
   opencupboard:
-#    image: opencupboard3
-    image: craigcudmore/opencupboard3:20261015
-    pull_policy: always
-#    pull_policy: never
+    image: opencupboard3
+#    image: craigcudmore/opencupboard3:20261015
+#    pull_policy: always
+    pull_policy: never
     restart: unless-stopped
     environment:
       <<: *app-env

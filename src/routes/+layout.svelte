@@ -11,7 +11,7 @@
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
 
-	const favicon = '/images/logo.svg'
+	const favicon = '/images/default-logo.svg'
 	async function handleSignOut() {
 		await signOut();
 		await invalidateAll();
