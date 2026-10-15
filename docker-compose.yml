@@ -32,9 +32,9 @@ services:
   # `prisma db push` is idempotent, so it is safe on every `up`.
   # Requires the image to contain the Prisma CLI and prisma/schema.prisma.
   db-push:
-    image: opencupboard3
-#    pull_policy: always
-    pull_policy: never
+    image: craigcudmore/opencupboard3:20261015
+    pull_policy: always
+#    pull_policy: never
     # Clear any ENTRYPOINT baked into the image so it doesn't start the server
 ##      && npx prisma migrate deploy
     entrypoint: []
@@ -52,14 +52,15 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
     restart: "no"
 
   opencupboard:
-    image: opencupboard3
-#    pull_policy: always
-    pull_policy: never
+#    image: opencupboard3
+    image: craigcudmore/opencupboard3:20261015
+    pull_policy: always
+#    pull_policy: never
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -73,7 +74,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       db-push:
         condition: service_completed_successfully
