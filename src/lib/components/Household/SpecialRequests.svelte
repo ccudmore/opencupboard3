@@ -22,7 +22,7 @@
 	}
 
 	function addSpecialRequest() {
-		$form.datedRequests.push({type: 'Prayer', requestText: '', status: 'Active', createdAt: new Date(), });
+		$form.datedRequests.push({type: type, requestText: '', status: 'Active', createdAt: new Date(), });
 		toggleSpecialRequestDrawer($form.datedRequests.length-1)
 		form.set($form) // trigger reactivation
 	}
@@ -35,7 +35,7 @@
 		openSpecialRequestDrawer = (openSpecialRequestRow != null)
   	};
 	
-	let hideClosedDatedRequests = $state(false)
+	let hideClosedDatedRequests = $state(true)
 
 	function confirmDelete() {
 		openComfirmDeleteModal=true
@@ -52,20 +52,19 @@
 
 */
 
-	let { form, errors, constraints, title} = $props()
+	let { form, errors, constraints, type} = $props()
 </script>
 <!--Label for="specialRequests" class="mb-2 text-lg font-semibold">{title}</Label-->
 
 <Table striped={true}>
   	<caption class="bg-white p-5 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
     	<div class="flex items-center justify-between">
-      		<span>{title}</span>
+      		<span>{type} Requests</span>
       		<Button outline color="dark" onclick={addSpecialRequest}>
-        		New {title}
+        		New {type} Request
       		</Button>
     	</div>
   	</caption>
-
 
 	<TableHead>
     	<TableHeadCell>Date</TableHeadCell>
@@ -74,7 +73,7 @@
   	</TableHead>
 	<TableBody>
     	{#each $form.datedRequests as item, i}
-			{#if item.type === 'Prayer' && (item.status === 'Active' || (hideClosedDatedRequests == false && item.status === 'Closed')) }
+			{#if item.type === type && (item.status === 'Active' || (hideClosedDatedRequests == false && item.status === 'Closed')) }
       			<TableBodyRow onclick={() => toggleSpecialRequestDrawer(i)}>	
 					<TableBodyCell>
 						{formattedDate($form.datedRequests[i].createdAt)}
@@ -90,12 +89,15 @@
     	{/each}
 	</TableBody>
 </Table>
-<Checkbox bind:checked={hideClosedDatedRequests}>Hide closed</Checkbox>
-<!--Button outline color="dark" onclick={addSpecialRequest}>New {title}</Button><br-->
+<Checkbox 
+class="bg-gray-100 border-gray-300 text-grey-600 
+         dark:bg-gray-800 dark:border-gray-600 dark:text-blue-500"
+ bind:checked={hideClosedDatedRequests}>Hide closed</Checkbox>
+<!--Button outline color="dark" onclick={addSpecialRequest}>New {type}</Button><br-->
 
 <Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
 
-	<div class="mb-2 text-lg font-semibol">{title}</div>
+	<div class="mb-2 text-lg font-semibol">{type} Requests</div>
     {#if openSpecialRequestRow != null}
   		<div class="mt-0.5 gap-4 pl-10 pt-5 mb-0.5">
 			<div>
@@ -123,7 +125,7 @@
 <Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
   <div class="text-center">
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this {title}?</h3>
+    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this {type} Request?</h3>
     <div class="space-x-2">
 		<ButtonGroup class="*:ring-primary-700!">
       		<Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>

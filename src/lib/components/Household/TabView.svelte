@@ -5,12 +5,10 @@
 	import HouseholdMembers from "$lib/components/Household/Members.svelte";
 	import HouseholdAppointments from "$lib/components/Household/Appointments.svelte";
 	import { Tabs, TabItem } from "flowbite-svelte";
-  import { env } from '$env/dynamic/public';
 	import AddressMap from "$lib/components/Household/AddressMap.svelte";
-  import { UserCircleSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
+  import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
 
 	let { form, errors, constraints, validateForm} = $props()
-  const title = env.PUBLIC_SPECIAL_REQUESTS_TITLE??"Special Requests"
 
 const active =
     'inline-block px-4 py-2 text-sm font-medium rounded-lg shadow-sm ' +
@@ -69,10 +67,19 @@ const active =
   <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
-        <QuestionCircleSolid size="md" />{title}
+        <QuestionCircleSolid size="md" />Special Requests
       </div>
     {/snippet}
-		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} title={title}/>
+		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type="Special"/>
+  </TabItem>
+
+    <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <HeartSolid size="md" />Prayer Requests
+      </div>
+    {/snippet}
+		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type="Prayer"/>
   </TabItem>
 
   <TabItem>
