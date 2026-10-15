@@ -38,6 +38,7 @@ COPY --from=build --chown=sveltekit:nodejs /app/build ./build
 COPY --from=build --chown=sveltekit:nodejs /app/package.json ./
 COPY --from=deps --chown=sveltekit:nodejs /app/node_modules ./node_modules
 COPY --from=deps --chown=sveltekit:nodejs /app/prisma ./prisma
+COPY --from=build --chown=sveltekit:nodejs /app/prisma.config.ts ./
 
 USER sveltekit
 EXPOSE 3000

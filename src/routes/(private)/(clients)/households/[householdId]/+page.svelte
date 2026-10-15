@@ -4,10 +4,8 @@
  	import { goto } from '$app/navigation';
 	import { toast } from "svelte-sonner";
 	
-	import { Button, Input, ButtonGroup, Modal } from "flowbite-svelte";
-	import { Breadcrumb, BreadcrumbItem } from "flowbite-svelte";
-  	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline } from "flowbite-svelte-icons";
-	import TabView from "$lib/components/Household/TabView.svelte";
+	import { Button, Input, ButtonGroup, Modal, Dropdown, DropdownItem, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
+	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline, DotsVerticalOutline } from "flowbite-svelte-icons";	import TabView from "$lib/components/Household/TabView.svelte";
 	import Topper from "$lib/components/Household/Topper.svelte";
 	import {formattedDate} from "$lib/utils"
   	import { slide } from "svelte/transition";
@@ -110,50 +108,67 @@ function toastFormErrors3(errors: FormErrors) {
 	}
 </script>
 
-	<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-  		<BreadcrumbItem href="/" home>
-   			{#snippet icon()}
-    			<HomeOutline class="me-2 h-4 w-4" />
-    		{/snippet}
-			Home
-  		</BreadcrumbItem>
-  		<BreadcrumbItem href="/households">
-    		{#snippet icon()}
-      			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-   		 	{/snippet}
-    		Household and Guests
-  		</BreadcrumbItem>
-  		<BreadcrumbItem>
-    		{#snippet icon()}
-      			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-    		{/snippet}
-    		Edit
-  		</BreadcrumbItem>
-	</Breadcrumb>
-	<Topper form={form} errors={errors} constraints={constraints}/>
-{#if isTainted($tainted)}
-    <div
-        role="status"
-        class="mx-4 my-3 flex items-center gap-3 rounded-lg border-l-4 border-amber-500 bg-amber-100 px-4 py-3 text-base font-semibold text-amber-900 shadow-md
-               md:mx-6
-               dark:border-amber-400 dark:bg-amber-900/50 dark:text-amber-100"
-    >
-        <ExclamationCircleOutline class="h-6 w-6 shrink-0 text-amber-600 dark:text-amber-300" />
-        <span>You have unsaved changes.</span>
-    </div>
-{/if}
-	<form action="?/updateHousehold" method="POST" class="p-2" use:enhance>
-		<Input type="hidden" id="id" name="id" value={data.household.id} />
-		<!--SuperDebug data={$form}/-->
-		<ButtonGroup class="*:ring-primary-700!">
-    		<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
-    		<Button size="lg" color="red" onclick={confirmDelete} class="px-6 font-semibold">Delete</Button>
-    		<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
-		</ButtonGroup>
-		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
-	</form>
+<form action="?/updateHousehold" method="POST" use:enhance>
+	<Input type="hidden" id="id" name="id" value={data.household.id} />
+	<!--SuperDebug data={$form}/-->
 
-	Created by: {data.household.createdBy} on {formattedDate(data.household.createdAt)}
+	<!-- Breadcrumb and actions share one row -->
+	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-gray-50 px-5 py-2 dark:bg-gray-900">
+		<Breadcrumb>
+			<BreadcrumbItem href="/" home>
+				{#snippet icon()}
+					<HomeOutline class="me-2 h-4 w-4" />
+				{/snippet}
+				Home
+			</BreadcrumbItem>
+			<BreadcrumbItem href="/households">
+				{#snippet icon()}
+					<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
+				{/snippet}
+				Household and Guests
+			</BreadcrumbItem>
+			<BreadcrumbItem>
+				{#snippet icon()}
+					<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
+				{/snippet}
+				Edit
+			</BreadcrumbItem>
+		</Breadcrumb>
+
+		<div class="flex flex-wrap items-center gap-3">
+			{#if isTainted($tainted)}
+				<span
+					role="status"
+					class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900
+					       dark:bg-amber-900/50 dark:text-amber-100"
+				>
+					<ExclamationCircleOutline class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
+					Unsaved changes
+				</span>
+			{/if}
+
+			<ButtonGroup class="*:ring-primary-700!">
+				<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
+				<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
+				<Button outline size="lg" id="more-actions" aria-label="More actions" class="px-3">
+					<DotsVerticalOutline class="h-6 w-6" />
+				</Button>
+			</ButtonGroup>
+			<Dropdown triggeredBy="#more-actions">
+				<DropdownItem type="button" class="font-semibold text-red-600 dark:text-red-400" onclick={confirmDelete}>
+					Delete household…
+				</DropdownItem>
+			</Dropdown>
+		</div>
+	</div>
+
+	<div class="p-2">
+		<Topper form={form} errors={errors} constraints={constraints}/>
+		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
+	</div>
+</form>
+
+Created by: {data.household.createdBy} on {formattedDate(data.household.createdAt)}
 
 <Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
   <div class="text-center">

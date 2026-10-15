@@ -1,4 +1,4 @@
-name: opencupboard2 CI
+name: opencupboard CI
 
 on:
   push:
@@ -34,4 +34,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: craigcudmore/opencupboard2:${{ steps.date.outputs.today }}
+        tags: craigcudmore/opencupboard3:${{ steps.date.outputs.today }}

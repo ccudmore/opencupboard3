@@ -1,0 +1,85 @@
+x-app-env: &app-env
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  ORIGIN: ${ORIGIN:-http://localhost:3000}
+#  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${ORIGIN:-http://localhost:3000}}
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
+# craig - only needed for now
+  BETTER_AUTH_URL: http://localhost:3000
+  PUBLIC_BETTER_AUTH_URL: "http://localhost:3000"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      # On first start (empty volume only), the postgres image creates this
+      # user, password and database. On later starts these are ignored.
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # One-shot job: pushes the Prisma schema using your own image, then exits.
+  # `prisma db push` is idempotent, so it is safe on every `up`.
+  # Requires the image to contain the Prisma CLI and prisma/schema.prisma.
+  db-push:
+    image: opencupboard3
+#    pull_policy: always
+    pull_policy: never
+    # Clear any ENTRYPOINT baked into the image so it doesn't start the server
+##      && npx prisma migrate deploy
+    entrypoint: []
+    command: >
+      sh -c "
+      npx prisma db push
+      && npx prisma db seed
+      "
+    environment:
+      <<: *app-env
+    volumes:
+      # Prisma 7 needs a config file with datasource.url. Mounted into the
+      # image's working directory (assumed to be /app) so no rebuild is needed.
+      - ./prisma.config.mjs:/app/prisma.config.mjs:ro
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  opencupboard:
+    image: opencupboard3
+#    pull_policy: always
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      db-push:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+
+networks:
+  backend:

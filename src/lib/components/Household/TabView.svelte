@@ -30,8 +30,25 @@ const active =
   divider={false}
   class="mt-3 p-4 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
 >
-
   <TabItem open>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <CalendarMonthSolid  size="md" />Appointments
+      </div>
+    {/snippet}
+		<HouseholdAppointments form={form} errors={errors} constraints={constraints}/>
+  </TabItem>
+
+    <TabItem>
+    {#snippet titleSlot()}
+      <div class="flex items-center gap-2">
+        <UsersGroupSolid size="md" />Household Members
+      </div>
+    {/snippet}
+		<HouseholdMembers form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
+  </TabItem>
+
+  <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
         <AddressBookSolid size="md" />Address
@@ -56,24 +73,6 @@ const active =
       </div>
     {/snippet}
 		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} title={title}/>
-  </TabItem>
-
-  <TabItem>
-    {#snippet titleSlot()}
-      <div class="flex items-center gap-2">
-        <UsersGroupSolid size="md" />Household Members
-      </div>
-    {/snippet}
-		<HouseholdMembers form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
-  </TabItem>
-
-  <TabItem>
-    {#snippet titleSlot()}
-      <div class="flex items-center gap-2">
-        <CalendarMonthSolid  size="md" />Appointments
-      </div>
-    {/snippet}
-		<HouseholdAppointments form={form} errors={errors} constraints={constraints}/>
   </TabItem>
 
   <TabItem>
