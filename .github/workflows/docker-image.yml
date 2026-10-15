@@ -35,5 +35,5 @@ jobs:
         context: .
         push: true
         tags: craigcudmore/opencupboard3:${{ steps.date.outputs.today }}
-        platforms: linux/arm/v7,linux/amd64,linux/arm64
+        platforms: linux/amd64,linux/arm64
 
