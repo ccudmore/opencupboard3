@@ -164,12 +164,12 @@ const siteData: Prisma.SiteCreateInput[] = [
 ];
 
 const eventData: Prisma.EventCreateInput[] = [
-  {id: 'event-monday-morning', type: 'Service', status: 'Active', title: 'Monday morning',startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-monday-evening', type: 'Service', status: 'Active', title: 'Monday afternoon',startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-tuesday-morning', type: 'Service', status: 'Active', title: 'Tuesday morning',startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 12:00:00'), note: 'Note 3', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-tuesday-evening', type: 'Service', status: 'Active', title: 'Tuesday afternoon',startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 20:00:00'), note: 'Note 4', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {type: 'Sorting', status: 'Active', title: 'Restocking',startTime: new Date('2026-11-12 10:00:00'), endTime: new Date('2026-11-12 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {type: 'Food Drive', status: 'Active', title: 'Food Drive',startTime: new Date('2026-11-13 16:00:00'), endTime: new Date('2026-11-13 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {id: 'event-monday-morning', type: 'Service Date', status: 'Active', title: 'Monday morning',startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {id: 'event-monday-evening', type: 'Service Date', status: 'Active', title: 'Monday afternoon',startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {id: 'event-tuesday-morning', type: 'Service Date', status: 'Active', title: 'Tuesday morning',startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 12:00:00'), note: 'Note 3', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {id: 'event-tuesday-evening', type: 'Service Date', status: 'Active', title: 'Tuesday afternoon',startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 20:00:00'), note: 'Note 4', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {type: 'Sorting', status: 'Active', title: 'Inventory',startTime: new Date('2026-11-12 10:00:00'), endTime: new Date('2026-11-12 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
+  {type: 'Food Drives & Events', status: 'Active', title: 'Food Drive',startTime: new Date('2026-11-13 16:00:00'), endTime: new Date('2026-11-13 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
 ];
 
 const appointmentData: Prisma.AppointmentCreateInput[] = [

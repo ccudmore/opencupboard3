@@ -2,7 +2,7 @@
 
   const availableApps = {
     clients: {name: "Houesholds and Guests", label: "Households and Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
-    calendar: {name: "Calendar", label: "Calendar", href: "/event", icon: CalendarEditOutline, subContent: ""},
+    calendar: {name: "Calendar", label: "Calendar", href: "/calendar", icon: CalendarEditOutline, subContent: ""},
     volunteers: {name: "Manage Volunteers", label: "Manage Volunteers", href: "/volunteers", icon: AwardOutline, subContent: ""},
     reports: {name: "Reports", label: "Reports", href: "/reports", icon: ChartPieOutline, subContent: ""},
     admin: {name: "Admin", label: "Admin", href: "/admin", icon: CogOutline, subContent: ""},
