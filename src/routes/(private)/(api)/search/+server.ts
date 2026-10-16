@@ -1,7 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import { requireRole } from '$lib/server/auth';
-import { searchClients, parseClientSearchParams } from '$lib/server/queries/clients';
 import { searchHousehold, parseHouseholdSearchParams } from '$lib/server/queries/household';
+import { searchEvent, parseEventSearchParams } from '$lib/server/queries/event';
+import { searchVolunteer, parseVolunteerSearchParams } from '$lib/server/queries/volunteer';
 
 export async function GET({ url, locals }) {
 	// craig requires permission checks
@@ -22,20 +23,33 @@ export async function GET({ url, locals }) {
   			};
 		});
 
-		/*
-		const transformedClients = clientResults.clients.map(client => {
+		const eventResults = await searchEvent(parseEventSearchParams(url.searchParams) );
+		const transformedEvents = eventResults.events.map(event => {
   			return {
-				id: client.id,
-    			URL: `${urlbase.origin}/households/${client.householdMembershipId}`, 
-    			desc1: `${client.firstName} ${client.firstName}`,
-    			desc2: client.memberOf.street,
-    			desc3: client.phone,
-				category: 'Guest' // craig - need to make this configurable in env file
+				id: event.id,
+    			URL: `${urlbase.origin}/event/${event.id}`, 
+				desc1: event.title,
+  				desc2: event.startTime.toLocaleString("en-CA"),
+				desc3: event.location.name,
+				category: 'Event'
   			};
 		});
-		*/
-//		destinationArray.push(...transformedClients);
+		const volunteerResults = await searchVolunteer(parseVolunteerSearchParams(url.searchParams) );
+		const transformedVolunteers = volunteerResults.volunteers.map(volunteer => {
+  			return {
+				id: volunteer.id,
+    			URL: `${urlbase.origin}/event/${volunteer.id}`, 
+				desc1: `${volunteer.firstName} ${volunteer.lastName}`,
+  				desc2: volunteer.phone1,
+				desc3: volunteer.email1,
+				category: 'Volunteer'
+  			};
+		});
+
+
 		destinationArray.push(...transformedHouseholds);
+		destinationArray.push(...transformedEvents);
+		destinationArray.push(...transformedVolunteers);
 
 		return json({ results: destinationArray });
 	} catch (e) {
