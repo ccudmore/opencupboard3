@@ -16,11 +16,12 @@
   ]
 </script>
 
-<div>
+<div class="p-1">
 <Tabs
   tabStyle="underline"
+  contentClass="p-0 mt-0"
   divider={false}
-  class="mt-3 p-4 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+  class="mt-3 p-1 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
 >
   <TabItem open>
     {#snippet titleSlot()}

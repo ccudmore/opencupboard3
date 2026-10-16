@@ -162,7 +162,7 @@ function toastFormErrors3(errors: FormErrors) {
 		</div>
 	</div>
 
-	<div class="p-2">
+	<div class="p-0">
 		<Topper form={form} errors={errors} constraints={constraints}/>
 		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
 	</div>

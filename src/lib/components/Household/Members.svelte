@@ -102,7 +102,7 @@
 </script>
 
 <Table striped={true}>
-  	<caption class="bg-white p-5 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
+  	<caption class="bg-white px-5 pb-3 pt-1 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
     	<div class="flex items-center justify-between">
       		<span>Household Members</span>
       		<Button outline color="dark" onclick={addHouseholdMember}>

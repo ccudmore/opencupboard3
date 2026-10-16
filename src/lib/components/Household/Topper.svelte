@@ -29,7 +29,7 @@
 	);
 </script>
 
-<div class="flex flex-col gap-3 p-3 md:flex-row md:items-start md:justify-between md:gap-6 md:p-4">
+<div class="flex flex-col gap-3 p-3 md:flex-row md:items-start md:justify-between md:gap-6 md:p-2">
 	<!-- Left: people, id status, household status -->
 	<div class="min-w-0 flex-1 space-y-3">
 		{#if primaryMembers.length > 0}
