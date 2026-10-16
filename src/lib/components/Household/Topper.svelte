@@ -21,6 +21,9 @@
 		)
 	);
 
+	const familySize = $derived(calculateFamilySize($form.members));
+	const childCount = $derived(calculateChildCount($form.members));
+
 	// Show the first few primary members; the rest sit behind a "+N more" toggle
 	const MEMBER_LIMIT = 2;
 	let showAllMembers = $state(false);
@@ -29,27 +32,29 @@
 	);
 </script>
 
-<div class="flex flex-col gap-3 p-3 md:flex-row md:items-start md:justify-between md:gap-6 md:p-2">
-	<!-- Left: people, id status, household status -->
-	<div class="min-w-0 flex-1 space-y-3">
+<div class="space-y-3 p-3 lg:p-2">
+	<!-- Row 1: members on the left, status on the right -->
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
 		{#if primaryMembers.length > 0}
-			<div>
-				<div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+			<section class="min-w-0 flex-1">
+				<h2 class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
 					{primaryMembers.length > 1 ? "Primary Members" : "Primary Member"}
-				</div>
-				<div class="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-x-8 gap-y-2">
+					<span class="ms-2 font-normal normal-case tracking-normal">· ID {$form.uniqueId}</span>
+				</h2>
+
+				<ul class="grid gap-x-8 gap-y-3 sm:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
 					{#each visibleMembers as member}
-						<div class="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-							<div class="text-lg font-bold text-gray-900 dark:text-white">
+						<li class="min-w-0">
+							<div class="text-xl font-bold leading-tight text-gray-900 dark:text-white">
 								{member.firstName} {member.lastName}
 							</div>
-							<div class="flex min-w-0 flex-col text-sm leading-tight text-gray-600 dark:text-gray-300">
-								<span class="break-all">{member.email}</span>
-								<span>{member.phone}</span>
+							<div class="truncate text-sm text-gray-600 dark:text-gray-300">
+								{[member.phone, member.email].filter(Boolean).join(" · ")}
 							</div>
-						</div>
+						</li>
 					{/each}
-				</div>
+				</ul>
+
 				{#if primaryMembers.length > MEMBER_LIMIT}
 					<button
 						type="button"
@@ -59,51 +64,45 @@
 						{showAllMembers ? "Show fewer" : `+${primaryMembers.length - MEMBER_LIMIT} more`}
 					</button>
 				{/if}
-			</div>
+			</section>
 		{/if}
 
-		<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-			{#if idNeeded}
-				<span
-					class="inline-flex items-center gap-2 rounded-lg bg-red-100 px-3 py-1.5 font-bold text-red-800
-					       dark:bg-red-900/40 dark:text-red-300"
-				>
-					<CloseCircleOutline class="h-5 w-5" />
-					Id validation needed
-				</span>
-			{:else}
-				<span
-					class="inline-flex items-center gap-2 rounded-lg bg-green-100 px-3 py-1.5 font-bold text-green-800
-					       dark:bg-green-900/40 dark:text-green-300"
-				>
-					<CheckCircleOutline class="h-5 w-5" />
-					All Ids up to date
-				</span>
-			{/if}
-
-			<div class="flex items-center gap-2">
-				<Label for="status" class="shrink-0 text-base font-bold">Status</Label>
-				<Select id="status" size="sm" class="w-40" items={householdStatuses} bind:value={$form.status} />
-			</div>
+		<div class="flex shrink-0 items-center gap-2">
+			<Label for="status" class="shrink-0 text-sm text-gray-500 dark:text-gray-400">Status</Label>
+			<Select id="status" size="sm" class="w-36" items={householdStatuses} bind:value={$form.status} />
 		</div>
 	</div>
 
-	<!-- Right: household summary -->
-	<dl
-		class="grid w-full shrink-0 grid-cols-[auto_auto] gap-x-6 gap-y-0.5 rounded-lg border border-blue-300 bg-blue-100 p-3
-		       text-sm font-bold text-blue-900 md:w-auto
-		       dark:border-blue-700 dark:bg-blue-900/40 dark:text-blue-100"
-	>
-		<dt>Unique ID:</dt>
-		<dd>{$form.uniqueId}</dd>
+	<!-- Row 2: one horizontal summary strip -->
+	<div class="flex flex-wrap items-stretch gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+		<!-- ID validation status -->
+		<div
+			role="status"
+			class="flex items-center gap-3 rounded-lg border px-4 py-2 {idNeeded
+				? 'border-red-300 bg-red-100 text-red-800 dark:border-red-800 dark:bg-red-900/40 dark:text-red-300'
+				: 'border-green-300 bg-green-100 text-green-800 dark:border-green-800 dark:bg-green-900/40 dark:text-green-300'}"
+		>
+			{#if idNeeded}
+				<CloseCircleOutline class="h-7 w-7 shrink-0" />
+				<span class="font-bold">Id validation needed</span>
+			{:else}
+				<CheckCircleOutline class="h-7 w-7 shrink-0" />
+				<span class="font-bold">Id validation up to date</span>
+			{/if}
+		</div>
 
-		<dt>Can book next appointment on:</dt>
-		<dd>Soon (WIP)</dd>
-
-		<dt>Family Size:</dt>
-		<dd>{calculateFamilySize($form.members)}</dd>
-
-		<dt>Number of children &lt; 13:</dt>
-		<dd>{calculateChildCount($form.members)}</dd>
-	</dl>
+		<!-- Stat tiles -->
+		{#each [
+			{ label: "Family size", value: familySize },
+			{ label: "Children under 13", value: childCount },
+			{ label: "Next appointment", value: "Soon (WIP)", small: true }
+		] as stat}
+			<dl class="flex min-w-28 flex-col-reverse justify-center rounded-lg border border-gray-200 bg-white px-5 py-2 text-center dark:border-gray-700 dark:bg-gray-800">
+				<dt class="text-xs text-gray-500 dark:text-gray-400">{stat.label}</dt>
+				<dd class="{stat.small ? 'text-base' : 'text-2xl'} font-bold text-gray-900 dark:text-white">
+					{stat.value}
+				</dd>
+			</dl>
+		{/each}
+	</div>
 </div>
