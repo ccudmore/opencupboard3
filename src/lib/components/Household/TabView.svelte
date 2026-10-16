@@ -10,16 +10,10 @@
 
 	let { form, errors, constraints, validateForm} = $props()
 
-const active =
-    'inline-block px-4 py-2 text-sm font-medium rounded-lg shadow-sm ' +
-    'bg-blue-800 text-white ' +
-    'dark:bg-blue-300 dark:text-blue-950';
-
-  const inactive =
-    'inline-block px-4 py-2 text-sm font-medium rounded-lg ' +
-    'text-gray-500 hover:text-gray-900 hover:bg-gray-200 ' +
-    'dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700';
-
+  const requestsTypes = [
+    {name: 'Special', icon: QuestionCircleSolid},
+    {name: 'Prayer', icon: HeartSolid},
+  ]
 </script>
 
 <div>
@@ -64,23 +58,17 @@ const active =
 		<HouseholdNotes form={form} errors={errors} constraints={constraints}/>
   </TabItem>
 
+  {#each requestsTypes as item}
+  {@const Icon = item.icon}
   <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
-        <QuestionCircleSolid size="md" />Special Requests
+        <Icon size="md" />{item.name} Requests
       </div>
     {/snippet}
-		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type="Special"/>
+		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type={item.name}/>
   </TabItem>
-
-    <TabItem>
-    {#snippet titleSlot()}
-      <div class="flex items-center gap-2">
-        <HeartSolid size="md" />Prayer Requests
-      </div>
-    {/snippet}
-		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type="Prayer"/>
-  </TabItem>
+  {/each}
 
   <TabItem>
     {#snippet titleSlot()}
