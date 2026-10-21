@@ -34,10 +34,14 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 # --- Production image ---
 FROM base AS runner
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    PATH="/app/node_modules/.bin:${PATH}"
 
-# Use the non-root `node` user that ships with the base image
-RUN chown node:node /app
+# npm/npx/corepack aren't needed at runtime. Removing them drops npm's bundled
+# dependencies (brace-expansion, undici, ...) and shrinks the attack surface.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+ && chown node:node /app
 
 COPY --from=build     --chown=node:node /app/build ./build
 COPY --from=build     --chown=node:node /app/package.json ./
