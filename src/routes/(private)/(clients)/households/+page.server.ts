@@ -44,38 +44,31 @@ export const actions: Actions = {
     
     const form = await superValidate(request, zod4(newHouseholdSchema));
 		if (!form.valid) return fail(400, { form });
-/*
-    let uniqueFound: boolean = false;
-    let candidate: string = ""
-    do {
-      candidate=generateRandomString(4)
-        const count = await prisma.household.count( {
-          where: {
-            uniqueId: {equals: candidate}
-          }
-        } )
-      uniqueFound = (count == 0)
-    } while(!uniqueFound)
-*/
-    let newHosuehold = null
-    try {
-  	  const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
-		  const household = {...householdWithoutMembers, uniqueId: generateUniqueId(), createdBy: user.name,
-        members: {create: {
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phone: phone,
+    
+    let newHousehold = null
+    for (let attempt = 0; attempt < 5 && !newHousehold; attempt++) {
+      try {
+  	    const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
+		    const household = {...householdWithoutMembers,
+          uniqueId: generateUniqueId(),
           createdBy: user.name,
-          relationship: 'Primary'}
+          members: {create: {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phone: phone,
+            createdBy: user.name,
+            relationship: 'Primary'}
+          }
         }
-      }
-      newHosuehold = await prisma.household.create({
+        newHousehold = await prisma.household.create({
                                   data: household })
-    } catch (err) {
-      console.error(err)
-      return message(form, 'Could not save the household. Please try again.', { status: 500 });
-     }
-    throw redirect(303, '/households/'+newHosuehold.id)
-  },
+      } catch (err) {
+        if ((err as { code?: string }).code === 'P2002') continue; // ID collision, try another
+        console.error(err)
+        return message(form, 'Could not save the household. Please try again.', { status: 500 });
+      }
+      throw redirect(303, '/households/'+newHousehold.id)
+    }
+  }
 };

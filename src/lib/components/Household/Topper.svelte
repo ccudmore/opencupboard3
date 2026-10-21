@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
-	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils";
+	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils"; // craig - fix thie import of servicedate2
+	import { HouseholdStatus } from '$prisma/browser';
 
 	let { form, errors, constraints, bookings, enhance } = $props();
 
@@ -10,6 +11,12 @@
 		{ value: "Inactive", name: "Inactive" },
 		{ value: "Archived", name: "Archived" },
 	];
+
+
+	export const householdStatusOptions = Object.values(HouseholdStatus).map((s) => ({
+  		value: s,
+  		name: s
+	}));
 
 	const primaryMembers = $derived(
 		($form.members ?? []).filter((m: { relationship: string }) => m.relationship === "Primary")
@@ -70,7 +77,7 @@
 
 		<div class="flex shrink-0 items-center gap-2">
 			<Label for="status" class="shrink-0 text-sm text-gray-500 dark:text-gray-400">Status</Label>
-			<Select id="status" size="sm" class="w-36" items={householdStatuses} bind:value={$form.status} />
+			<Select id="status" size="sm" class="w-36" items={householdStatusOptions} bind:value={$form.status} />
 		</div>
 	</div>
 

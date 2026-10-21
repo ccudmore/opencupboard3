@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "./src/generated/prisma/client.js";
+import { PrismaClient, Prisma, HouseholdStatus } from "./src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
@@ -116,7 +116,7 @@ const seedUsers: SeedUser[] = [
 
 const householdData: Prisma.HouseholdCreateInput[] = [
   {
-    id: 'abc123', uniqueId: 'ABCD', status: 'Active', dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: ['pickup', 'delivery'], preferredTimeOfDay: ['wednesday afternoons', 'friday mornings'], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
+    id: 'abc123', uniqueId: 'ABCD', status: HouseholdStatus.Active, dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: ['pickup', 'delivery'], preferredTimeOfDay: ['wednesday afternoons', 'friday mornings'], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
         datedRequests: {
           createMany: {data: [
             {status: 'Active', requestText: 'for rain', createdBy: 'CraigC' , type: 'Prayer'},

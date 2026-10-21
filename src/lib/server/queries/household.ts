@@ -1,5 +1,6 @@
 import type { Prisma } from '$prisma/client';
 import prisma from '$lib/prisma';
+import { HouseholdStatus } from '$prisma/browser';
 
 export const GUEST_PAGE_SIZE = 10;
 
@@ -22,7 +23,8 @@ export async function searchHousehold({
 
   const guestWhere: Prisma.ClientWhereInput = {
     relationship: 'Primary',
-    ...(!showNonActive && { memberOf: { status: 'Active' } }),
+    ...(!showNonActive && { memberOf: { status: HouseholdStatus.Active } }),
+//    ...(!showNonActive && { memberOf: { status: 'Active' } }),
     ...(term && {
       OR: [
         { firstName: { contains: term, mode: 'insensitive' } },

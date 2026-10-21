@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { HouseholdStatus } from '$prisma/enums';
 
 // Canadian postal code: A1A 1A1
 // First letter excludes D, F, I, O, Q, U, W, Z; the other letters exclude D, F, I, O, Q, U
@@ -33,7 +34,8 @@ export const householdSchema = z.object({
             message: 'Enter a valid postal code (e.g. A1A 1A1)'
         })
         .transform((code) => (code ? `${code.slice(0, 3)} ${code.slice(3)}` : null)),
-    status: z.string().default('Active'),
+//    status: z.string().default('Active'),
+    status: z.enum(HouseholdStatus).default(HouseholdStatus.Active),
     dietaryRestrictions: z.string().array().default([]),
     pets: z.string().nullish(),
     howHeard: z.string().nullish(),

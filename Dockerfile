@@ -26,7 +26,9 @@ RUN BETTER_AUTH_SECRET=build-time-placeholder \
     BETTER_AUTH_URL=http://localhost:3000 \
     npm run build
 
-# --- Production-only dependencies (no vite, svelte, tailwind, etc.) ---
+# --- Runtime dependencies (devDependencies omitted; some tooling such as
+#     vite, prisma and tsx still installs because better-auth and
+#     @prisma/client declare them as peer dependencies) ---
 FROM base AS prod-deps
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
@@ -39,6 +41,7 @@ ENV NODE_ENV=production \
 
 # npm/npx/corepack aren't needed at runtime. Removing them drops npm's bundled
 # dependencies (brace-expansion, undici, ...) and shrinks the attack surface.
+# Must run as root, so it stays before USER node.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
  && chown node:node /app

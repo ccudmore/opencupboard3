@@ -236,9 +236,15 @@ model DatedRequest {
   @@index([householdId])
 }
 
+enum HouseholdStatus {
+  Active
+  Archived
+  Inactive
+}
+
 model Household {
   id                    String                @id @unique @default(cuid())
-  status                String                @default("Active")
+  status                HouseholdStatus       @default(Active)
   uniqueId              String?               @unique
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
   //datedRequest          String[]
