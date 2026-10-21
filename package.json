@@ -4,6 +4,7 @@
 	"version": "0.0.2",
 	"type": "module",
 	"scripts": {
+		"test": "jest",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
