@@ -8,6 +8,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { newHouseholdSchema } from '$lib/formschemas/household';
 import { redirect } from "@sveltejs/kit";
 import { requirePermission } from '$lib/server/auth';
+import { randomInt } from 'node:crypto';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const user = requirePermission(locals, url, ['manage-households']);
@@ -18,13 +19,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return { ...result, form };
 };
 
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+/*
 function generateRandomString(length: number): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
+    result += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
   }
   return result;
+}
+*/
+
+function generateUniqueId(length = 4): string {
+  let id = '';
+  for (let i = 0; i < length; i++) {
+    id += ALPHABET[randomInt(ALPHABET.length)];
+  }
+  return id;
 }
 
 export const actions: Actions = {
@@ -33,7 +44,7 @@ export const actions: Actions = {
     
     const form = await superValidate(request, zod4(newHouseholdSchema));
 		if (!form.valid) return fail(400, { form });
-
+/*
     let uniqueFound: boolean = false;
     let candidate: string = ""
     do {
@@ -45,11 +56,11 @@ export const actions: Actions = {
         } )
       uniqueFound = (count == 0)
     } while(!uniqueFound)
-
+*/
     let newHosuehold = null
     try {
   	  const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
-		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: user.name,
+		  const household = {...householdWithoutMembers, uniqueId: generateUniqueId(), createdBy: user.name,
         members: {create: {
           firstName: firstName,
           lastName: lastName,

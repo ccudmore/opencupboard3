@@ -239,7 +239,7 @@ model DatedRequest {
 model Household {
   id                    String                @id @unique @default(cuid())
   status                String                @default("Active")
-  uniqueId              String?
+  uniqueId              String?               @unique
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
   //datedRequest          String[]
   dietaryRestrictions   String[]

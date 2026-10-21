@@ -1,14 +1,20 @@
-FROM node:26-alpine AS base
+# syntax=docker/dockerfile:1
+
+# Match CI. For fully reproducible builds, pin the digest as well:
+#   docker buildx imagetools inspect node:24-alpine   -> node:24-alpine@sha256:<digest>
+ARG NODE_VERSION=24
+
+FROM node:${NODE_VERSION}-alpine AS base
 WORKDIR /app
+# Needed by the Prisma CLI (db push) on Alpine
 RUN apk add --no-cache openssl
 
-# Install dependencies and build the app
+# --- All dependencies (incl. dev) + Prisma client generation ---
 FROM base AS deps
-COPY package.json ./
+# Lockfile is required so `npm ci` installs exactly what you tested
+COPY package.json package-lock.json ./
 COPY prisma ./prisma
-RUN npm install
-
-# Rebuild Prisma Client
+RUN --mount=type=cache,target=/root/.npm npm ci
 RUN npx prisma generate
 
 # --- Build the SvelteKit app ---
@@ -16,31 +22,35 @@ FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .
-
 RUN BETTER_AUTH_SECRET=build-time-placeholder \
     BETTER_AUTH_URL=http://localhost:3000 \
     npm run build
 
+# --- Production-only dependencies (no vite, svelte, tailwind, etc.) ---
+FROM base AS prod-deps
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+
 # --- Production image ---
-FROM node:26-alpine AS runner
+FROM base AS runner
+ENV NODE_ENV=production \
+    PORT=3000
 
-WORKDIR /app
-RUN apk add --no-cache openssl
+# Use the non-root `node` user that ships with the base image
+RUN chown node:node /app
 
-ENV NODE_ENV=production
-ENV PORT=3000
+COPY --from=build     --chown=node:node /app/build ./build
+COPY --from=build     --chown=node:node /app/package.json ./
+COPY --from=build     --chown=node:node /app/prisma.config.ts ./
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
+# Schema, seed script and generated client (used by the db-push service)
+COPY --from=deps      --chown=node:node /app/prisma ./prisma
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 sveltekit
-RUN chown -R sveltekit:nodejs /app
-
-COPY --from=build --chown=sveltekit:nodejs /app/build ./build
-COPY --from=build --chown=sveltekit:nodejs /app/package.json ./
-COPY --from=deps --chown=sveltekit:nodejs /app/node_modules ./node_modules
-COPY --from=deps --chown=sveltekit:nodejs /app/prisma ./prisma
-COPY --from=build --chown=sveltekit:nodejs /app/prisma.config.ts ./
-
-USER sveltekit
+USER node
 EXPOSE 3000
-CMD ["node", "build"]
 
+# 127.0.0.1, not localhost: Alpine resolves localhost to ::1 first
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget -qO /dev/null "http://127.0.0.1:${PORT:-3000}/healthz" || exit 1
+
+CMD ["node", "build"]
