@@ -34,7 +34,7 @@ export const actions: Actions = {
 		const formData = await superValidate(request, zod4(householdSchema));
 		if (!formData.valid) return fail(400, { formData });
 
-		const {id,members,datedRequests,appointmentBookings,...householdWithoutIds} = formData.data
+		const {id,members,datedRequests,appointmentBookings,uniqueId,createdAt,createdBy,...householdWithoutIds} = formData.data
 		try {
 			await prisma.household.update({
 				where: {

@@ -1,10 +1,10 @@
 x-app-env: &app-env
   DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
   ORIGIN: ${ORIGIN:-http://localhost:3000}
-#  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${ORIGIN:-http://localhost:3000}}
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${ORIGIN:-http://localhost:3000}}
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
 # craig - only needed for now
-  BETTER_AUTH_URL: http://localhost:3000
+#  BETTER_AUTH_URL: http://localhost:3000
   PUBLIC_BETTER_AUTH_URL: "http://localhost:3000"
 
 services:
@@ -40,15 +40,14 @@ services:
     entrypoint: []
     command: >
       sh -c "
-      npx prisma db push
-      && npx prisma db seed
-      "
+      npx prisma db push"
+##      && npx prisma db seed
     environment:
       <<: *app-env
     volumes:
       # Prisma 7 needs a config file with datasource.url. Mounted into the
       # image's working directory (assumed to be /app) so no rebuild is needed.
-      - ./prisma.config.mjs:/app/prisma.config.mjs:ro
+      # - ./prisma.config.mjs:/app/prisma.config.mjs:ro
     networks:
       - backend
     depends_on:

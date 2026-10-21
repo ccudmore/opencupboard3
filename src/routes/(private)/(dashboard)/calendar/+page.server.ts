@@ -168,7 +168,6 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
 };
 
 async function saveChanges({ created, updated, deleted }: CalendarChanges) {
-	console.log('CRAIG')
 	// for future reference, the rest of the generated code is found in my ~/Downloads folder
 }
 
@@ -209,11 +208,11 @@ async function handle(
 	request: Request,
 	rule: (c: CalendarChanges) => string | null // action-specific shape check
 ) {
-	console.log('CRAIG2 - handle')
+//	console.log('CRAIG2 - handle')
 		const parsed = readChanges(await request.formData());
 
-	console.log(request)
-	console.log(rule) 
+//	console.log(request)
+//	console.log(rule) 
 }
 
 /** Parses and validates the `changes` form field sent by the calendar. */

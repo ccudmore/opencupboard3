@@ -61,9 +61,7 @@ for (const event of services as any[]) {
     const craig = JSON.stringify(services)
 
     // sort bookings into active, historical
-    console.log('CRAIG3')
 
     // for each service, get the countof 
-    console.log(craig)
     return { services };
 };
