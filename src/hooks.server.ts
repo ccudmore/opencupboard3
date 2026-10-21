@@ -6,9 +6,17 @@ import { building } from '$app/environment'
 import prisma from "$lib/prisma"
 import { sequence } from '@sveltejs/kit/hooks';
 
+/*
 function haveCommonElement(arr1: string[], arr2: string[]): boolean {
   const set2 = new Set(arr2);
   return arr1.some(element => set2.has(element));
+}
+*/
+type RolePermission = { permissionId: string };
+type RoleEntry = { role: { permissions: RolePermission[] } };
+
+function uniquePermissionIds(data: RoleEntry[]): string[] {
+  return [...new Set(data.flatMap((d) => d.role.permissions.map((p) => p.permissionId)))];
 }
 
 async function handleAuthentication({event, resolve} : {event:any, resolve:any}) {
@@ -16,7 +24,7 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
     if (authSession) {
         const roleRows = await prisma.userRole.findMany({
             where: { userId: authSession.user.id },
-            select: { role: { select: { name: true, id: true } } }
+            select: { role: { select: { name: true, id: true, permissions: true } } }
         });
         event.locals.user = {
             id: authSession.user.id,
@@ -24,6 +32,7 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             email: authSession.user.email,
             image: authSession.user.image,
             roles: roleRows.map((r) => r.role.name),
+            permissions: uniquePermissionIds(roleRows),
         };
         event.locals.session = {
             id: authSession.session.id,

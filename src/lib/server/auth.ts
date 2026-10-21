@@ -64,6 +64,20 @@ function haveCommonElement(arr1: string[], arr2: string[]): boolean {
   return arr1.some(element => set2.has(element));
 }
 
+export function requirePermission( locals: App.Locals, url: URL, requiredPermissions: string[]) {
+	const user = locals.user;
+
+  	if (!user) {
+    	throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+  	}
+
+	if (!haveCommonElement(requiredPermissions, user.permissions)) {
+		throw error(403, 'You do not have permission to view this page');
+  	}
+
+  	return user;
+}
+
 export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[]) {
   const user = locals.user;
 

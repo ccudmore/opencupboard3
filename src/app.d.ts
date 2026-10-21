@@ -4,6 +4,7 @@ export type AuthedUser = {
         name: string;
         email: string;
         roles: string[];
+        permissions: string[];
         image: string;
 };
 

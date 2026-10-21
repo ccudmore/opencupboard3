@@ -7,8 +7,11 @@ import { superValidate, setError, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { newHouseholdSchema } from '$lib/formschemas/household';
 import { redirect } from "@sveltejs/kit";
+import { requirePermission } from '$lib/server/auth';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
+  const user = requirePermission(locals, url, ['manage-households']);
+
 	const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
 	const form = await superValidate(zod4(newHouseholdSchema));
 
@@ -25,7 +28,9 @@ function generateRandomString(length: number): string {
 }
 
 export const actions: Actions = {
-  createHousehold: async ({ request, locals }) => {
+  createHousehold: async ({ request, locals, url }) => {
+    const user = requirePermission(locals, url, ['manage-households']);
+    
     const form = await superValidate(request, zod4(newHouseholdSchema));
 		if (!form.valid) return fail(400, { form });
 
@@ -44,22 +49,22 @@ export const actions: Actions = {
     let newHosuehold = null
     try {
   	  const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
-		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: locals.user.name,
+		  const household = {...householdWithoutMembers, uniqueId: candidate, createdBy: user.name,
         members: {create: {
           firstName: firstName,
           lastName: lastName,
           email: email,
           phone: phone,
-          createdBy: locals.user.name,
+          createdBy: user.name,
           relationship: 'Primary'}
         }
       }
       newHosuehold = await prisma.household.create({
-                                data: household })
+                                  data: household })
     } catch (err) {
       console.error(err)
       return message(form, 'Could not save the household. Please try again.', { status: 500 });
-    }
+     }
     throw redirect(303, '/households/'+newHosuehold.id)
   },
 };

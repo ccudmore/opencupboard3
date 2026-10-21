@@ -93,7 +93,7 @@ model Role {
   name        String   @unique // e.g. "user", "manager", "admin"
   description String?
   createdAt   DateTime @default(now())
-
+  createdBy    String?
   users       UserRole[]
   permissions RolePermission[]
 
@@ -102,15 +102,12 @@ model Role {
 
 model Permission {
   id          String  @id @default(cuid())
-  // Dot/colon-scoped permission key, e.g. "reports:view", "users:manage"
   name        String  @unique
   description String?
-
   createdAt DateTime @default(now())
-
+  createdBy    String?
   roles           RolePermission[]
-  protectedRoutes String[]
-
+  
   @@map("permission")
 }
 
@@ -130,7 +127,7 @@ model RolePermission {
   roleId       String
   permissionId String
   createdAt    DateTime @default(now())
-
+  createdBy    String?
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 

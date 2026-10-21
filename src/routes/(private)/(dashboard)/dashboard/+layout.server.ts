@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from '../../$types';
-import { requireRole } from '$lib/server/auth';
+import { requirePermission } from '$lib/server/auth';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
-    const user = requireRole(locals, url, ['Administrator']);
+    const user = requirePermission(locals, url, ['view-dashboard']);
 }

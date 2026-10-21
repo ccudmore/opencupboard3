@@ -6,8 +6,10 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { householdSchema } from '$lib/formschemas/household';
 import type { HouseholdWithRelations, } from "$lib/types/household";
 import { householdInclude } from '$lib/server/household';
+import { requirePermission } from '$lib/server/auth';
 
-export const load: PageServerLoad = async ({params, locals }) => {
+export const load: PageServerLoad = async ({params, locals, url }) => {
+	const user = requirePermission(locals, url, ['manage-households']);
   	const householdAll: HouseholdWithRelations | null = await prisma.household.findUnique({
 		where: {
 			id: params.householdId,
@@ -26,7 +28,8 @@ export const load: PageServerLoad = async ({params, locals }) => {
 }
 
 export const actions: Actions = {
-	updateHousehold: async ( { request, locals} ) => {
+	updateHousehold: async ( { request, locals, url} ) => {
+		const user = requirePermission(locals, url, ['manage-households']);
 
 		const formData = await superValidate(request, zod4(householdSchema));
 		if (!formData.valid) return fail(400, { formData });
@@ -68,9 +71,11 @@ export const actions: Actions = {
 			return fail(500, { message: "Could not update household" })
 		}
 		return { formData }
-	},	
-	deleteHousehold: async (event) => {
-		const id = event.params.householdId
+	},
+	deleteHousehold: async ( { request, params, locals, url} ) => {
+		const user = requirePermission(locals, url, ['manage-households']);
+		const id = params.householdId
+		
 		if (!id) {
 			return fail(400, { message: "Invalid request" })
 		}

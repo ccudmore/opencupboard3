@@ -1,11 +1,12 @@
 import { error, json } from '@sveltejs/kit';
-import { requireRole } from '$lib/server/auth';
+import { requirePermission } from '$lib/server/auth';
 import { searchHousehold, parseHouseholdSearchParams } from '$lib/server/queries/household';
 import { searchEvent, parseEventSearchParams } from '$lib/server/queries/event';
 import { searchVolunteer, parseVolunteerSearchParams } from '$lib/server/queries/volunteer';
 
 export async function GET({ url, locals }) {
-	// craig requires permission checks
+	requirePermission(locals, url, ['manage-households',]);
+
 	let destinationArray = [];
 	const urlbase = new URL(url);
 	try {

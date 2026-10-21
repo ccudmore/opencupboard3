@@ -6,7 +6,7 @@ import type {
 	CalendarMode,
 	EventVolunteer,
 } from '$lib/components/Calendar.svelte';
-import { requireRole } from '$lib/server/auth';
+import { requirePermission } from '$lib/server/auth';
 import prisma from '$lib/prisma';
 import type { Actions, PageServerLoad } from './$types';
 //import getVoluteers from 
@@ -148,7 +148,7 @@ sample data:
 }
 
 export const load: PageServerLoad = async ({params, locals, url }) => {
-	const user = requireRole(locals, url, ['Client Manager', 'Administrator','User', 'Volunteer Manager', 'Volunteer', 'Inventory Manager']);
+    const user = requirePermission(locals, url, ['login']);
 
 	let mode = <CalendarMode>('readonly'); // defaults to read-only
 

@@ -20,15 +20,15 @@ type SeedUser = {
 
 type SeedRole = {
   roleName: string;
-  permissionNames: string[];
+  permissionIds: string[];
 };
 
-async function createRoleWithNewPermissions(roleName: string, permissionNames: string[]) {
+async function createRoleWithNewPermissions(roleName: string, permissionIds: string[]) {
 	return prisma.role.create({
 		data: {
 			name: roleName,
 			permissions: {
-				create: permissionNames.map((name) => ({
+				create: permissionIds.map((name) => ({
 					permission: {
 						connectOrCreate: {
 							where: { name },
@@ -41,6 +41,20 @@ async function createRoleWithNewPermissions(roleName: string, permissionNames: s
 	});
 }
 
+async function createRoleWithPermissionsNew(roleName: string, permissionIds: string[]) {
+  return prisma.role.upsert({
+    where: { name: roleName },
+    update: {},
+    create: {
+      name: roleName,
+      permissions: {
+        create: permissionIds.map((id) => ({
+          permission: { connect: { id } }
+        }))
+      }
+    }
+  });
+}
 async function createUserWithRoles(
 	data: { name: string; email: string; image: string },
 	roleNames: string[]
@@ -73,24 +87,24 @@ async function createUserWithRoles(
 }
 
 const permissionData: Prisma.PermissionCreateInput[] = [
-  { name: 'Log in', protectedRoutes: ['/']},
-  { name: 'Manage clients', description: '', protectedRoutes: ['/households']},
-  { name: 'Manage system configuration', description: '', protectedRoutes: ['/admin']},
-  { name: 'Manage volunteers', description: '', protectedRoutes: ['/volunteers']},
-  { name: 'Manage inventory', description: '', protectedRoutes: ['/inventory']},
-  { name: 'Manage donors', description: '', protectedRoutes: ['/donors']},
-  { name: 'View dashboard', description: '', protectedRoutes: ['/dashboard']},
-  { name: 'Volunteer', description: '', protectedRoutes: ['/volunteer']},
+  { id: 'login', name: 'Log in', description: 'Log into the service'},
+  { id: 'manage-households', name: 'Manage clients', description: 'Manage households' },
+  { id: 'manage-configuration', name: 'Manage system configuration', description: 'Manage system configuration'},
+  { id: 'manage-volunteers', name: 'Manage volunteers', description: 'Manage volunteers'},
+  { id: 'manage-inventory', name: 'Manage inventory', description: 'Manage inventory'},
+  { id: 'manage-donors', name: 'Manage donors', description: 'Manage donors'},
+  { id: 'view-dashboard', name: 'View dashboard', description: 'View dashboard'},
+  { id: 'access-volunteer', name: 'Volunteer', description: 'Volunteer'},
 ]
 
 const roleData: SeedRole[] = [
-{roleName: 'Administrator', permissionNames: ['Log in', 'Manage clients', 'Manage system configuration', 'Manage volunteers', 'Manage inventory', 'Manage donors', 'View dashboard', 'Volunteer']},
-{roleName: 'User', permissionNames: ['Log in']},
-{roleName: 'Client Manager', permissionNames: ['Log in', 'Manage clients']},
-{roleName: 'Volunteer Manager', permissionNames: ['Log in', 'Manage volunteers']},
-{roleName: 'Volunteer', permissionNames: ['Log in', 'Volunteer']},
-{roleName: 'Donor Manager', permissionNames: ['Log in', 'Manage donors']},
-{roleName: 'Inventory Manager', permissionNames: ['Log in', 'Manage inventory']},
+{roleName: 'Administrator', permissionIds: ['login', 'manage-households', 'manage-configuration', 'manage-volunteers', 'manage-inventory', 'manage-donors', 'view-dashboard', 'access-volunteer']},
+{roleName: 'User', permissionIds: ['login']},
+{roleName: 'Client Manager', permissionIds: ['login', 'manage-households']},
+{roleName: 'Volunteer Manager', permissionIds: ['login', 'manage-volunteers']},
+{roleName: 'Volunteer', permissionIds: ['login', 'access-volunteer']},
+{roleName: 'Donor Manager', permissionIds: ['login', 'manage-donors']},
+{roleName: 'Inventory Manager', permissionIds: ['login', 'manage-inventory']},
 ];
 
 const seedUsers: SeedUser[] = [
@@ -220,7 +234,7 @@ export async function main() {
 
   }
   for (const r of roleData) {
-    await createRoleWithNewPermissions(r.roleName, r.permissionNames);
+    await createRoleWithPermissionsNew(r.roleName, r.permissionIds);
     console.log(`Created role ${r.roleName}`);
   }
   

@@ -1,9 +1,11 @@
 import type { PageServerLoad } from './$types';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
+import { requirePermission } from '$lib/server/auth';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
+    const user = requirePermission(locals, url, ['manage-appointments']);
 
 // craig - move to a query
     const oneYearAgo = new Date();
