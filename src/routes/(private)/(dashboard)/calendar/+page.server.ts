@@ -9,6 +9,7 @@ import type {
 import { requireRole } from '$lib/server/auth';
 import prisma from '$lib/prisma';
 import type { Actions, PageServerLoad } from './$types';
+//import getVoluteers from 
 
 
 /**
@@ -37,6 +38,7 @@ const categories = await getCategories()
 const volunteers = await getVolunteers();
 
 async function getVolunteers(): Promise<Volunteer[]> {
+	/*
 	const results = await prisma.volunteer.findMany({
 		select: {
     		id: true,
@@ -50,6 +52,8 @@ async function getVolunteers(): Promise<Volunteer[]> {
     	id: v.id
 	}));
 	return volunteers
+	*/
+	return []
 }
 
 async function getEvents(): Promise<CalendarEvent[]> {

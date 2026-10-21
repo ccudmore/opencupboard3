@@ -34,6 +34,7 @@ export async function GET({ url, locals }) {
 				category: 'Event'
   			};
 		});
+		
 		const volunteerResults = await searchVolunteer(parseVolunteerSearchParams(url.searchParams) );
 		const transformedVolunteers = volunteerResults.volunteers.map(volunteer => {
   			return {
