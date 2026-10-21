@@ -3,7 +3,7 @@
 	import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte"
  	import { goto } from '$app/navigation';
 	import { toast } from "svelte-sonner";
-	
+
 	import { Button, Input, ButtonGroup, Modal, Dropdown, DropdownItem, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
 	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline, DotsVerticalOutline } from "flowbite-svelte-icons";	import TabView from "$lib/components/Household/TabView.svelte";
 	import Topper from "$lib/components/Household/Topper.svelte";
@@ -13,6 +13,7 @@
 	import { householdSchema } from '$lib/formschemas/household';
 
 	let { data } = $props()
+	
   	let openComfirmDeleteModal = $state(false);
 
 	function handleSuccess() {
@@ -27,7 +28,7 @@ type FormErrors = {
   [field: string]: unknown;
 };
 
-function toastFormErrors3(errors: FormErrors) {
+function toastFormErrors(errors: FormErrors) {
   const { members, _errors, ...topLevel } = errors;
 
   // Form-level errors
@@ -64,7 +65,7 @@ function toastFormErrors3(errors: FormErrors) {
 }
 
     function handleError() {
-		toastFormErrors3($errors)
+		toastFormErrors($errors)
     }
 	
 	// superForm only needs the initial value; it manages its own state afterwards
@@ -100,7 +101,7 @@ function toastFormErrors3(errors: FormErrors) {
     		const res = await fetch('?/deleteHousehold', {
  		    	method: 'POST',
       			headers: { 'Content-Type': 'multipart/form-data' },
-      			body: JSON.stringify({ id: data.household.id })
+      			body: JSON.stringify({ id: $form.id })
     		});
 			toast("Household deleted") // craig - toast not working
 			goto('/households');
@@ -109,7 +110,7 @@ function toastFormErrors3(errors: FormErrors) {
 </script>
 
 <form action="?/updateHousehold" method="POST" use:enhance>
-	<Input type="hidden" id="id" name="id" value={data.household.id} />
+	<Input type="hidden" id="id" name="id" value={$form.id} />
 	<!--SuperDebug data={$form}/-->
 
 	<!-- Breadcrumb and actions share one row -->
@@ -163,12 +164,12 @@ function toastFormErrors3(errors: FormErrors) {
 	</div>
 
 	<div class="p-0">
-		<Topper form={form} errors={errors} constraints={constraints}/>
-		<TabView form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
+		<Topper {form} {errors} {constraints} {enhance} bookings={data.bookings} />
+		<TabView {form} {errors} {constraints} {enhance} {validateForm} bookings={data.bookings}/>
 	</div>
 </form>
 
-Created by: {data.household.createdBy} on {formattedDate(data.household.createdAt)}
+Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
 
 <Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
   <div class="text-center">

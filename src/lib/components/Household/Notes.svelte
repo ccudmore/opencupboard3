@@ -28,17 +28,6 @@
 </script>   
 <Label for="dietaryRestrictions" class="mt-5 mb-3">Dietary Restrictions</Label>
 
-<!--Tags id="dietaryRestrictions" class="mt-5 mb-3 text-gray-900 dark:[&_button]:text-gray-100 dark:[&_ul]:bg-gray-700
-[&_button:hover]:bg-blue-100
-		dark:[&_button:hover]:bg-gray-600" 
-	classes={{
-		tag: "dark:bg-blue-600",                    // the chips you've added
-		span: "dark:text-gray-200",                 // text inside the chips
-		input: "text-gray-900 dark:text-white",
-	}}
-
- bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/
- -->
 <Tags id="dietaryRestrictions" class="mt-5 mb-3 text-gray-900 dark:[&_button]:text-gray-200 dark:[&_ul]:bg-gray-700" 
 	classes={{
 		tag: "dark:bg-gray-600",                    // the chips you've added

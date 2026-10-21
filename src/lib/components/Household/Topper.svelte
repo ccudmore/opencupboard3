@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
-	import { isIdVerificationNeeded, calculateFamilySize, calculateChildCount } from "$lib/utils";
+	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils";
 
-	let { form, errors, constraints } = $props();
+	let { form, errors, constraints, bookings, enhance } = $props();
 
 	const householdStatuses = [
 		{ value: "Active", name: "Active" },
@@ -23,6 +23,7 @@
 
 	const familySize = $derived(calculateFamilySize($form.members));
 	const childCount = $derived(calculateChildCount($form.members));
+	const nextServiceDate = $derived(calculateNextServiceDate2(bookings));
 
 	// Show the first few primary members; the rest sit behind a "+N more" toggle
 	const MEMBER_LIMIT = 2;
@@ -95,14 +96,19 @@
 		{#each [
 			{ label: "Family size", value: familySize },
 			{ label: "Children under 13", value: childCount },
-			{ label: "Next appointment", value: "Soon (WIP)", small: true }
+			{ label: "Next appointment", value: nextServiceDate?formattedDate(nextServiceDate):'Now', small: true, highlight: !nextServiceDate }
 		] as stat}
-			<dl class="flex min-w-28 flex-col-reverse justify-center rounded-lg border border-gray-200 bg-white px-5 py-2 text-center dark:border-gray-700 dark:bg-gray-800">
-				<dt class="text-xs text-gray-500 dark:text-gray-400">{stat.label}</dt>
-				<dd class="{stat.small ? 'text-base' : 'text-2xl'} font-bold text-gray-900 dark:text-white">
-					{stat.value}
-				</dd>
-			</dl>
+    	<dl
+        class="flex min-w-28 flex-col-reverse justify-center rounded-lg border px-5 py-2 text-center
+        {stat.highlight
+            ? 'border-green-300 bg-green-100 dark:border-green-700 dark:bg-green-900'
+            : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'}"
+    >
+        <dt class="text-xs text-gray-500 dark:text-gray-400">{stat.label}</dt>
+        <dd class="{stat.small ? 'text-base' : 'text-2xl'} font-bold text-gray-900 dark:text-white">
+            {stat.value}
+        </dd>
+    	</dl>
 		{/each}
 	</div>
 </div>

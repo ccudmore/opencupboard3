@@ -18,8 +18,6 @@
 		repeatUntil?: Date | string;
 		/** Dates ('YYYY-MM-DD') of single occurrences that were deleted from the series. */
 		exceptions?: string[];
-		/** Optional number of available slots; shown next to the title. */
-		slots?: number;
 		/**
 		 * Volunteers signed up for the event: ids from the `volunteers` prop, optionally with a
 		 * role from the event's category. A bare id string means "no role".
@@ -44,6 +42,18 @@
 		color: string;
 		/** Roles volunteers can be given on events of this category. Omit for none. */
 		roles?: string[];
+	}
+
+	/**
+	 * Everything a single user action changed, so it can be persisted in one go. Editing or deleting
+	 * one occurrence of a repeating event can touch two events (e.g. the original gets an exception
+	 * and a new one-off event is created). Events need an `id` to be reported here.
+	 */
+	export interface CalendarChanges {
+		created: CalendarEvent[];
+		updated: CalendarEvent[];
+		/** ids of removed events */
+		deleted: string[];
 	}
 
 	export type CalendarView = 'day' | 'week' | 'month';
@@ -86,10 +96,11 @@
 		weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
 		locale?: string;
 		maxPerCell?: number;
-		onadd?: (event: CalendarEvent) => void;
+		/** Called after an event is added. `changes` lists everything that changed. */
+		onadd?: (event: CalendarEvent, changes: CalendarChanges) => void;
 		/** Called after an edit; `event` is the changed or newly created event. */
-		onedit?: (event: CalendarEvent, scope: RepeatScope) => void;
-		ondelete?: (event: CalendarEvent, scope: RepeatScope) => void;
+		onedit?: (event: CalendarEvent, scope: RepeatScope, changes: CalendarChanges) => void;
+		ondelete?: (event: CalendarEvent, scope: RepeatScope, changes: CalendarChanges) => void;
 	}
 
 	type RepeatScope = 'this' | 'following' | 'all';
@@ -314,7 +325,7 @@
 	const colorOf = (name: string) =>
 		categories.find((c) => c.name === name)?.color ?? FALLBACK_COLOR;
 	const label = (ev: CalendarEvent) =>
-		typeof ev.slots === 'number' ? `${ev.title} (${ev.slots} left)` : ev.title;
+		ev.title;
 
 	/* ---------- header / navigation ---------- */
 	const monthItems = $derived(
@@ -492,7 +503,6 @@
 		unit: 'day' | 'week';
 		/** 'YYYY-MM-DD', or '' to repeat with no end date. */
 		until: string;
-		slots: string | number;
 		volunteers: string[];
 		/** Role per volunteer id (missing or '' = no role). */
 		roles: Record<string, string>;
@@ -505,6 +515,11 @@
 	let formOpen = $state(false);
 	let titleInput = $state<HTMLInputElement>();
 
+	// Flowbite gives checkboxes/radios a light-gray fill that hides the (white) check mark when
+	// checked; give the checked state an explicit blue fill, in both themes.
+	const checkedStyle =
+		'checked:border-blue-600 checked:bg-blue-600 dark:checked:border-blue-500 dark:checked:bg-blue-500';
+
 	const unitItems = [
 		{ name: 'day(s)', value: 'day' },
 		{ name: 'week(s)', value: 'week' }
@@ -514,6 +529,25 @@
 		{ value: 'following', label: 'This and all following events' },
 		{ value: 'all', label: 'All events in the series' }
 	];
+
+	/** Replace `events` with `next` and report what differs, matching events by id. */
+	function commit(next: CalendarEvent[]): CalendarChanges {
+		const prev = new Map<string, CalendarEvent>();
+		for (const e of events) if (e.id != null) prev.set(e.id, e);
+		const seen = new Set<string>();
+		const created: CalendarEvent[] = [];
+		const updated: CalendarEvent[] = [];
+		for (const e of next) {
+			if (e.id == null) continue;
+			seen.add(e.id);
+			const old = prev.get(e.id);
+			if (!old) created.push(e);
+			else if (old !== e) updated.push(e);
+		}
+		const deleted = [...prev.keys()].filter((id) => !seen.has(id));
+		events = next;
+		return { created, updated, deleted };
+	}
 
 	const sameEvent = (a: CalendarEvent, b: CalendarEvent) => (b.id != null ? a.id === b.id : a === b);
 	const newId = () => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
@@ -535,7 +569,6 @@
 			every: ev?.repeatEvery ?? 1,
 			unit: ev?.repeatUnit === 'day' ? 'day' : 'week',
 			until: ev?.repeatUntil ? dateKey(ev.repeatUntil) : '',
-			slots: typeof ev?.slots === 'number' ? ev.slots : '',
 			volunteers: volsOf(ev).map((v) => v.id),
 			roles: Object.fromEntries(volsOf(ev).flatMap((v) => (v.role ? [[v.id, v.role]] : []))),
 			scope: 'this'
@@ -611,11 +644,7 @@
 			volunteers: draft.volunteers.map((id): EventVolunteer => {
 				const role = draft!.roles[id];
 				return role && rolesFor(draft!.category).includes(role) ? { id, role } : { id };
-			}),
-			slots:
-				draft.slots !== '' && draft.slots != null
-					? Math.max(0, Math.floor(Number(draft.slots)))
-					: undefined
+			})
 		};
 		const repeatFields: Partial<CalendarEvent> = repeats
 			? {
@@ -627,12 +656,13 @@
 			: { repeating: false, repeatEvery: undefined, repeatUnit: undefined, repeatUntil: undefined };
 
 		let result: CalendarEvent;
+		let next: CalendarEvent[];
 
 		if (!orig) {
 			// New event
 			result = { id: newId(), ...details, start, end, ...repeatFields };
-			events = [...events, result];
-			onadd?.(result);
+			const changes = commit([...events, result]);
+			onadd?.(result, changes);
 			formOpen = false;
 			return;
 		}
@@ -643,7 +673,7 @@
 		if (scope === 'this') {
 			// Detach this occurrence into its own one-off event.
 			result = { id: newId(), ...details, start, end, repeating: false };
-			events = [
+			next = [
 				...events.map((x) =>
 					sameEvent(x, base) ? { ...x, exceptions: [...(x.exceptions ?? []), toInputDate(orig.start)] } : x
 				),
@@ -660,7 +690,7 @@
 				...repeatFields,
 				exceptions: (base.exceptions ?? []).filter((d) => d >= cutoff)
 			};
-			events = [
+			next = [
 				...events.map((x) =>
 					sameEvent(x, base)
 						? {
@@ -686,9 +716,10 @@
 				...repeatFields,
 				exceptions: repeats ? base.exceptions : undefined
 			};
-			events = events.map((x) => (sameEvent(x, base) ? result : x));
+			next = events.map((x) => (sameEvent(x, base) ? result : x));
 		}
-		onedit?.(result, scope);
+		const changes = commit(next);
+		onedit?.(result, scope, changes);
 		formOpen = false;
 	}
 
@@ -704,6 +735,7 @@
 		});
 		const scope: RepeatScope = base.repeating ? draft.scope : 'all';
 		let result: CalendarEvent;
+		let next: CalendarEvent[];
 
 		if (scope === 'this') {
 			// Split this occurrence off as its own event with the new volunteers.
@@ -719,7 +751,7 @@
 				repeatUntil: undefined,
 				exceptions: undefined
 			};
-			events = [
+			next = [
 				...events.map((x) =>
 					sameEvent(x, base) ? { ...x, exceptions: [...(x.exceptions ?? []), toInputDate(orig.start)] } : x
 				),
@@ -735,7 +767,7 @@
 				volunteers: vols,
 				exceptions: (base.exceptions ?? []).filter((d) => d >= cutoff)
 			};
-			events = [
+			next = [
 				...events.map((x) =>
 					sameEvent(x, base)
 						? {
@@ -749,9 +781,10 @@
 			];
 		} else {
 			result = { ...base, volunteers: vols };
-			events = events.map((x) => (sameEvent(x, base) ? result : x));
+			next = events.map((x) => (sameEvent(x, base) ? result : x));
 		}
-		onedit?.(result, scope);
+		const changes = commit(next);
+		onedit?.(result, scope, changes);
 		formOpen = false;
 	}
 
@@ -773,16 +806,17 @@
 		if (!viewing || !canDelete) return;
 		const { event: ev, start, n } = viewing;
 		const scope: RepeatScope = ev.repeating ? deleteScope : 'all';
+		let next: CalendarEvent[];
 
 		if (scope === 'all' || (scope === 'following' && n === 0)) {
-			events = events.filter((x) => !sameEvent(x, ev));
+			next = events.filter((x) => !sameEvent(x, ev));
 		} else if (scope === 'this') {
-			events = events.map((x) =>
+			next = events.map((x) =>
 				sameEvent(x, ev) ? { ...x, exceptions: [...(x.exceptions ?? []), toInputDate(start)] } : x
 			);
 		} else {
 			const cutoff = toInputDate(start);
-			events = events.map((x) =>
+			next = events.map((x) =>
 				sameEvent(x, ev)
 					? {
 							...x,
@@ -792,7 +826,8 @@
 					: x
 			);
 		}
-		ondelete?.(ev, scope);
+		const changes = commit(next);
+		ondelete?.(ev, scope, changes);
 		detailOpen = false;
 	}
 </script>
@@ -1018,7 +1053,7 @@
 					<fieldset class="space-y-1 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
 						<legend class="px-1 text-sm font-medium text-gray-900 dark:text-white">Apply changes to</legend>
 						{#each scopeItems as s}
-							<Radio color="blue" name="edit-scope" value={s.value} bind:group={draft.scope}>{s.label}</Radio>
+							<Radio color="blue" class={checkedStyle} name="edit-scope" value={s.value} bind:group={draft.scope}>{s.label}</Radio>
 						{/each}
 					</fieldset>
 				{/if}
@@ -1048,18 +1083,9 @@
 					</Label>
 				</div>
 
-				<div class="grid grid-cols-2 gap-2">
-					{#if categories.length}
-						<Label class="space-y-1">
-							<span>Category</span>
-							<Select items={categoryItems} bind:value={draft.category} onchange={pruneRoles} />
-						</Label>
+				{#if categories.length}
+						\1
 					{/if}
-					<Label class="space-y-1">
-						<span>Available slots</span>
-						<Input type="number" min="0" step="1" placeholder="Optional" bind:value={draft.slots} />
-					</Label>
-				</div>
 					{:else if editing}
 						<!-- 'volunteers' mode: the event itself is read-only -->
 						<dl class="details">
@@ -1100,7 +1126,7 @@
 				{/if}
 
 				{#if mode === 'full' && !(editing?.event.repeating && draft.scope === 'this')}
-					<Checkbox color="blue" bind:checked={draft.repeating}>Repeating event</Checkbox>
+					<Checkbox color="blue" class={checkedStyle} bind:checked={draft.repeating}>Repeating event</Checkbox>
 
 					{#if draft.repeating}
 						<div class="grid grid-cols-2 gap-2">
@@ -1157,7 +1183,6 @@
 						{/if}
 					</dd>
 					{#if ev.location}<dt>Where</dt><dd>{ev.location}</dd>{/if}
-					{#if typeof ev.slots === 'number'}<dt>Available slots</dt><dd>{ev.slots}</dd>{/if}
 					{#if volsOf(ev).length}
 						<dt>Volunteers</dt>
 						<dd>
@@ -1170,7 +1195,7 @@
 						<fieldset class="space-y-1 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
 							<legend class="px-1 text-sm font-medium text-gray-900 dark:text-white">Delete which events?</legend>
 							{#each scopeItems as s}
-								<Radio color="blue" name="delete-scope" value={s.value} bind:group={deleteScope}>{s.label}</Radio>
+								<Radio color="blue" class={checkedStyle} name="delete-scope" value={s.value} bind:group={deleteScope}>{s.label}</Radio>
 							{/each}
 						</fieldset>
 					{:else}

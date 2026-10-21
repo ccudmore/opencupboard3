@@ -10,19 +10,20 @@
 
     function sendBookingNotification(i: number, event: MouseEvent) {
 		event.preventDefault(); 
-		$form.appointmentBookings[i].notificationSent = new Date()
+		bookings[i].notificationSent = new Date()
 	}
 
 	function sendBookingReminder(i: number, event: MouseEvent) {
 		event.preventDefault(); 
-		$form.appointmentBookings[i].reminderSent = new Date()
+		bookings[i].reminderSent = new Date()
 	}
 
-	let { form, errors, constraints} = $props()
+	let { form, errors, constraints, bookings} = $props()
 
 	const validStatus = [
+    	{ value: "Pending", name: "Pending" },
+    	{ value: "Active", name: "Active" },
     	{ value: "No Show", name: "No Show" },
-    	{ value: "Booked", name: "Booked" },
     	{ value: "Cancelled", name: "Cancelled" },
 	]
 
@@ -43,17 +44,17 @@
 		<TableHeadCell>Reminder</TableHeadCell>
   	</TableHead>
   	<TableBody>
-    	{#each $form.appointmentBookings as item, i}
+    	{#each bookings as item, i}
       		<TableBodyRow>	
 				<TableBodyCell>
-					{formattedDateTime($form.appointmentBookings[i].appointment.startTime) }
+					{formattedDateTime(bookings[i].appointment.startTime) }
 				</TableBodyCell>
 				<TableBodyCell>
-					<Select class="mb-2" items={validStatus} bind:value={$form.appointmentBookings[i].status} {...$constraints.appointmentBookings?.status} required/>
+					<Select class="mb-2" items={validStatus} bind:value={bookings[i].status} {...$constraints.appointmentBookings?.status} required/>
 				</TableBodyCell>
 				<TableBodyCell>
-					{#if $form.appointmentBookings[i].notificationSent !== null}
-						Sent: {formattedDate($form.appointmentBookings[i].notificationSent)}
+					{#if bookings[i].notificationSent !== null}
+						Sent: {formattedDate(bookings[i].notificationSent)}
 					{:else}
 					    <a href="/" onclick={(event) => sendBookingNotification(i,event)} class="text-primary-600 dark:text-primary-500 font-medium hover:underline">	
 							Send
@@ -61,8 +62,8 @@
 					{/if}
 				</TableBodyCell>
 				<TableBodyCell>
-					{#if $form.appointmentBookings[i].reminderSent !== null}
-						Sent: {formattedDate($form.appointmentBookings[i].reminderSent)}
+					{#if bookings[i].reminderSent !== null}
+						Sent: {formattedDate(bookings[i].reminderSent)}
 					{:else}
 					    <a href="/" onclick={(event) => sendBookingReminder(i,event)} class="text-primary-600 dark:text-primary-500 font-medium hover:underline">	
 							Send

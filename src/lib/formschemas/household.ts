@@ -19,31 +19,31 @@ const normalizePostal = (value: string): string =>
 
 export const householdSchema = z.object({
     id: z.string(),
-    street: z.string().min(1),
-    street2: z.string().optional(),
-    city: z.string(),
+    street: z.string().min(1).nullish(),
+    street2: z.string().nullish(),
+    city: z.string().nullable(),
     province: z.string().default('Ontario'),
     country: z.string().default('Canada'),
     postalCode: z
         .string()
         .trim()
-        .optional()
-        .transform((val) => (val ? normalizePostal(val) : ''))
-        .refine((code) => code === '' || POSTAL_REGEX.test(code), {
+        .nullish()
+        .transform((val) => (val ? normalizePostal(val) : null))
+        .refine((code) => code === null || POSTAL_REGEX.test(code), {
             message: 'Enter a valid postal code (e.g. A1A 1A1)'
         })
-        .transform((code) => (code ? `${code.slice(0, 3)} ${code.slice(3)}` : '')),
+        .transform((code) => (code ? `${code.slice(0, 3)} ${code.slice(3)}` : null)),
     status: z.string().default('Active'),
     dietaryRestrictions: z.string().array().default([]),
-    pets: z.string().optional(),
-    howHeard: z.string().optional(),
-    notes: z.string().optional(),
+    pets: z.string().nullish(),
+    howHeard: z.string().nullish(),
+    notes: z.string().nullish(),
     preferredServiceTypes: z.string().array(),
     preferredTimeOfDay: z.string().array(),
     languagesSpoken: z.string().array(),
     uniqueId: z.string().optional().nullable(),
     createdAt: z.date().optional(),
-    createdBy: z.string().optional(),
+    createdBy: z.string().nullish(),
     appointmentBookings: z.array(
         z.object({
             id: z.string().optional(),
@@ -66,11 +66,12 @@ export const householdSchema = z.object({
             firstName: z.string().min(1),   
             lastName: z.string().min(1), 
             idChecked: z.string().optional().nullable(),
-            email: z.email('Enter a valid email').optional().or(z.literal('')),
+            email: z.email('Enter a valid email').nullish().or(z.literal('')),
+//            email: z.email('Enter a valid email').or(z.literal('')).optional(),
             phone: z
                 .string()
                 .trim()
-                .optional()
+                .nullish()
                 .transform((val) => (val ? normalizePhone(val) : ''))
                 .refine((digits) => digits === '' || /^[2-9]\d{2}[2-9]\d{6}$/.test(digits), {
                     message: 'Enter a valid North American phone number (e.g. 613-555-1234)'
@@ -78,21 +79,21 @@ export const householdSchema = z.object({
                 .transform((digits) =>
                     digits ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : ''
                 ),
-            relationship: z.string().optional(),
+            relationship: z.string().nullish(),
             birthYear: z.int().optional().nullable(),
             idCheckDate: z.date().optional().nullable(),
             createdAt: z.date().optional(),
-            createdBy: z.string().optional(),
+            createdBy: z.string().nullish(),
         })
     ),
     datedRequests: z.array(
         z.object({
             id: z.string().optional(),
-            requestText: z.string(),
-            status: z.string(),
+            requestText: z.string().nullish(),
+            status: z.string().nullish(),
             createdAt: z.date(),
-            createdBy: z.string().optional(),
-            type: z.string().optional(),
+            createdBy: z.string().nullish(),
+            type: z.string().nullish(),
         })
     ),
 })

@@ -3,12 +3,12 @@
 	import HouseholdNotes from "$lib/components/Household/Notes.svelte";
 	import HouseholdSpecialRequests from "$lib/components/Household/SpecialRequests.svelte";
 	import HouseholdMembers from "$lib/components/Household/Members.svelte";
-	import HouseholdAppointments from "$lib/components/Household/Appointments.svelte";
+	import Bookings from "$lib/components/Household/Bookings.svelte";
 	import { Tabs, TabItem } from "flowbite-svelte";
 	import AddressMap from "$lib/components/Household/AddressMap.svelte";
   import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
 
-	let { form, errors, constraints, validateForm} = $props()
+	let { form, errors, constraints, validateForm, bookings, enhance} = $props()
 
   const requestsTypes = [
     {name: 'Special', icon: QuestionCircleSolid},
@@ -29,7 +29,7 @@
         <CalendarMonthSolid  size="md" />Appointments
       </div>
     {/snippet}
-		<HouseholdAppointments form={form} errors={errors} constraints={constraints}/>
+		<Bookings {form} {errors} {constraints} {bookings}/>
   </TabItem>
 
     <TabItem>
@@ -38,7 +38,7 @@
         <UsersGroupSolid size="md" />Household Members
       </div>
     {/snippet}
-		<HouseholdMembers form={form} errors={errors} constraints={constraints} validateForm={validateForm}/>
+		<HouseholdMembers {form} {errors} {constraints} {validateForm}/>
   </TabItem>
 
   <TabItem>
@@ -47,7 +47,7 @@
         <AddressBookSolid size="md" />Address
       </div>
     {/snippet}
-		<HouseholdAddress form={form} errors={errors} constraints={constraints}/>
+		<HouseholdAddress {form} {errors} {constraints}/>
   </TabItem>
   
   <TabItem>
@@ -56,7 +56,7 @@
         <InfoCircleSolid size="md" />Additional Information
       </div>
     {/snippet}
-		<HouseholdNotes form={form} errors={errors} constraints={constraints}/>
+		<HouseholdNotes {form} {errors} {constraints}/>
   </TabItem>
 
   {#each requestsTypes as item}
@@ -67,7 +67,7 @@
         <Icon size="md" />{item.name} Requests
       </div>
     {/snippet}
-		<HouseholdSpecialRequests form={form} errors={errors} constraints={constraints} type={item.name}/>
+		<HouseholdSpecialRequests {form} {errors} {constraints} type={item.name}/>
   </TabItem>
   {/each}
 

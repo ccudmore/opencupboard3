@@ -4,24 +4,25 @@ import { error, fail } from "@sveltejs/kit"
 import { superValidate, message } from "sveltekit-superforms/server";
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { householdSchema } from '$lib/formschemas/household';
+import type { HouseholdWithRelations, } from "$lib/types/household";
+import { householdInclude } from '$lib/server/household';
 
 export const load: PageServerLoad = async ({params, locals }) => {
-  	const household = await prisma.household.findUnique({
+  	const householdAll: HouseholdWithRelations | null = await prisma.household.findUnique({
 		where: {
 			id: params.householdId,
-			},
-			include: { members: true, datedRequests: true },
-//			include: { members: true, appointmentBookings: {include: {appointment: true}}, datedRequests: true },
+		},
+		include: householdInclude
   	});
-  	if (!household) {
+  	if (!householdAll) {
 		throw error(404, "Household not found")
 	}
-
 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
-	const form = await superValidate(household, zod4(householdSchema));
-  	return { form , household}
 
+	const {bookings, ...household} = householdAll;
+	const form = await superValidate(household, zod4(householdSchema));
+  	return { form , bookings} // craig - maybe bookings is in its own form?
 }
 
 export const actions: Actions = {

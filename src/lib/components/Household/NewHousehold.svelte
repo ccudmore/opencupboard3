@@ -4,7 +4,9 @@
 	import { Modal, Label, Input, Textarea, MultiSelect, Button, ButtonGroup, Helper, Alert } from 'flowbite-svelte';
 	import { newHouseholdSchema } from '$lib/formschemas/household';
     import { toast } from "svelte-sonner";
-  import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
+  	import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
+    import { stringProxy } from 'sveltekit-superforms';
+
 
 let {
 		data,
@@ -13,7 +15,7 @@ let {
 
 	// superForm only needs the initial value; it manages its own state afterwards
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, submitting, message, reset, constraints } = superForm(data, {
+	const { form, errors, enhance, submitting, message, reset, constraints }: any = superForm(data, {
 		validators: zod4Client(newHouseholdSchema),
 		resetForm: true,
 		onError({ result }) {
@@ -33,6 +35,7 @@ let {
 		value: d,
 		name: d
 	}));
+
 </script>
 
 <Modal title="New Household" bind:open size="lg" onclose={() => reset()}>

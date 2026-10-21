@@ -13,18 +13,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  role          String    @default("user")
-  test		String	  @default("mystuff")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  role          String     @default("user")
   sessions      Session[]
   accounts      Account[]
-  roles UserRole[]
+  roles         UserRole[]
 
   @@unique([email])
   @@map("user")
@@ -102,14 +101,14 @@ model Role {
 }
 
 model Permission {
-  id          String   @id @default(cuid()) @unique
+  id          String  @id @default(cuid())
   // Dot/colon-scoped permission key, e.g. "reports:view", "users:manage"
-  name        String   @unique
+  name        String  @unique
   description String?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  roles RolePermission[]
+  roles           RolePermission[]
   protectedRoutes String[]
 
   @@map("permission")
@@ -141,103 +140,110 @@ model RolePermission {
 
 // - custom stuff starts here
 
-
 model Site {
-  id          String   @id @default(cuid())
-  name        String  @unique
-  street      String?
-  city        String?
-  postalCode  String?
-  province    String   @default("Ontario")
-  country     String   @default("Canada")
-  createdTime DateTime @default(now())
-  events      Event[]
-  createdAt     DateTime        @default(now())
-  createdBy   String?
+  id           String        @id @default(cuid())
+  name         String        @unique
+  street       String?
+  city         String?
+  postalCode   String?
+  province     String        @default("Ontario")
+  country      String        @default("Canada")
+  createdTime  DateTime      @default(now())
+  events       Event[]
+  createdAt    DateTime      @default(now())
+  createdBy    String?
   appointments Appointment[]
 }
 
 model Appointment {
-  id            String     @id @default(cuid())
-//  eventId       String
-  status        String?
-  confirmations Json?
-  reminders     Json?
-  startTime  DateTime
-  endTime    DateTime
-  location   Site        @relation(fields:  [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  locationId String
-  household Household? @relation(fields: [householdId], references: [id])
-  householdId String?
-  createdAt     DateTime        @default(now())
-  createdBy   String?
-  event       Event     @relation(fields: [eventId], references: [id])
-  eventId     String
+  id        String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  //  location   Site     @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  //  locationId String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  bookings AppointmentBookings[] // renamed from "appointments"
+  site     Site?                 @relation(fields: [siteId], references: [id])
+  siteId   String?
+
+  //  @@index([locationId])
+  @@index([eventId])
 }
 
 model Event {
-  id         String      @id @default(cuid())
-  type       String
-  title      String?
-  startTime  DateTime
-  endTime    DateTime
-  note       String?
-  status     String
-  locationId String
-  location   Site        @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  volunteers VolunteerAssignments[]
-  createdAt     DateTime        @default(now())
-  createdBy   String?
+  id           String                 @id @default(cuid())
+  type         String
+  title        String?
+  startTime    DateTime
+  endTime      DateTime
+  note         String?
+  status       String
+  locationId   String
+  location     Site                   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  volunteers   VolunteerAssignments[]
+  createdAt    DateTime               @default(now())
+  createdBy    String?
   appointments Appointment[]
+
+  @@index([locationId])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Client {
-  id          String     @id @default(cuid())
+  id                    String    @id @default(cuid())
   //person          Person  @relation(fields: [personId], references: [id])
   //personId        String  @unique
-  firstName       String
-  lastName        String
-  email         String?
-  phone        String?
-  idChecked   String?
-  birthYear   Int?
-  idCheckDate DateTime?
-  relationship String?
-  memberOf   Household @relation("HouseholdMembership", fields: [householdMembershipId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  firstName             String
+  lastName              String
+  email                 String?
+  phone                 String?
+  idChecked             String?
+  birthYear             Int?
+  idCheckDate           DateTime?
+  relationship          String?
+  memberOf              Household @relation("HouseholdMembership", fields: [householdMembershipId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   householdMembershipId String
-  createdAt     DateTime        @default(now())
-  createdBy   String?
+  createdAt             DateTime  @default(now())
+  //  appointments  AppointmentBookings[]
+  createdBy             String?
+
+  @@index([householdMembershipId])
 }
-/*
-model Message {
-    id          String     @id @default(cuid())
-    content     String
-    senderId    String
-    recipient    User @relation("Message Recipient", fields: [recipientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    sender      User @relation("Message Sender", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    recipientId   String
-    status        String
-    createdAt     DateTime        @default(now())
-}
-*/
+
+/**
+ * model Message {
+ * id          String     @id @default(cuid())
+ * content     String
+ * senderId    String
+ * recipient    User @relation("Message Recipient", fields: [recipientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+ * sender      User @relation("Message Sender", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+ * recipientId   String
+ * status        String
+ * createdAt     DateTime        @default(now())
+ * }
+ */
 
 model DatedRequest {
-  id                    String        @id @default(cuid())
-  household             Household     @relation("DatedRequestMembership", fields: [householdId], references: [id])
-  householdId           String
-  requestText           String?
-  status                String?
-  type                  String?
-  createdAt             DateTime        @default(now())
-  createdBy             String?
+  id          String    @id @default(cuid())
+  household   Household @relation("DatedRequestMembership", fields: [householdId], references: [id])
+  householdId String
+  requestText String?
+  status      String?
+  type        String?
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+
+  @@index([householdId])
 }
 
 model Household {
-  id                    String        @id @default(cuid())
-  status                String        @default("Active")
+  id                    String                @id @unique @default(cuid())
+  status                String                @default("Active")
   uniqueId              String?
-  datedRequests         DatedRequest[] @relation("DatedRequestMembership")
+  datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
   //datedRequest          String[]
   dietaryRestrictions   String[]
   pets                  String?
@@ -246,49 +252,68 @@ model Household {
   preferredTimeOfDay    String[]
   languagesSpoken       String[]
   howHeard              String?
-  street      String?
-  street2     String?
-  city        String?
-  postalCode  String?
-  province    String
-  country     String
-  appointments          Appointment[]
-  members               Client[] @relation("HouseholdMembership")
-  createdAt     DateTime        @default(now())
-  createdBy   String?
+  street                String?
+  street2               String?
+  city                  String?
+  postalCode            String?
+  province              String
+  country               String
+  //  appointments          Appointment[]
+  bookings              AppointmentBookings[]
+  members               Client[]              @relation("HouseholdMembership")
+  createdAt             DateTime              @default(now())
+  createdBy             String?
 }
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+
 model Volunteer {
-  id              String  @id @default(cuid())
+  id              String                 @id @default(cuid())
   //person          Person  @relation(fields: [personId], references: [id])
   //personId        String  @unique
   firstName       String
   lastName        String
   street          String?
-  city        String?
-  postalCode  String?
-  province    String   @default("Ontario")
-  country     String   @default("Canada")
-  email1      String?
-  email2      String?
-  phone1      String?
-  phone2      String?
+  city            String?
+  postalCode      String?
+  province        String                 @default("Ontario")
+  country         String                 @default("Canada")
+  email1          String?
+  email2          String?
+  phone1          String?
+  phone2          String?
   availability    Json?
   attachments     Json?
   trainingCourses Json?
-  assignments VolunteerAssignments[]
-  createdAt     DateTime        @default(now())
-  createdBy   String?
+  assignments     VolunteerAssignments[]
+  createdAt       DateTime               @default(now())
+  createdBy       String?
 }
 
 model VolunteerAssignments {
-  volunteer Volunteer @relation(fields: [volunteerId], references: [id])
+  volunteer   Volunteer @relation(fields: [volunteerId], references: [id])
   volunteerId String
-  event Event @relation(fields: [eventId], references: [id])
-  eventId String
-  eventRole String
-  status String
-  @@id([volunteerId, eventId, eventRole])
-  createdAt     DateTime        @default(now())
+  event       Event     @relation(fields: [eventId], references: [id])
+  eventId     String
+  eventRole   String
+  status      String
+  createdAt   DateTime  @default(now())
   createdBy   String?
+
+  @@id([volunteerId, eventId, eventRole])
+  @@index([eventId])
+}
+
+model AppointmentBookings {
+  id            String      @id @default(cuid())
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  appointmentId String
+  household     Household   @relation(fields: [householdId], references: [id])
+  householdId   String
+  status        String
+  confirmations Json?
+  reminders     Json?
+  createdAt     DateTime    @default(now())
+  createdBy     String?
+
+  @@unique([appointmentId, householdId, status]) // optional: one booking per household per appointment
+  @@index([householdId])
 }

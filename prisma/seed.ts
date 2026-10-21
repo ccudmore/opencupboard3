@@ -102,7 +102,7 @@ const seedUsers: SeedUser[] = [
 
 const householdData: Prisma.HouseholdCreateInput[] = [
   {
-    uniqueId: 'ABCD', status: 'Active', dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: ['pickup', 'delivery'], preferredTimeOfDay: ['wednesday afternoons', 'friday mornings'], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
+    id: 'abc123', uniqueId: 'ABCD', status: 'Active', dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: ['pickup', 'delivery'], preferredTimeOfDay: ['wednesday afternoons', 'friday mornings'], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
         datedRequests: {
           createMany: {data: [
             {status: 'Active', requestText: 'for rain', createdBy: 'CraigC' , type: 'Prayer'},
@@ -173,26 +173,43 @@ const eventData: Prisma.EventCreateInput[] = [
 ];
 
 const appointmentData: Prisma.AppointmentCreateInput[] = [
-  {startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 10:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 10:15:00'), endTime: new Date('2026-11-10 10:30:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 10:30:00'), endTime: new Date('2026-11-10 10:45:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 10:45:00'), endTime: new Date('2026-11-10 11:00:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 11:00:00'), endTime: new Date('2026-11-10 11:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 16:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:15:00'), endTime: new Date('2026-11-10 16:30:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:30:00'), endTime: new Date('2026-11-10 16:45:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:45:00'), endTime: new Date('2026-11-10 17:00:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 17:00:00'), endTime: new Date('2026-11-10 17:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 10:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:15:00'), endTime: new Date('2026-11-11 10:30:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:30:00'), endTime: new Date('2026-11-11 10:45:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:45:00'), endTime: new Date('2026-11-11 11:00:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 11:00:00'), endTime: new Date('2026-11-11 11:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 16:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:15:00'), endTime: new Date('2026-11-11 16:30:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:30:00'), endTime: new Date('2026-11-11 16:45:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:45:00'), endTime: new Date('2026-11-11 17:00:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 17:00:00'), endTime: new Date('2026-11-11 17:15:00'), status: 'Active', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}, event: {connect: {id: 'event-tuesday-evening'}} },
+  {startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 10:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}},
+    bookings: {
+      create: [
+        {
+          status: 'Active',
+          createdBy: 'CraigC',
+          household: { connect: { id: 'abc123' } },
+        },
+        {
+          status: 'Cancelled',
+          createdBy: 'CraigC',
+          household: { connect: { id: 'abc123' } },
+        },
+      ],
+    },
+
+
+},
+  {startTime: new Date('2026-11-10 10:15:00'), endTime: new Date('2026-11-10 10:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
+  {startTime: new Date('2026-11-10 10:30:00'), endTime: new Date('2026-11-10 10:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
+  {startTime: new Date('2026-11-10 10:45:00'), endTime: new Date('2026-11-10 11:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
+  {startTime: new Date('2026-11-10 11:00:00'), endTime: new Date('2026-11-10 11:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
+  {startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 16:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
+  {startTime: new Date('2026-11-10 16:15:00'), endTime: new Date('2026-11-10 16:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
+  {startTime: new Date('2026-11-10 16:30:00'), endTime: new Date('2026-11-10 16:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
+  {startTime: new Date('2026-11-10 16:45:00'), endTime: new Date('2026-11-10 17:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
+  {startTime: new Date('2026-11-10 17:00:00'), endTime: new Date('2026-11-10 17:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
+  {startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 10:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
+  {startTime: new Date('2026-11-11 10:15:00'), endTime: new Date('2026-11-11 10:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
+  {startTime: new Date('2026-11-11 10:30:00'), endTime: new Date('2026-11-11 10:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
+  {startTime: new Date('2026-11-11 10:45:00'), endTime: new Date('2026-11-11 11:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
+  {startTime: new Date('2026-11-11 11:00:00'), endTime: new Date('2026-11-11 11:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
+  {startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 16:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
+  {startTime: new Date('2026-11-11 16:15:00'), endTime: new Date('2026-11-11 16:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
+  {startTime: new Date('2026-11-11 16:30:00'), endTime: new Date('2026-11-11 16:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
+  {startTime: new Date('2026-11-11 16:45:00'), endTime: new Date('2026-11-11 17:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
+  {startTime: new Date('2026-11-11 17:00:00'), endTime: new Date('2026-11-11 17:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
 ]
 
 export async function main() {
