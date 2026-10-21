@@ -18,11 +18,11 @@
 		bookings[i].reminderSent = new Date()
 	}
 
-	let { form, errors, constraints, bookings} = $props()
-
+	let { bookings} = $props()
 	const validStatus = [
     	{ value: "Pending", name: "Pending" },
     	{ value: "Active", name: "Active" },
+    	{ value: "Complete", name: "Complete" },
     	{ value: "No Show", name: "No Show" },
     	{ value: "Cancelled", name: "Cancelled" },
 	]
@@ -33,7 +33,7 @@
     	<div class="flex items-center justify-between p-1">
       		<span>Appointments</span>
       		<Button outline color="dark" onclick={addAppointment}>
-        		New Appointment
+        		Book New Appointment
       		</Button>
     	</div>
   	</caption>
@@ -50,11 +50,11 @@
 					{formattedDateTime(bookings[i].appointment.startTime) }
 				</TableBodyCell>
 				<TableBodyCell>
-					<Select class="mb-2" items={validStatus} bind:value={bookings[i].status} {...$constraints.appointmentBookings?.status} required/>
+					<Select class="mb-2" items={validStatus} bind:value={bookings[i].status} required/>
 				</TableBodyCell>
 				<TableBodyCell>
-					{#if bookings[i].notificationSent !== null}
-						Sent: {formattedDate(bookings[i].notificationSent)}
+					{#if bookings[i].notifications !== null}
+						Sent: {formattedDate(bookings[i].notifications)}
 					{:else}
 					    <a href="/" onclick={(event) => sendBookingNotification(i,event)} class="text-primary-600 dark:text-primary-500 font-medium hover:underline">	
 							Send
@@ -62,8 +62,8 @@
 					{/if}
 				</TableBodyCell>
 				<TableBodyCell>
-					{#if bookings[i].reminderSent !== null}
-						Sent: {formattedDate(bookings[i].reminderSent)}
+					{#if bookings[i].reminders !== null}
+						Sent: {formattedDate(bookings[i].reminders)}
 					{:else}
 					    <a href="/" onclick={(event) => sendBookingReminder(i,event)} class="text-primary-600 dark:text-primary-500 font-medium hover:underline">	
 							Send

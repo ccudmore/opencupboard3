@@ -29,7 +29,7 @@
         <CalendarMonthSolid  size="md" />Appointments
       </div>
     {/snippet}
-		<Bookings {form} {errors} {constraints} {bookings}/>
+		<Bookings {bookings}/>
   </TabItem>
 
     <TabItem>
