@@ -1,4 +1,4 @@
-import type { AppPermission, AuthedUser } from '$lib/server/permissions';
+//import type { AppPermission, AuthedUser } from '$lib/server/permissions';
 export type AuthedUser = {
         id: string;
         name: string;

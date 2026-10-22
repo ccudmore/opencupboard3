@@ -4,7 +4,6 @@
 	"version": "0.0.2",
 	"type": "module",
 	"scripts": {
-		"test": "jest",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -42,7 +41,6 @@
 	"dependencies": {
 		"@prisma/adapter-pg": "^7.10.0",
 		"@prisma/client": "^7.10.0",
-		"bcryptjs": "^3.0.3",
 		"better-auth": "^1.7.5",
 		"dotenv": "^18.0.3",
 		"flowbite-svelte-blocks": "^2.1.0",

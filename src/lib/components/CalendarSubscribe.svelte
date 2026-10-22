@@ -7,7 +7,6 @@
 	// webcal:// triggers external applications like Apple Calendar or Outlook
 	const webcalUrl = subscriptionUrl.replace(/^https?:\/\//, 'webcal://');
     const googleCalendarUrl = `https://google.com${encodeURIComponent(subscriptionUrl)}`;
-    console.log(googleCalendarUrl)
 
 	function copyToClipboard() {
 		navigator.clipboard.writeText(subscriptionUrl);

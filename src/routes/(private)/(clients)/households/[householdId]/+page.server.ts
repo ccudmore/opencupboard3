@@ -28,22 +28,21 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
 }
 
 export const actions: Actions = {
-	updateHousehold: async ( { request, locals, url} ) => {
+	updateHousehold: async ( { request, locals, url, params} ) => {
 		const user = requirePermission(locals, url, ['manage-households']);
 
 		const formData = await superValidate(request, zod4(householdSchema));
 		if (!formData.valid) return fail(400, { formData });
-
 		const {id,members,datedRequests,appointmentBookings,uniqueId,createdAt,createdBy,...householdWithoutIds} = formData.data
 		try {
 			await prisma.household.update({
 				where: {
-					id: id,
+					id: params.householdId,
 				},
 				data: {...householdWithoutIds,
 					datedRequests :{
           				deleteMany: {
-            				householdId: id,
+            				householdId: params.householdId,
             				NOT: datedRequests.filter(update =>("id" in update)&&(update != null))?.map(({id}) => ({id}))
           				},
           				upsert: datedRequests.map((update)=>({
@@ -54,7 +53,7 @@ export const actions: Actions = {
 					},
 					members: {
           				deleteMany: {
-            				householdMembershipId: id,
+            				householdMembershipId: params.householdId,
             				NOT: members.filter(update =>("id" in update)&&(update != null))?.map(({id}) => ({id}))
           				},
           				upsert: members.map((update)=>({
@@ -72,6 +71,7 @@ export const actions: Actions = {
 		}
 		return { formData }
 	},
+	/*
 	deleteHousehold: async ( { request, params, locals, url} ) => {
 		const user = requirePermission(locals, url, ['manage-households']);
 		const id = params.householdId
@@ -92,4 +92,5 @@ export const actions: Actions = {
 			})
 		}
 	},
+	*/
 }

@@ -2,23 +2,7 @@
 	import {  } from "flowbite-svelte";
 	import { Label, Tags, Textarea,MultiSelect } from "flowbite-svelte";
 
-    const householdStatuses = [
-    	{ value: "Active", name: "Active" },
-    	{ value: "Inactive", name: "Inactive" },
-    	{ value: "Archived", name: "Archived" },
-  	];
-
-	const deliveryTypes = [
-    	{ value: "In Person", name: "In Person" },
-    	{ value: "Delivery", name: "Delivery" },
-    	{ value: "Pickup", name: "Pickup" },
-  	];
-	const deliveryTimes = [
-    	{ value: "Wednesday Morning", name: "Wednesday Morning" },
-    	{ value: "Wednesday Evening", name: "Wednesday Evening" },
-    	{ value: "Thursday Morning", name: "Thursday Morning" },
-    	{ value: "Thursday Evening", name: "Thursday Evening" },
-  	];
+	import { deliveryTypeOptions, serviceTimeOptions } from '$lib/labels'
 
     let dietaryOptions= ['Halal', 'Kosher', 'Lactose Free', 'Gluten Free']
 
@@ -35,9 +19,9 @@
 	}}
  bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/>
 <Label for="preferredServiceTypes" class="mb-2">Service Type</Label>
-<MultiSelect class="mb-2" items={deliveryTypes} bind:value={$form.preferredServiceTypes} />
+<MultiSelect class="mb-2" items={deliveryTypeOptions} bind:value={$form.preferredServiceTypes} />
 <Label for="preferredTimeOfDay" class="mb-2">Prefered Service Time</Label>
-<MultiSelect id="preferredTimeOfDay" placeholder="Preferred times" class="mt-5 mb-3" bind:value={$form.preferredTimeOfDay}   items={deliveryTimes}  />
+<MultiSelect id="preferredTimeOfDay" placeholder="Preferred times" class="mt-5 mb-3" bind:value={$form.preferredTimeOfDay}   items={serviceTimeOptions}  />
 <Label for="languagesSpoken" class="mb-2">Languages Spoken</Label>
 <Tags placeholder="Languages spoken" class="mt-5 mb-3" bind:value={$form.languagesSpoken} showHelper showAvailableTags={true} availableTags={languagesSpoken} unique/>
 <Label for="pets" class="mb-2">Pets</Label>

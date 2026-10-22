@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { HouseholdStatus } from '$prisma/enums';
+import { HouseholdStatus, ClientIdentificationType, ClientRelationship, DatedRequestStatus, ServiceTime, DeliveryType } from '$prisma/enums';
 
 // Canadian postal code: A1A 1A1
 // First letter excludes D, F, I, O, Q, U, W, Z; the other letters exclude D, F, I, O, Q, U
@@ -35,13 +35,15 @@ export const householdSchema = z.object({
         })
         .transform((code) => (code ? `${code.slice(0, 3)} ${code.slice(3)}` : null)),
 //    status: z.string().default('Active'),
-    status: z.enum(HouseholdStatus).default(HouseholdStatus.Active),
+    status: z.enum(HouseholdStatus).default(HouseholdStatus.ACTIVE),
     dietaryRestrictions: z.string().array().default([]),
     pets: z.string().nullish(),
     howHeard: z.string().nullish(),
     notes: z.string().nullish(),
-    preferredServiceTypes: z.string().array(),
-    preferredTimeOfDay: z.string().array(),
+//    preferredServiceTypes: z.string().array(),
+//    preferredTimeOfDay: z.string().array(),
+    preferredServiceTypes: z.enum(DeliveryType).array(),
+    preferredTimeOfDay: z.enum(ServiceTime).array(),
     languagesSpoken: z.string().array(),
     uniqueId: z.string().optional().nullable(),
     createdAt: z.date().optional(),
@@ -67,7 +69,8 @@ export const householdSchema = z.object({
             id: z.string().optional(),
             firstName: z.string().min(1),   
             lastName: z.string().min(1), 
-            idChecked: z.string().optional().nullable(),
+//            idChecked: z.string().optional().nullable(),
+            idChecked: z.enum(ClientIdentificationType).optional().nullable(),
             email: z.email('Enter a valid email').nullish().or(z.literal('')),
 //            email: z.email('Enter a valid email').or(z.literal('')).optional(),
             phone: z
@@ -81,7 +84,8 @@ export const householdSchema = z.object({
                 .transform((digits) =>
                     digits ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : ''
                 ),
-            relationship: z.string().nullish(),
+//            relationship: z.string().nullish(),
+            relationship: z.enum(ClientRelationship).optional().nullable(),
             birthYear: z.int().optional().nullable(),
             idCheckDate: z.date().optional().nullable(),
             createdAt: z.date().optional(),
@@ -92,7 +96,8 @@ export const householdSchema = z.object({
         z.object({
             id: z.string().optional(),
             requestText: z.string().nullish(),
-            status: z.string().nullish(),
+//            status: z.string().nullish(),
+            status: z.enum(DatedRequestStatus).nullish(),
             createdAt: z.date(),
             createdBy: z.string().nullish(),
             type: z.string().nullish(),

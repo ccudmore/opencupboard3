@@ -91,10 +91,12 @@ function toastFormErrors(errors: FormErrors) {
 		goto('/households');
 	}
 
+	/*
 	function confirmDelete() {
 		openComfirmDeleteModal=true
 	}
-
+		*/
+/*
 	async function actionDelete({ action }: { action: string }) {
 
 		if (action === 'yes') { // craig - can this be done a an action?
@@ -107,6 +109,7 @@ function toastFormErrors(errors: FormErrors) {
 			goto('/households');
 		}		
 	}
+	*/
 </script>
 
 <form action="?/updateHousehold" method="POST" use:enhance>
@@ -155,11 +158,13 @@ function toastFormErrors(errors: FormErrors) {
 					<DotsVerticalOutline class="h-6 w-6" />
 				</Button>
 			</ButtonGroup>
+			<!---
 			<Dropdown triggeredBy="#more-actions">
 				<DropdownItem type="button" class="font-semibold text-red-600 dark:text-red-400" onclick={confirmDelete}>
 					Delete household…
 				</DropdownItem>
 			</Dropdown>
+		-->
 		</div>
 	</div>
 
@@ -171,6 +176,7 @@ function toastFormErrors(errors: FormErrors) {
 
 Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
 
+<!---
 <Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
   <div class="text-center">
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
@@ -181,3 +187,4 @@ Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
     </div>
   </div>
 </Modal>
+-->

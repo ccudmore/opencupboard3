@@ -9,6 +9,7 @@ import { newHouseholdSchema } from '$lib/formschemas/household';
 import { redirect } from "@sveltejs/kit";
 import { requirePermission } from '$lib/server/auth';
 import { randomInt } from 'node:crypto';
+import { ClientRelationship } from '$prisma/enums';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const user = requirePermission(locals, url, ['manage-households']);
@@ -51,14 +52,14 @@ export const actions: Actions = {
   	    const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
 		    const household = {...householdWithoutMembers,
           uniqueId: generateUniqueId(),
-          createdBy: user.name,
+          createdBy: user.id,
           members: {create: {
             firstName: firstName,
             lastName: lastName,
             email: email,
             phone: phone,
             createdBy: user.name,
-            relationship: 'Primary'}
+            relationship: ClientRelationship.PRIMARY}
           }
         }
         newHousehold = await prisma.household.create({

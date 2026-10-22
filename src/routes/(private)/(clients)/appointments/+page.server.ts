@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
                 orderBy: { startTime: 'asc' }, 
                 include: {
                     bookings: {
-                        include: {household: true}
+                        include: {household: false}
                     }}
                 //craig - also include households
             }
@@ -58,8 +58,7 @@ for (const event of services as any[]) {
   event.bookedAppointmentCount = booked;
   event.availableAppointmentCount = available;
 }
-    const craig = JSON.stringify(services)
-
+ 
     // sort bookings into active, historical
 
     // for each service, get the countof 

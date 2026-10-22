@@ -1,6 +1,6 @@
 import type { Prisma } from '$prisma/client';
 import prisma from '$lib/prisma';
-import { HouseholdStatus } from '$prisma/browser';
+import { HouseholdStatus, ClientRelationship } from '$prisma/browser';
 
 export const GUEST_PAGE_SIZE = 10;
 
@@ -22,8 +22,8 @@ export async function searchHousehold({
   const compactTerm = term.replace(/\s+/g, '');
 
   const guestWhere: Prisma.ClientWhereInput = {
-    relationship: 'Primary',
-    ...(!showNonActive && { memberOf: { status: HouseholdStatus.Active } }),
+    relationship: ClientRelationship.PRIMARY,
+    ...(!showNonActive && { memberOf: { status: HouseholdStatus.ACTIVE } }),
 //    ...(!showNonActive && { memberOf: { status: 'Active' } }),
     ...(term && {
       OR: [
@@ -50,7 +50,7 @@ export async function searchHousehold({
     where: { id: { in: ids } },
     include: {
       members: {
-        where: { relationship: 'Primary' },
+        where: { relationship: ClientRelationship.PRIMARY },
         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
       }
     }

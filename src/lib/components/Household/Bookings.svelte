@@ -2,6 +2,7 @@
 	import { Select, Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Modal } from "flowbite-svelte";
 	import {formattedDate, formattedDateTime} from "$lib/utils"
   	import { invalidateAll } from '$app/navigation';
+	import {appointmentBookingStatusOptions} from '$lib/labels'
 
     function addAppointment() {
 		alert("under construction")
@@ -19,14 +20,6 @@
 	}
 
 	let { bookings} = $props()
-	const validStatus = [
-    	{ value: "Pending", name: "Pending" },
-    	{ value: "Active", name: "Active" },
-    	{ value: "Complete", name: "Complete" },
-    	{ value: "No Show", name: "No Show" },
-    	{ value: "Cancelled", name: "Cancelled" },
-	]
-
 </script>
 <Table striped={true}>
   	<caption class="bg-white px-5 pb-3 pt-1 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
@@ -50,7 +43,7 @@
 					{formattedDateTime(bookings[i].appointment.startTime) }
 				</TableBodyCell>
 				<TableBodyCell>
-					<Select class="mb-2" items={validStatus} bind:value={bookings[i].status} required/>
+					<Select class="mb-2" items={appointmentBookingStatusOptions} bind:value={bookings[i].status} required/>
 				</TableBodyCell>
 				<TableBodyCell>
 					{#if bookings[i].notifications !== null}

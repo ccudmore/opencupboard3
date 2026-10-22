@@ -20,7 +20,6 @@ model User {
   image         String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
-  role          String     @default("user")
   sessions      Session[]
   accounts      Account[]
   roles         UserRole[]
@@ -150,6 +149,8 @@ model Site {
   createdAt    DateTime      @default(now())
   createdBy    String?
   appointments Appointment[]
+
+  @@map("site")
 }
 
 model Appointment {
@@ -169,6 +170,7 @@ model Appointment {
 
   //  @@index([locationId])
   @@index([eventId])
+  @@map("appointment")
 }
 
 model Event {
@@ -187,27 +189,44 @@ model Event {
   appointments Appointment[]
 
   @@index([locationId])
+  @@map("event")
+}
+
+enum ClientIdentificationType {
+  DRIVERS_LICENSE
+  ID_CARD
+  HEALTH_CARD
+  BILL
+  OTHER
+}
+
+enum ClientRelationship {
+  PRIMARY
+  SPOUSE
+  PARENT
+  CHILD
+  GRANDPARENT
+  SIBLING
+  OTHER
 }
 
 model Client {
   id                    String    @id @default(cuid())
-  //person          Person  @relation(fields: [personId], references: [id])
-  //personId        String  @unique
   firstName             String
   lastName              String
   email                 String?
   phone                 String?
-  idChecked             String?
+  idChecked             ClientIdentificationType?
   birthYear             Int?
   idCheckDate           DateTime?
-  relationship          String?
+  relationship          ClientRelationship?
   memberOf              Household @relation("HouseholdMembership", fields: [householdMembershipId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   householdMembershipId String
   createdAt             DateTime  @default(now())
-  //  appointments  AppointmentBookings[]
   createdBy             String?
 
   @@index([householdMembershipId])
+  @@map("client")
 }
 
 /**
@@ -223,36 +242,60 @@ model Client {
  * }
  */
 
+enum DatedRequestStatus {
+  ACTIVE
+  CLOSED
+}
+
 model DatedRequest {
   id          String    @id @default(cuid())
   household   Household @relation("DatedRequestMembership", fields: [householdId], references: [id])
   householdId String
   requestText String?
-  status      String?
+  status      DatedRequestStatus?
   type        String?
   createdAt   DateTime  @default(now())
   createdBy   String?
 
   @@index([householdId])
+  @@map("dated_request")
 }
 
 enum HouseholdStatus {
-  Active
-  Archived
-  Inactive
+  ACTIVE
+  ARCHIVED
+  INACTIVE
+}
+
+enum DeliveryType {
+  IN_PERSON
+  DELIVERY
+  PICKUP
+}
+
+enum ServiceTime {
+  MONDAY_MORNING
+  MONDAY_EVENING
+  TUESDAY_MORNING
+  TUESDAY_EVENING
+  WEDNESDAY_MORNING
+  WEDNESDAY_EVENING
+  THURSDAY_MORNING
+  THURSDAY_EVENING
+  FRIDAY_MORNING
+  FRIDAY_EVENING
 }
 
 model Household {
-  id                    String                @id @unique @default(cuid())
-  status                HouseholdStatus       @default(Active)
+  id                    String                @id @default(cuid())
+  status                HouseholdStatus       @default(ACTIVE)
   uniqueId              String?               @unique
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
-  //datedRequest          String[]
   dietaryRestrictions   String[]
   pets                  String?
   notes                 String?
-  preferredServiceTypes String[]
-  preferredTimeOfDay    String[]
+  preferredServiceTypes DeliveryType[]
+  preferredTimeOfDay    ServiceTime[]
   languagesSpoken       String[]
   howHeard              String?
   street                String?
@@ -266,6 +309,7 @@ model Household {
   members               Client[]              @relation("HouseholdMembership")
   createdAt             DateTime              @default(now())
   createdBy             String?
+  @@map("household")
 }
 
 model Volunteer {
@@ -289,6 +333,7 @@ model Volunteer {
   assignments     VolunteerAssignments[]
   createdAt       DateTime               @default(now())
   createdBy       String?
+  @@map("volunteer")
 }
 
 model VolunteerAssignments {
@@ -303,15 +348,24 @@ model VolunteerAssignments {
 
   @@id([volunteerId, eventId, eventRole])
   @@index([eventId])
+  @@map("volunteer_assignments")
+}
+
+enum AppointmentBoookingStatus {
+  PENDING
+  ACTIVE
+  COMPLETE
+  NO_SHOW
+  CANCELLED
 }
 
 model AppointmentBookings {
-  id            String      @id @default(cuid())
+  id            String      @default(cuid())
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
   appointmentId String
   household     Household   @relation(fields: [householdId], references: [id])
   householdId   String
-  status        String
+  status        AppointmentBoookingStatus
   confirmations Json?
   reminders     Json?
   createdAt     DateTime    @default(now())
@@ -319,4 +373,6 @@ model AppointmentBookings {
 
   @@unique([appointmentId, householdId, status]) // optional: one booking per household per appointment
   @@index([householdId])
+  @@id([id, appointmentId, householdId])
+  @@map("appointment_bookings")
 }

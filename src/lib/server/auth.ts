@@ -38,6 +38,7 @@ export const auth = betterAuth({
 			clientId: env.GOOGLE_CLIENT_ID as string,
 			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       		scope: ["openid", "email", "profile"],
+			disableImplicitSignup: true,
   			mapProfileToUser: (profile) => {
     			return {
       				image: profile.picture ?? "/images/default-avatar.png",
@@ -48,6 +49,7 @@ export const auth = betterAuth({
 			prompt: "select_account",
 			clientId: env.MICROSOFT_CLIENT_ID as string,
 			clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
+			disableImplicitSignup: true,
 			// "common" allows both personal and work/school Microsoft accounts.
 			// Set MICROSOFT_TENANT_ID to a specific tenant GUID to restrict it.
 			tenantId: env.MICROSOFT_TENANT_ID || 'common',
@@ -91,6 +93,10 @@ export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[
   }
 
   return user;
+}
+
+export function hasPermission( locals: App.Locals, requestedRoles: string[]) {
+    return (locals.user && haveCommonElement(requestedRoles, locals.user.roles))
 }
 
 export type Session = typeof auth.$Infer.Session;

@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, HouseholdStatus } from "./src/generated/prisma/client.js";
+import { PrismaClient, Prisma, HouseholdStatus, ClientIdentificationType, ClientRelationship, AppointmentBoookingStatus, DatedRequestStatus, ServiceTime, DeliveryType } from "./src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
@@ -116,51 +116,51 @@ const seedUsers: SeedUser[] = [
 
 const householdData: Prisma.HouseholdCreateInput[] = [
   {
-    id: 'abc123', uniqueId: 'ABCD', status: HouseholdStatus.Active, dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: ['pickup', 'delivery'], preferredTimeOfDay: ['wednesday afternoons', 'friday mornings'], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
+    id: 'abc123', uniqueId: 'ABCD', status: HouseholdStatus.ACTIVE, dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: [DeliveryType.PICKUP, DeliveryType.DELIVERY], preferredTimeOfDay: [ServiceTime.WEDNESDAY_EVENING, ServiceTime.FRIDAY_MORNING], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
         datedRequests: {
           createMany: {data: [
-            {status: 'Active', requestText: 'for rain', createdBy: 'CraigC' , type: 'Prayer'},
-            {status: 'Closed', requestText: 'for health', createdBy: 'CraigC', type: 'Prayer'},
+            {status: DatedRequestStatus.ACTIVE, requestText: 'for rain', createdBy: 'CraigC' , type: 'Prayer'},
+            {status: DatedRequestStatus.CLOSED, requestText: 'for health', createdBy: 'CraigC', type: 'Prayer'},
           ]}
         },
         members: {
           createMany: { data: [
-            {firstName: 'Craig', lastName: 'Cudmore', idChecked: 'drivers license', birthYear: 1966, email: 'craig@cudmore.ca', phone: '613-555-1212', relationship: 'Primary', createdBy: 'Seed'},
-            {firstName: 'Linda', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda@cudmore.ca', phone: '613-822-1234', relationship: 'Primary', createdBy: 'Seed'},
-            {firstName: 'Linda2', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda2@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda3', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda3@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda4', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda4@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda5', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda5@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda6', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda6@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda7', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda7@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda8', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda8@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda9', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda9@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda10', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda10@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda11', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda11@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda12', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda12@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda13', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda13@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda14', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda14@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda15', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda15@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda16', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda16@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda17', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda17@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda18', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda18@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda19', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda19@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda20', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda20@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda21', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda21@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda22', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda22@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda23', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda23@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda24', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda24@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda25', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda25@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda26', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda26@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda27', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda27@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda28', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda28@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda29', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda29@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda30', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda30@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda31', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda31@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda32', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda32@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda33', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda33@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda34', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda34@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
-            {firstName: 'Linda35', lastName: 'Cudmore', idChecked: 'health card', birthYear: 1967, email: 'linda35@cudmore.ca', phone: '613-822-1234', relationship: 'Secondary', createdBy: 'Seed'},
+            {firstName: 'Craig', lastName: 'Cudmore', idChecked: ClientIdentificationType.DRIVERS_LICENSE, birthYear: 1966, email: 'craig@cudmore.ca', phone: '613-555-1212', relationship: ClientRelationship.PRIMARY, createdBy: 'Seed'},
+            {firstName: 'Linda', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.PRIMARY, createdBy: 'Seed'},
+            {firstName: 'Linda2', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda2@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda3', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda3@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda4', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda4@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda5', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda5@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda6', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda6@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda7', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda7@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda8', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda8@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda9', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda9@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda10', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda10@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda11', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda11@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda12', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda12@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda13', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda13@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda14', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda14@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda15', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda15@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda16', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda16@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda17', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda17@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda18', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda18@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda19', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda19@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda20', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda20@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda21', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda21@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda22', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda22@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda23', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda23@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda24', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda24@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda25', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda25@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda26', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda26@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda27', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda27@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda28', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda28@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda29', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda29@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda30', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda30@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda31', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda31@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda32', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda32@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda33', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda33@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda34', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda34@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
+            {firstName: 'Linda35', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda35@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
           ]}
         }
       }
@@ -191,12 +191,12 @@ const appointmentData: Prisma.AppointmentCreateInput[] = [
     bookings: {
       create: [
         {
-          status: 'Active',
+          status: AppointmentBoookingStatus.ACTIVE,
           createdBy: 'CraigC',
           household: { connect: { id: 'abc123' } },
         },
         {
-          status: 'Cancelled',
+          status: AppointmentBoookingStatus.CANCELLED,
           createdBy: 'CraigC',
           household: { connect: { id: 'abc123' } },
         },

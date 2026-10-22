@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
-  
+	import { householdStatusLabels } from '$lib/labels'
 	import {
 		Button,
 		TableBody,
@@ -127,7 +127,7 @@
 					{/each}
 				</TableBodyCell>
 				<TableBodyCell class="px-4 py-3">
-					{household.status}<br>
+					{householdStatusLabels[household.status]}<br>
 				</TableBodyCell>
 			</TableBodyRow>
 

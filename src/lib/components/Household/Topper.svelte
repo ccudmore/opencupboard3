@@ -2,21 +2,8 @@
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
 	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils"; // craig - fix thie import of servicedate2
-	import { HouseholdStatus } from '$prisma/browser';
-
+	import {householdStatusOptions} from '$lib/labels'
 	let { form, errors, constraints, bookings, enhance } = $props();
-
-	const householdStatuses = [
-		{ value: "Active", name: "Active" },
-		{ value: "Inactive", name: "Inactive" },
-		{ value: "Archived", name: "Archived" },
-	];
-
-
-	export const householdStatusOptions = Object.values(HouseholdStatus).map((s) => ({
-  		value: s,
-  		name: s
-	}));
 
 	const primaryMembers = $derived(
 		($form.members ?? []).filter((m: { relationship: string }) => m.relationship === "Primary")

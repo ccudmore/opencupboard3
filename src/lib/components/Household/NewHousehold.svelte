@@ -5,8 +5,6 @@
 	import { newHouseholdSchema } from '$lib/formschemas/household';
     import { toast } from "svelte-sonner";
   	import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
-    import { stringProxy } from 'sveltekit-superforms';
-
 
 let {
 		data,

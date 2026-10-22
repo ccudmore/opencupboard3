@@ -44,7 +44,7 @@ services:
 ##      && npx prisma db seed
     environment:
       <<: *app-env
-    volumes:
+##    volumes:
       # Prisma 7 needs a config file with datasource.url. Mounted into the
       # image's working directory (assumed to be /app) so no rebuild is needed.
       # - ./prisma.config.mjs:/app/prisma.config.mjs:ro

@@ -5,13 +5,10 @@
 	import {formattedDate} from "$lib/utils"
 	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
-
-  	let openComfirmDeleteModal = $state(false);
-
-	const specialRequestStatuses = [
-    	{ value: "Active", name: "Active" },
-    	{ value: "Closed", name: "Closed" },
-  	];
+	import { datedRequestStatusOptions, datedRequestLabels } from '$lib/labels'
+    import { DatedRequestStatus } from "$prisma/enums";
+  	
+	let openComfirmDeleteModal = $state(false);
 
 	function actionDelete({ action }: { action: string }) {
 		if (action === "yes" && openSpecialRequestRow != null) {
@@ -73,7 +70,7 @@
   	</TableHead>
 	<TableBody>
     	{#each $form.datedRequests as item, i}
-			{#if item.type === type && (item.status === 'Active' || (hideClosedDatedRequests == false && item.status === 'Closed')) }
+			{#if item.type === type && (item.status === DatedRequestStatus.ACTIVE || (hideClosedDatedRequests == false && item.status === DatedRequestStatus.CLOSED)) }
       			<TableBodyRow onclick={() => toggleSpecialRequestDrawer(i)}>	
 					<TableBodyCell>
 						{formattedDate($form.datedRequests[i].createdAt)}
@@ -82,7 +79,7 @@
 						{$form.datedRequests[i].requestText.substring(0,20)}
 					</TableBodyCell>
         			<TableBodyCell>
-						{$form.datedRequests[i].status}
+						{datedRequestLabels[$form.datedRequests[i].status as keyof typeof datedRequestLabels]}
 					</TableBodyCell>
 				</TableBodyRow>
 			{/if}
@@ -106,7 +103,7 @@ class="bg-gray-100 border-gray-300 text-grey-600
 			</div>
 			<div>
    				<Label for="status" class="mb-2">Status</Label>
-				<Select class="mb-2 w-1/4" items={specialRequestStatuses} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
+				<Select class="mb-2 w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
 			<div>
 				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by { $form.datedRequests[openSpecialRequestRow].createdBy}

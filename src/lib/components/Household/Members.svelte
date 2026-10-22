@@ -7,6 +7,7 @@
 	import {nextIdVerificationDate,isIdVerificationNeeded} from "$lib/utils"
   	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
+	import { idTypeOptions, relationshipOptions, relationshipLabels } from '$lib/labels'
 
 	// for opening and closing the member detail drawer
 	let openMemberRow: number | null | undefined = $state();
@@ -43,24 +44,7 @@
   		toast(`${rows.length} rows failed: ${message} (rows ${rows.join(", ")})`);
 	}
 	
-    const validIdTypes = [
-    	{ value: "Drivers License", name: "Drivers License" },
-    	{ value: "ID Card", name: "ID Card" },
-    	{ value: "Bill", name: "Bill" },
-    	{ value: "Other", name: "Other" },
-	]
-
-	const validRelationships = [
-    	{ value: "Primary", name: "Primary" },
-    	{ value: "Spouse", name: "Spouse" },
-    	{ value: "Parent", name: "Parent" },
-    	{ value: "Child", name: "Child" },
-    	{ value: "Grandparent", name: "Grandparent" },
-    	{ value: "Sibling", name: "Sibling" },
-    	{ value: "other", name: "Other" },
-	]
-
-    function updateId({ action, data }: { action: string; data: FormData }) {
+	function updateId({ action, data }: { action: string; data: FormData }) {
 		const idType = (data.get("idtype") as string)
 
 	    if (action === "confirm" && idType && idVerificationRow != null) {
@@ -127,7 +111,7 @@
 					{$form.members[i].lastName}
 				</TableBodyCell>
         		<TableBodyCell>
-					{$form.members[i].relationship}
+					{relationshipLabels[$form.members[i].relationship as keyof typeof relationshipLabels]}
 				</TableBodyCell>
         		<TableBodyCell>
 					{#if isIdVerificationNeeded($form.members[i].idCheckDate)}
@@ -149,7 +133,7 @@
 </Table>
 
 <Modal title="Identification Check" form size="xs" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
-	ID type presented<Select class="mb-2" items={validIdTypes} name="idtype"/>
+	ID type presented<Select class="mb-2" items={idTypeOptions} name="idtype"/>
 	{#snippet footer()}
     	<Button outline type="submit" value="confirm" color="dark">Confirm</Button>
     	<Button outline type="submit" value="cancel" color="dark">Cancel</Button>
@@ -180,7 +164,7 @@
 			</div>
 			<div>
    				<Label for="relationship" class="mb-2">Relationship</Label>
-				<Select class="mb-2" items={validRelationships} bind:value={$form.members[openMemberRow].relationship} {...$constraints.members?.relationship} required/>
+				<Select class="mb-2" items={relationshipOptions} bind:value={$form.members[openMemberRow].relationship} {...$constraints.members?.relationship} required/>
 			</div>
 			<div>
    				<Label for="phone" class="mb-2">Phone Number</Label>
