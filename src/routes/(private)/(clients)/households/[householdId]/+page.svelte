@@ -154,9 +154,11 @@ function toastFormErrors(errors: FormErrors) {
 			<ButtonGroup class="*:ring-primary-700!">
 				<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
 				<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
+				<!--
 				<Button outline size="lg" id="more-actions" aria-label="More actions" class="px-3">
 					<DotsVerticalOutline class="h-6 w-6" />
 				</Button>
+			-->
 			</ButtonGroup>
 			<!---
 			<Dropdown triggeredBy="#more-actions">

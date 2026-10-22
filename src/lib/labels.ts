@@ -3,7 +3,7 @@ import { HouseholdStatus, AppointmentBoookingStatus, ClientIdentificationType, C
 export const householdStatusLabels = {
   	ACTIVE: 'Active',
   	INACTIVE: 'Inactive',
-  	ARCHIVED: 'Archived'
+  	ARCHIVED: 'Archived',
 } as const satisfies Record<HouseholdStatus, string>;
 export const householdStatusOptions = Object.entries(householdStatusLabels).map(([value, name]) => ({ value, name }));
 
