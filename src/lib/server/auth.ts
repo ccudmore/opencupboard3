@@ -39,6 +39,7 @@ export const auth = betterAuth({
 			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       		scope: ["openid", "email", "profile"],
 			disableImplicitSignup: true,
+			disableSignUp: true,
   			mapProfileToUser: (profile) => {
     			return {
       				image: profile.picture ?? "/images/default-avatar.png",

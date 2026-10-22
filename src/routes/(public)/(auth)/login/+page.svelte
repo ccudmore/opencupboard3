@@ -146,13 +146,6 @@
 					Continue with Microsoft
 				</Button>
 			</div>
-
-			<p class="text-center text-sm text-gray-500 dark:text-gray-400">
-				Don't have an account?
-				<a href="/register" class="font-medium text-primary-600 hover:underline dark:text-primary-500">
-					Sign up
-				</a>
-			</p>
 		</div>
 	</div>
 </div>
