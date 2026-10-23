@@ -6,7 +6,7 @@ import type {
 	CalendarMode,
 	EventVolunteer,
 } from '$lib/components/Calendar.svelte';
-import { requirePermission, hasPermission } from '$lib/server/auth';
+import { requirePermission, hasPermission } from '$lib/utils';
 import prisma from '$lib/prisma';
 import type { Actions, PageServerLoad } from './$types';
 //import getVoluteers from 
@@ -148,12 +148,12 @@ sample data:
 }
 
 export const load: PageServerLoad = async ({params, locals, url }) => {
-    const user = requirePermission(locals, url, ['login']);
+    requirePermission(locals?.user?.permissions, url, ['login']);
 
 	let mode = <CalendarMode>('readonly'); // defaults to read-only
-	if (hasPermission(locals, ['manage-clients', 'manage-inventory'])) {
+	if (hasPermission(locals?.user?.permissions, ['manage-clients', 'manage-inventory'])) {
 		mode = <CalendarMode>('full')
-	} else if (hasPermission(locals, ['manage-volunteers'])) {
+	} else if (hasPermission(locals?.user?.permissions, ['manage-volunteers'])) {
 		mode = <CalendarMode>('volunteers')
 	}
 	const [categories, volunteers, events] = await Promise.all([
@@ -172,7 +172,7 @@ export const actions: Actions = {
 	/** A new event. */
 	add: ({ request, url, locals }) =>
 	{
-	    const user = requirePermission(locals, url, ['login']);
+	    requirePermission(locals?.user?.permissions, url, ['login']);
 		return handle(request, (c) =>
 			c.created.length === 1 && c.updated.length === 0 && c.deleted.length === 0
 				? null
@@ -183,7 +183,7 @@ export const actions: Actions = {
 	/** An edit: one event changed, possibly splitting a repeating series (so may also create one). */
 	update: ({ request, url, locals }) => 
 	{
-	    const user = requirePermission(locals, url, ['login']);
+	    requirePermission(locals?.user?.permissions, url, ['login']);
 		handle(request, (c) =>
 			c.updated.length >= 1 && c.deleted.length === 0 ? null : 'Updating expects changed events only.'
 		);
@@ -192,7 +192,7 @@ export const actions: Actions = {
 	/** A delete: removed events, and/or a series trimmed (exception or earlier end date). */
 	delete: ({ request, url, locals }) =>
 	{
-	    const user = requirePermission(locals, url, ['login']);
+	    requirePermission(locals?.user?.permissions, url, ['login']);
 		handle(request, (c) =>
 			c.created.length === 0 && c.updated.length + c.deleted.length >= 1
 				? null

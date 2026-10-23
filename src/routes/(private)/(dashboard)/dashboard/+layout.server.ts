@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from '../../$types';
-import { requirePermission } from '$lib/server/auth';
+import { requirePermission } from '$lib/utils';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
-    const user = requirePermission(locals, url, ['view-dashboard']);
+    requirePermission(locals?.user?.permissions, url, ['view-dashboard']);
 }

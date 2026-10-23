@@ -1,7 +1,8 @@
   import { CogOutline, ChartPieOutline, CalendarEditOutline, ProfileCardOutline, AwardOutline } from "flowbite-svelte-icons";
+import { hasPermission } from '$lib/utils';
 
   const availableApps = {
-    clients: {name: "Houesholds and Guests", label: "Households and Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
+    households: {name: "Houesholds and Guests", label: "Households and Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
     calendar: {name: "Calendar", label: "Calendar", href: "/calendar", icon: CalendarEditOutline, subContent: ""},
     volunteers: {name: "Manage Volunteers", label: "Manage Volunteers", href: "/volunteers", icon: AwardOutline, subContent: ""},
     reports: {name: "Reports", label: "Reports", href: "/reports", icon: ChartPieOutline, subContent: ""},
@@ -11,15 +12,14 @@
     volunteer: {name: "Volunteer", label: "Volunteer", href: "/inventory", icon: CogOutline, subContent: ""},
   }
 
-export function getPermittedApps(roles: string[] | null | undefined) {
+export function getPermittedApps(permissions: string[] | null | undefined,) {
     const apps = Array()
-    if (roles?.includes("Client Manager")) { apps.push(availableApps.clients) }
-    if (roles?.includes("Client Manager")) { apps.push(availableApps.calendar) }
-    if (roles?.includes("Volunteer Manager")) { apps.push(availableApps.volunteers) }
-    if (roles?.includes("Administrator")) { apps.push(availableApps.reports) }
-    if (roles?.includes("Donor Manager")) { apps.push(availableApps.donors) }
-    if (roles?.includes("Inventory Manager")) { apps.push(availableApps.inventory) }
-    if (roles?.includes("Volunteer")) { apps.push(availableApps.volunteer) }
-    if (roles?.includes("Administrator")) { apps.push(availableApps.admin) }
+    if (hasPermission(permissions, ['manage-households'])) { apps.push(availableApps.households) }
+    if (hasPermission(permissions, ['manage-appointments'])) { apps.push(availableApps.calendar) }
+    if (hasPermission(permissions, ['manage-configuration'])) { apps.push(availableApps.admin) }
+    if (hasPermission(permissions, ['manage-volunteers'])) { apps.push(availableApps.volunteers) }
+    if (hasPermission(permissions, ['manage-inventory'])) { apps.push(availableApps.inventory) }
+    if (hasPermission(permissions, ['manage-donors'])) { apps.push(availableApps.donors) }
+    if (hasPermission(permissions, ['access-volunteer'])) { apps.push(availableApps.volunteer) }
     return apps
 }

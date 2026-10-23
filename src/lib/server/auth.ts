@@ -3,6 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
+import { requested } from '$app/server';
 
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
@@ -61,43 +62,5 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24 // refresh once per day of activity
 	}
 });
-
-
-function haveCommonElement(arr1: string[], arr2: string[]): boolean {
-  const set2 = new Set(arr2);
-  return arr1.some(element => set2.has(element));
-}
-
-export function requirePermission( locals: App.Locals, url: URL, requiredPermissions: string[]) {
-	const user = locals.user;
-
-  	if (!user) {
-    	throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
-  	}
-
-	if (!haveCommonElement(requiredPermissions, user.permissions)) {
-		throw error(403, 'You do not have permission to view this page');
-  	}
-
-  	return user;
-}
-
-export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[]) {
-  const user = locals.user;
-
-  if (!user) {
-    throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
-  }
-
-  if (!haveCommonElement(allowedRoles, user.roles)) {
-    throw error(403, 'You do not have permission to view this page');
-  }
-
-  return user;
-}
-
-export function hasPermission( locals: App.Locals, requestedRoles: string[]) {
-    return (locals.user && haveCommonElement(requestedRoles, locals.user.roles))
-}
 
 export type Session = typeof auth.$Infer.Session;

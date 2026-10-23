@@ -1,22 +1,7 @@
-//import { clsx, type ClassValue } from "clsx";
-//import { twMerge } from "tailwind-merge";
 import { env } from '$env/dynamic/public';
 import type { BookingWithAppointment, HouseholdWithRelations, HouseholdMember} from "./types/household";
+import { error, redirect } from '@sveltejs/kit';
 
-/*
-export function cn(...inputs: ClassValue[]) {
-	return twMerge(clsx(inputs));
-}
-	*/
-
-	/*
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "children"> : T;
-export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
-export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
-*/
 export function formattedDate(date: Date | undefined | null) {
 	return  date?.toLocaleDateString("en-CA") // get from environment variable
 }
@@ -96,4 +81,38 @@ export function calculateNextServiceDate2(bookings: BookingWithAppointment[]) {
 	}
 
 	return result
+}
+
+function haveCommonElement(arr1: string[], arr2: string[]): boolean {
+  const set2 = new Set(arr2);
+  return arr1.some(element => set2.has(element));
+}
+
+export function hasPermission( permissions: string[] | null | undefined, requestedPermissions: string[]) {
+	return (permissions && haveCommonElement(requestedPermissions, permissions))
+}
+
+export function requirePermission( permissions: string[] | null | undefined, url: URL, requiredPermissions: string[]) {
+
+  	if (!permissions) {
+    	throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+  	}
+
+	if (!haveCommonElement(requiredPermissions, permissions)) {
+		throw error(403, 'You do not have permission to view this page');
+  	}
+}
+
+export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[]) {
+  const user = locals.user;
+
+  if (!user) {
+    throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+  }
+
+  if (!haveCommonElement(allowedRoles, user.roles)) {
+    throw error(403, 'You do not have permission to view this page');
+  }
+
+  return user;
 }

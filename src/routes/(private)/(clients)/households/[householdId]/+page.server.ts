@@ -6,10 +6,10 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { householdSchema } from '$lib/formschemas/household';
 import type { HouseholdWithRelations, } from "$lib/types/household";
 import { householdInclude } from '$lib/server/household';
-import { requirePermission } from '$lib/server/auth';
+import { requirePermission } from '$lib/utils';
 
 export const load: PageServerLoad = async ({params, locals, url }) => {
-	const user = requirePermission(locals, url, ['manage-households']);
+	requirePermission(locals?.user?.permissions, url, ['manage-households']);
   	const householdAll: HouseholdWithRelations | null = await prisma.household.findUnique({
 		where: {
 			id: params.householdId,
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
 
 export const actions: Actions = {
 	updateHousehold: async ( { request, locals, url, params} ) => {
-		const user = requirePermission(locals, url, ['manage-households']);
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
 
 		const formData = await superValidate(request, zod4(householdSchema));
 		if (!formData.valid) return fail(400, { formData });

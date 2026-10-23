@@ -3,7 +3,7 @@
   import { BarsFromLeftOutline } from "flowbite-svelte-icons";
   import { page } from "$app/state";
   import { getPermittedApps } from "$lib/components/NavPermissions";
-  const apps = getPermittedApps(page?.data?.user?.roles);
+  const apps = getPermittedApps(page?.data?.user?.permissions)
   let drawerOpen = $state(false);
   let spanClass = "flex-1 ms-3 whitespace-nowrap";
 </script>

@@ -1,279 +1,172 @@
-import { PrismaClient, Prisma, HouseholdStatus, ClientIdentificationType, ClientRelationship, AppointmentBoookingStatus, DatedRequestStatus, ServiceTime, DeliveryType } from "./src/generated/prisma/client.js";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { randomUUID } from "node:crypto";
-import { hashPassword } from "better-auth/crypto";
+import { HouseholdStatus, type Prisma } from './src/generated/prisma/client.js';
+import prisma from './db.js';
+import { seedReferenceData } from './reference-data.js';
+import { createUserWithPassword } from './users.js';
+import { PrismaClient, ClientIdentificationType, ClientRelationship, AppointmentBoookingStatus, DatedRequestStatus, ServiceTime, DeliveryType } from "./src/generated/prisma/client.js";
 
-const DEFAULT_ADMIN_PASSWORD = "password"
+// SAMPLE DATA for development and demos only. Never run this against real data.
+// Production gets reference data (seed-reference.ts) and the bootstrap admin.
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SAMPLE_DATA !== 'true') {
+	console.error('Refusing to load sample data in production (set ALLOW_SAMPLE_DATA=true to override).');
+	process.exit(1);
+}
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
+const SAMPLE_PASSWORD = process.env.SAMPLE_USER_PASSWORD ?? 'sample-password-123';
+const HOUSEHOLD_ID = 'sample-household-1';
 
-const prisma = new PrismaClient({
-  adapter,
-});
+const sampleUsers = [
+	{ email: 'craig@cudmore.ca', name: 'Craig Cudmore', roleNames: ['Administrator'] },
+	{ email: 'admin@example.com', name: 'Sample Admin', roleNames: ['Administrator'] },
+	{ email: 'clients@example.com', name: 'Sample Client Manager', roleNames: ['Client Manager'] },
+	{ email: 'volunteers@example.com', name: 'Sample Volunteer Manager', roleNames: ['Volunteer Manager'] },
+	{ email: 'viewer@example.com', name: 'Sample User', roleNames: ['User'] }
+];
 
-type SeedUser = {
-  data: { name: string; email: string; image: string };
-  roleNames: string[];
-};
+/** A date `days` from today at the given time, so sample events are never in the past. */
+function at(days: number, hour: number, minute = 0): Date {
+	const d = new Date();
+	d.setDate(d.getDate() + days);
+	d.setHours(hour, minute, 0, 0);
+	return d;
+}
 
-type SeedRole = {
-  roleName: string;
-  permissionIds: string[];
-};
+const sites = [
+	{ name: 'Sample Hall A', street: '1 Example Road', city: 'Gloucester' },
+	{ name: 'Sample Hall B', street: '2 Example Road', city: 'Gloucester' }
+];
 
-async function createRoleWithNewPermissions(roleName: string, permissionIds: string[]) {
-	return prisma.role.create({
-		data: {
-			name: roleName,
-			permissions: {
-				create: permissionIds.map((name) => ({
-					permission: {
-						connectOrCreate: {
-							where: { name },
-							create: { name }
-						}
-					}
-				}))
-			}
+const services = [
+	{ id: 'sample-service-1', title: 'Day 1 morning', start: at(7, 10), end: at(7, 12) },
+	{ id: 'sample-service-2', title: 'Day 1 afternoon', start: at(7, 16), end: at(7, 20) },
+	{ id: 'sample-service-3', title: 'Day 2 morning', start: at(8, 10), end: at(8, 12) },
+	{ id: 'sample-service-4', title: 'Day 2 afternoon', start: at(8, 16), end: at(8, 20) }
+];
+
+const household: Prisma.HouseholdCreateInput = {
+	id: HOUSEHOLD_ID,
+	uniqueId: 'DEMO',
+	status: HouseholdStatus.ACTIVE,
+	dietaryRestrictions: ['Halal', 'Lactose Free'],
+	pets: 'a dog',
+	notes: 'Sample household',
+	preferredServiceTypes: [DeliveryType.PICKUP, DeliveryType.DELIVERY],
+	preferredTimeOfDay: [ServiceTime.WEDNESDAY_MORNING, ServiceTime.FRIDAY_EVENING],
+	howHeard: 'Website',
+	street: '123 Example Street',
+	street2: '',
+	city: 'Ottawa',
+	postalCode: 'K2P 1A1',
+	province: 'Ontario',
+	country: 'Canada',
+	createdBy: 'Seed',
+	datedRequests: {
+		createMany: {
+			data: [
+				{ status: DatedRequestStatus.ACTIVE, requestText: 'Sample request', type: 'Prayer', createdBy: 'Seed' },
+				{ status: DatedRequestStatus.CLOSED, requestText: 'Older sample request', type: 'Prayer', createdBy: 'Seed' }
+			]
 		}
-	});
-}
+	},
+	members: {
+		createMany: {
+			data: Array.from({ length: 12 }, (_, i) => ({
+				firstName: `Sample${i + 1}`,
+				lastName: 'Person',
+				idChecked: ClientIdentificationType.DRIVERS_LICENSE,
+				birthYear: 1980 + i,
+				email: `sample${i + 1}@example.com`,
+				phone: '613-555-0100',
+				relationship: i < 2 ? ClientRelationship.PRIMARY:ClientRelationship.OTHER,
+				createdBy: 'Seed'
+			}))
+		}
+	}
+};
 
-async function createRoleWithPermissionsNew(roleName: string, permissionIds: string[]) {
-  return prisma.role.upsert({
-    where: { name: roleName },
-    update: {},
-    create: {
-      name: roleName,
-      permissions: {
-        create: permissionIds.map((id) => ({
-          permission: { connect: { id } }
-        }))
-      }
-    }
-  });
-}
-async function createUserWithRoles(
-	data: { name: string; email: string; image: string },
-	roleNames: string[]
-) {
-	const user = await prisma.user.create({
-		data: {
-			...data,
-      id: data.email,
-      emailVerified: true,
-			roles: {
-				create: roleNames.map((name) => ({
-					role: { connect: { name } }
-				}))
+async function main() {
+	// Roles and permissions must exist before users can be created.
+	await seedReferenceData();
+
+	for (const u of sampleUsers) {
+		if (await prisma.user.findUnique({ where: { email: u.email } })) continue;
+		await createUserWithPassword({ ...u, password: SAMPLE_PASSWORD });
+		console.log(`Created user ${u.email} (${u.roleNames.join(', ')})`);
+	}
+
+	if (await prisma.household.findUnique({ where: { id: HOUSEHOLD_ID } })) {
+		console.log('Sample data already loaded; to reload it, reset the development database.');
+		return;
+	}
+
+	for (const s of sites) {
+		await prisma.site.upsert({ where: { name: s.name }, update: {}, create: s });
+	}
+
+	await prisma.household.create({ data: household });
+	console.log(`Created household ${HOUSEHOLD_ID}`);
+
+	await prisma.volunteer.createMany({
+		data: [
+			{ firstName: 'Sample', lastName: 'Volunteer One' },
+			{ firstName: 'Sample', lastName: 'Volunteer Two' }
+		]
+	});
+
+	const location = { connect: { name: sites[0].name } };
+	const extraEvents = [
+		{ id: 'sample-sorting-1', type: 'Sorting', title: 'Inventory', start: at(9, 10), end: at(9, 12) },
+		{ id: 'sample-drive-1', type: 'Food Drives & Events', title: 'Food Drive', start: at(10, 16), end: at(10, 20) }
+	];
+
+	for (const e of [...services.map((s) => ({ ...s, type: 'Service Date' })), ...extraEvents]) {
+		await prisma.event.upsert({
+			where: { id: e.id },
+			update: {},
+			create: {
+				id: e.id,
+				type: e.type,
+				status: 'Active',
+				title: e.title,
+				startTime: e.start,
+				endTime: e.end,
+				note: 'Sample event',
+				createdBy: 'Seed',
+				location
 			}
-		},
-		include: { roles: { include: { role: true } } }
-	});
-  const passwordHash = await hashPassword(DEFAULT_ADMIN_PASSWORD);
-  await prisma.account.create({
-    data: {
-        id: randomUUID(),
-        userId: user.id,
-        providerId: "credential",
-        accountId: user.id,
-        password: passwordHash,
-    },
-  });
+		});
+	}
 
-  return user
-}
-
-const permissionData: Prisma.PermissionCreateInput[] = [
-  { id: 'login', name: 'Log in', description: 'Log into the service'},
-  { id: 'manage-households', name: 'Manage clients', description: 'Manage households' },
-  { id: 'manage-configuration', name: 'Manage system configuration', description: 'Manage system configuration'},
-  { id: 'manage-volunteers', name: 'Manage volunteers', description: 'Manage volunteers'},
-  { id: 'manage-inventory', name: 'Manage inventory', description: 'Manage inventory'},
-  { id: 'manage-donors', name: 'Manage donors', description: 'Manage donors'},
-  { id: 'view-dashboard', name: 'View dashboard', description: 'View dashboard'},
-  { id: 'access-volunteer', name: 'Volunteer', description: 'Volunteer'},
-]
-
-const roleData: SeedRole[] = [
-{roleName: 'Administrator', permissionIds: ['login', 'manage-households', 'manage-configuration', 'manage-volunteers', 'manage-inventory', 'manage-donors', 'view-dashboard', 'access-volunteer']},
-{roleName: 'User', permissionIds: ['login']},
-{roleName: 'Client Manager', permissionIds: ['login', 'manage-households']},
-{roleName: 'Volunteer Manager', permissionIds: ['login', 'manage-volunteers']},
-{roleName: 'Volunteer', permissionIds: ['login', 'access-volunteer']},
-{roleName: 'Donor Manager', permissionIds: ['login', 'manage-donors']},
-{roleName: 'Inventory Manager', permissionIds: ['login', 'manage-inventory']},
-];
-
-const seedUsers: SeedUser[] = [
-  { data: { name: "Alice", email: "alice@prisma.io", image: ''}, roleNames: ["Administrator"], },
-  { data: { name: "CraigC", email: "craig@cudmore.ca", image: 'https://lh3.googleusercontent.com/a/ACg8ocI7EteRgKFDjpb5KHFiJVE1gDAlX-JB68IhU_7D7sHuDQ_TEQ=s96-c', }, roleNames: ["Administrator", "User", "Client Manager"], },
-  { data: { name: "CraigC2", email: "craig.cudmore@gmail.com", image: ''}, roleNames: ["User"], },
-  { data: { name: "LindaC", email: "linda@cudmore.ca", image: ''}, roleNames: ["User", "Client Manager"], },
-];
-
-const householdData: Prisma.HouseholdCreateInput[] = [
-  {
-    id: 'abc123', uniqueId: 'ABCD', status: HouseholdStatus.ACTIVE, dietaryRestrictions: ['Halal', 'Lactose Free'], pets: 'a dog', notes: 'note1, note2',preferredServiceTypes: [DeliveryType.PICKUP, DeliveryType.DELIVERY], preferredTimeOfDay: [ServiceTime.WEDNESDAY_EVENING, ServiceTime.FRIDAY_MORNING], howHeard: 'Google', street: '741 Rolling River Cres', street2: '', postalCode: 'K1V1M2', province: 'Ontario', country: 'Canada', createdBy: 'CraigC', city: 'Ottawa',
-        datedRequests: {
-          createMany: {data: [
-            {status: DatedRequestStatus.ACTIVE, requestText: 'for rain', createdBy: 'CraigC' , type: 'Prayer'},
-            {status: DatedRequestStatus.CLOSED, requestText: 'for health', createdBy: 'CraigC', type: 'Prayer'},
-          ]}
-        },
-        members: {
-          createMany: { data: [
-            {firstName: 'Craig', lastName: 'Cudmore', idChecked: ClientIdentificationType.DRIVERS_LICENSE, birthYear: 1966, email: 'craig@cudmore.ca', phone: '613-555-1212', relationship: ClientRelationship.PRIMARY, createdBy: 'Seed'},
-            {firstName: 'Linda', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.PRIMARY, createdBy: 'Seed'},
-            {firstName: 'Linda2', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda2@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda3', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda3@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda4', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda4@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda5', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda5@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda6', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda6@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda7', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda7@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda8', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda8@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda9', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda9@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda10', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda10@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda11', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda11@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda12', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda12@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda13', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda13@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda14', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda14@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda15', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda15@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda16', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda16@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda17', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda17@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda18', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda18@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda19', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda19@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda20', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda20@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda21', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda21@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda22', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda22@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda23', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda23@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda24', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda24@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda25', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda25@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda26', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda26@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda27', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda27@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda28', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda28@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda29', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda29@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda30', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda30@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda31', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda31@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda32', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda32@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda33', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda33@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda34', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda34@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-            {firstName: 'Linda35', lastName: 'Cudmore', idChecked: ClientIdentificationType.HEALTH_CARD, birthYear: 1967, email: 'linda35@cudmore.ca', phone: '613-822-1234', relationship: ClientRelationship.OTHER, createdBy: 'Seed'},
-          ]}
-        }
-      }
-];
-
-const volunteerData: Prisma.VolunteerCreateInput[] = [
-  {firstName: 'Craig', lastName: 'Volunteer', },
-  {firstName: 'Linda', lastName: 'Volunteer', }
-];
-
-const siteData: Prisma.SiteCreateInput[] = [
-  {street: '3740 Spratt Rd', city: 'Gloucester',name: 'St FX'},
-  {street: '3740 Spratt Rd', city: 'Gloucester',name: 'The Gathering'},
-  {street: '3740 Spratt Rd', city: 'Gloucester',name: 'Brierleys YIG'},
-];
-
-const eventData: Prisma.EventCreateInput[] = [
-  {id: 'event-monday-morning', type: 'Service Date', status: 'Active', title: 'Monday morning',startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-monday-evening', type: 'Service Date', status: 'Active', title: 'Monday afternoon',startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-tuesday-morning', type: 'Service Date', status: 'Active', title: 'Tuesday morning',startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 12:00:00'), note: 'Note 3', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {id: 'event-tuesday-evening', type: 'Service Date', status: 'Active', title: 'Tuesday afternoon',startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 20:00:00'), note: 'Note 4', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {type: 'Sorting', status: 'Active', title: 'Inventory',startTime: new Date('2026-11-12 10:00:00'), endTime: new Date('2026-11-12 12:00:00'), note: 'Note 1', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-  {type: 'Food Drives & Events', status: 'Active', title: 'Food Drive',startTime: new Date('2026-11-13 16:00:00'), endTime: new Date('2026-11-13 20:00:00'), note: 'Note 2', createdBy: 'CraigC', location: {connect: {name: 'Brierleys YIG'}}},
-];
-
-const appointmentData: Prisma.AppointmentCreateInput[] = [
-  {startTime: new Date('2026-11-10 10:00:00'), endTime: new Date('2026-11-10 10:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}},
-    bookings: {
-      create: [
-        {
-          status: AppointmentBoookingStatus.ACTIVE,
-          createdBy: 'CraigC',
-          household: { connect: { id: 'abc123' } },
-        },
-        {
-          status: AppointmentBoookingStatus.CANCELLED,
-          createdBy: 'CraigC',
-          household: { connect: { id: 'abc123' } },
-        },
-      ],
-    },
-
-
-},
-  {startTime: new Date('2026-11-10 10:15:00'), endTime: new Date('2026-11-10 10:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 10:30:00'), endTime: new Date('2026-11-10 10:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 10:45:00'), endTime: new Date('2026-11-10 11:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 11:00:00'), endTime: new Date('2026-11-10 11:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-morning'}} },
-  {startTime: new Date('2026-11-10 16:00:00'), endTime: new Date('2026-11-10 16:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:15:00'), endTime: new Date('2026-11-10 16:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:30:00'), endTime: new Date('2026-11-10 16:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 16:45:00'), endTime: new Date('2026-11-10 17:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-10 17:00:00'), endTime: new Date('2026-11-10 17:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-monday-evening'}} },
-  {startTime: new Date('2026-11-11 10:00:00'), endTime: new Date('2026-11-11 10:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:15:00'), endTime: new Date('2026-11-11 10:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:30:00'), endTime: new Date('2026-11-11 10:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 10:45:00'), endTime: new Date('2026-11-11 11:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 11:00:00'), endTime: new Date('2026-11-11 11:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-morning'}} },
-  {startTime: new Date('2026-11-11 16:00:00'), endTime: new Date('2026-11-11 16:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:15:00'), endTime: new Date('2026-11-11 16:30:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:30:00'), endTime: new Date('2026-11-11 16:45:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 16:45:00'), endTime: new Date('2026-11-11 17:00:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
-  {startTime: new Date('2026-11-11 17:00:00'), endTime: new Date('2026-11-11 17:15:00'), createdBy: 'CraigC', event: {connect: {id: 'event-tuesday-evening'}} },
-]
-
-export async function main() {
-
-  for (const p of permissionData) {
-    await prisma.permission.create({ data: p });
-    console.log(`Created permission ${p.name}`);
-
-  }
-  for (const r of roleData) {
-    await createRoleWithPermissionsNew(r.roleName, r.permissionIds);
-    console.log(`Created role ${r.roleName}`);
-  }
-  
-   for (const { data, roleNames } of seedUsers) {
-    await createUserWithRoles(data, roleNames);
-    console.log(`Created user ${data.email} with roles: ${roleNames.join(", ")}`);
-  }
-  
-  for (const hh of householdData) {
-    await prisma.household.create({ data: hh });
-    console.log(`Created household ${hh.id}`);
-  }
-  
-  for (const vv of volunteerData) {
-    await prisma.volunteer.create({ data: vv });
-    console.log(`Created volunteer ${vv.firstName} ${vv.lastName}`);
-  }
-  for (const ss of siteData) {
-    await prisma.site.create({ data: ss });
-    console.log(`Created site ${ss.name}`);
-  }
-  for (const ee of eventData) {
-    await prisma.event.create({ data: ee });
-    console.log(`Created event ${ee.title}`);
-  }
-  
-  for (const aa of appointmentData) {
-    await prisma.appointment.create({ data: aa });
-    console.log(`Created appointment ${aa.startTime}`);
-  }
-
+	// Five 15-minute appointment slots per service. The very first slot gets one
+	// active and one cancelled booking so the appointments page has examples.
+	for (const [index, s] of services.entries()) {
+		for (let slot = 0; slot < 5; slot++) {
+			const startTime = new Date(s.start.getTime() + slot * 15 * 60_000);
+			const endTime = new Date(startTime.getTime() + 15 * 60_000);
+			await prisma.appointment.create({
+				data: {
+					startTime,
+					endTime,
+					createdBy: 'Seed',
+					event: { connect: { id: s.id } },
+					...(index === 0 &&
+						slot === 0 && {
+							bookings: {
+								create: [
+									{ status: AppointmentBoookingStatus.ACTIVE, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } },
+									{ status: AppointmentBoookingStatus.CANCELLED, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } }
+								]
+							}
+						})
+				}
+			});
+		}
+	}
+	console.log('Created sample sites, events and appointments');
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error('❌ Seeding error:', e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+	.catch((e) => {
+		console.error('Seeding error:', e);
+		process.exitCode = 1;
+	})
+	.finally(() => prisma.$disconnect());

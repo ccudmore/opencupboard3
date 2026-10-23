@@ -7,12 +7,12 @@ import { superValidate, setError, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { newHouseholdSchema } from '$lib/formschemas/household';
 import { redirect } from "@sveltejs/kit";
-import { requirePermission } from '$lib/server/auth';
+import { requirePermission } from '$lib/utils';
 import { randomInt } from 'node:crypto';
 import { ClientRelationship } from '$prisma/enums';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-  const user = requirePermission(locals, url, ['manage-households']);
+  requirePermission(locals?.user?.permissions, url, ['manage-households']);
 
 	const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
 	const form = await superValidate(zod4(newHouseholdSchema));
@@ -41,7 +41,7 @@ function generateUniqueId(length = 4): string {
 
 export const actions: Actions = {
   createHousehold: async ({ request, locals, url }) => {
-    const user = requirePermission(locals, url, ['manage-households']);
+    requirePermission(locals?.user?.permissions, url, ['manage-households']);
     
     const form = await superValidate(request, zod4(newHouseholdSchema));
 		if (!form.valid) return fail(400, { form });
@@ -52,13 +52,13 @@ export const actions: Actions = {
   	    const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
 		    const household = {...householdWithoutMembers,
           uniqueId: generateUniqueId(),
-          createdBy: user.id,
+          createdBy: locals.user?.id??'system',
           members: {create: {
             firstName: firstName,
             lastName: lastName,
             email: email,
             phone: phone,
-            createdBy: user.name,
+            createdBy: locals.user?.id??'system',
             relationship: ClientRelationship.PRIMARY}
           }
         }
