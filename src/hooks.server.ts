@@ -70,6 +70,25 @@ const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
 
 	try {
 		const h = response.headers;
+		// X-Content-Type-Options, X-Frame-Options, Referrer-Policy and HSTS come from nginx.
+		h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+
+		// Don't override a stricter CSP a route sets itself (the /logo route does).
+		if (!h.has('Content-Security-Policy')) {
+			h.set(CSP_HEADER, CSP);
+		}
+	} catch {
+		// Some responses (for example ones passed through from fetch) have immutable headers.
+	}
+
+	return response;
+};
+
+const handleSecurityHeadersOld: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+
+	try {
+		const h = response.headers;
 		h.set('X-Content-Type-Options', 'nosniff');
 		h.set('X-Frame-Options', 'DENY');
 		h.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -85,8 +104,11 @@ const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
 			h.set('Strict-Transport-Security', 'max-age=31536000');
 		}
 	} catch {
-		// Some responses (for example ones passed through from fetch) have immutable headers.
-	}
+	    const headers = new Headers(response.headers);
+	    headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+	    if (!headers.has('Content-Security-Policy')) headers.set(CSP_HEADER, CSP);
+	    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    }
 
 	return response;
 };
