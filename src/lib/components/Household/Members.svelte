@@ -107,7 +107,7 @@
 <div class="flex flex-wrap items-center justify-between gap-2 bg-white px-5 pb-3 pt-3 dark:bg-gray-800">
 	<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Household Members</h2>
 	<Button outline color="dark" onclick={addHouseholdMember}>
-		New Household Member
+		New  Member
 	</Button>
 </div>
 
