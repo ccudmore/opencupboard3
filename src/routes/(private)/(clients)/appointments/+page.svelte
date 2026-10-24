@@ -1,11 +1,10 @@
 <script lang="ts">
-	    import type { JsonValue } from '@prisma/client/runtime/client';
-import { Accordion, AccordionItem, Badge } from 'flowbite-svelte';
-    	import { onMount } from 'svelte';
-
-
+    import { onMount } from 'svelte';
+	import type { Prisma } from '$prisma/client';
 	let { data } = $props();
-
+	type AppointmentWithBookings = Prisma.AppointmentGetPayload<{
+		include: { bookings: { include: { household: true } } };
+	}>;
 
 	function formatDate(iso: string) {
 		// Parse as UTC so the date doesn't shift with the viewer's timezone
@@ -17,8 +16,7 @@ import { Accordion, AccordionItem, Badge } from 'flowbite-svelte';
 		});
 	}
 
-	// craig - get this as a prisma type
-	const firstActive = (a: { id: string; startTime: Date; endTime: Date; status: string | null; locationId: string; createdAt: Date; createdBy: string | null; confirmations: JsonValue | null; reminders: JsonValue | null; householdId: string | null; eventId: string; }) => 1;
+	const firstActive = (a: AppointmentWithBookings ) => 1;
  
 	let scrollEl: HTMLDivElement;
     let openAppts = $state<Record<string, boolean>>({});

@@ -6,14 +6,14 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public'
 	import Logo from '$lib/Logo.svelte'
-
+	import { safeRedirectPath } from '$lib/utils';
 
 	let email = $state('');
 	let password = $state('');
 	let errorMessage = $state('');
 	let loading = $state(false);
 
-	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
+	const redirectTo = safeRedirectPath(page.url.searchParams.get('redirectTo'));
   	const organizationName = env.PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard'
 
 	async function handleEmailLogin(e: SubmitEvent) {

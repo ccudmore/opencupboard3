@@ -261,6 +261,7 @@ model DatedRequest {
   type        String?
   createdAt   DateTime  @default(now())
   createdBy   String?
+  booking     AppointmentBookings? @relation("BookingDatedRequest")
 
   @@index([householdId])
   @@map("dated_request")
@@ -375,6 +376,8 @@ model AppointmentBookings {
   reminders     Json?
   createdAt     DateTime    @default(now())
   createdBy     String?
+  datedRequest   DatedRequest? @relation("BookingDatedRequest", fields: [datedRequestId], references: [id], onDelete: SetNull)
+  datedRequestId String?       @unique
 
   @@unique([appointmentId, householdId, status]) // optional: one booking per household per appointment
   @@index([householdId])

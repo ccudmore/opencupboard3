@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
 import { requirePermission } from '$lib/utils';
-import { EventStatus, } from '$prisma/enums';
+import { EventStatus, AppointmentBookingStatus} from '$prisma/enums';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
@@ -35,7 +35,7 @@ for (const event of services as any[]) {
   let available = 0;
 
   for (const appt of event.appointments) {
-    const activeBookings = appt.bookings.filter((b: any) => b.status === 'Active');
+    const activeBookings = appt.bookings.filter((b: any) => b.status === AppointmentBookingStatus.ACTIVE);
 
     if (activeBookings.length > 0) {
       booked++;

@@ -1,9 +1,6 @@
 x-app-env: &app-env
-  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@opencupboard-postgres-1:5432/${POSTGRES_DB}
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
-  #BETTER_AUTH_URL: "http://foodbank.zapto.org"
-  #PUBLIC_BETTER_AUTH_URL: "http://foodbank.zapto.org"
-  #ORIGIN: "http://foodbank.zapto.org"
   BETTER_AUTH_URL: ${BETTER_AUTH_URL}
   PUBLIC_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
   ORIGIN: ${BETTER_AUTH_URL}
@@ -25,8 +22,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - backend
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -38,7 +33,7 @@ services:
 # roles). Both steps are safe to repeat on every `up`.
   db-push:
     image: craigcudmore/opencupboard3:latest
-    pull_policy: never
+    pull_policy: always
     # Clear any ENTRYPOINT baked into the image so it doesn't start the server
     entrypoint: []
     # No npx: the runtime image has no npm. prisma and tsx come from node_modules/.bin.

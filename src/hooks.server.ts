@@ -5,13 +5,8 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from '$app/environment'
 import prisma from "$lib/prisma"
 import { sequence } from '@sveltejs/kit/hooks';
+import { env } from '$env/dynamic/private';
 
-/*
-function haveCommonElement(arr1: string[], arr2: string[]): boolean {
-  const set2 = new Set(arr2);
-  return arr1.some(element => set2.has(element));
-}
-*/
 type RolePermission = { permissionId: string };
 type RoleEntry = { role: { permissions: RolePermission[] } };
 
@@ -19,7 +14,19 @@ function uniquePermissionIds(data: RoleEntry[]): string[] {
   return [...new Set(data.flatMap((d) => d.role.permissions.map((p) => p.permissionId)))];
 }
 
-async function handleAuthentication({event, resolve} : {event:any, resolve:any}) {
+const CSP_HEADER = env.CSP_ENFORCE === 'true'
+	? 'Content-Security-Policy'
+	: 'Content-Security-Policy-Report-Only';
+
+async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
+    // don't touch the database for public content
+	const path = event.url.pathname;
+	if (path === '/healthz' || path.startsWith('/logo/')) {
+		event.locals.user = null;
+		event.locals.session = null;
+		return resolve(event);
+	}
+
     const authSession = await auth.api.getSession({ headers: event.request.headers });
     if (authSession) {
         const roleRows = await prisma.userRole.findMany({
@@ -30,7 +37,7 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
             id: authSession.user.id,
             name: authSession.user.name,
             email: authSession.user.email,
-            image: authSession.user.image,
+            image: authSession.user.image??'',
             roles: roleRows.map((r) => r.role.name),
             permissions: uniquePermissionIds(roleRows),
         };
@@ -44,6 +51,47 @@ async function handleAuthentication({event, resolve} : {event:any, resolve:any})
     }
     return resolve(event)
 }
+// Start with report-only; see "Rolling out the CSP" below.
+const CSP = [
+	"default-src 'self'",
+	"script-src 'self' 'unsafe-inline'",
+	"worker-src 'self' blob:",
+	"style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.googleusercontent.com",
+	"connect-src 'self' https://nominatim.openstreetmap.org https://api.maptiler.com",
+	"font-src 'self' data:",
+	"object-src 'none'",
+	"base-uri 'self'",
+	"form-action 'self'",
+	"frame-ancestors 'none'"
+].join('; ');
+
+const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+
+	try {
+		const h = response.headers;
+		h.set('X-Content-Type-Options', 'nosniff');
+		h.set('X-Frame-Options', 'DENY');
+		h.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+		h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+
+		// Don't override a stricter CSP a route sets itself (the /logo route does).
+		if (!h.has('Content-Security-Policy')) {
+			h.set('Content-Security-Policy-Report-Only', CSP);
+        	h.set(CSP_HEADER, CSP);
+		}
+
+		// Only meaningful over HTTPS. nginx terminates TLS, so key off the public URL.
+		if (env.BETTER_AUTH_URL?.startsWith('https://')) {
+			h.set('Strict-Transport-Security', 'max-age=31536000');
+		}
+	} catch {
+		// Some responses (for example ones passed through from fetch) have immutable headers.
+	}
+
+	return response;
+};
 
 // Authorization is now done in the +layout.server.ts at the route group level
 /*
@@ -87,5 +135,5 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });
 };
 
-export const handle: Handle = sequence(handleAuthentication, handleBetterAuth);
-//export const handle: Handle = sequence(handleAuthentication, authorizationHandle, handleBetterAuth);
+//export const handle: Handle = sequence(handleAuthentication, handleBetterAuth);
+export const handle: Handle = sequence(handleSecurityHeaders, handleAuthentication, handleBetterAuth);

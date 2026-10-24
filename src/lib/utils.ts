@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/public';
-import type { BookingWithAppointment, HouseholdWithRelations, HouseholdMember} from "./types/household";
+import type { BookingWithAppointment, HouseholdMember} from "./types/household";
 import { error, redirect } from '@sveltejs/kit';
+import { AppointmentBookingStatus } from '$prisma/enums';
 
 export function formattedDate(date: Date | undefined | null) {
 	return  date?.toLocaleDateString("en-CA") // get from environment variable
@@ -54,12 +55,8 @@ export function isIdVerificationNeeded(date: Date | undefined | null) {
 }
 
 export function calculateNextServiceDate(bookings: BookingWithAppointment[]) {
-	return new Date();
-}
-
-export function calculateNextServiceDate2(bookings: BookingWithAppointment[]) {
 	const times = (bookings as any[])
-		.filter((b) => b.status !== 'Cancelled')
+		.filter((b) => b.status !== AppointmentBookingStatus.CANCELLED)
   		.map((b) => new Date(b.appointment.startTime).getTime());
 
 	if (times.length === 0) {
@@ -101,4 +98,27 @@ export function requirePermission( permissions: string[] | null | undefined, url
 	if (!haveCommonElement(requiredPermissions, permissions)) {
 		throw error(403, 'You do not have permission to view this page');
   	}
+}
+
+/**
+ * Returns `target` only if it is a path on this site; otherwise `fallback`.
+ * Blocks absolute URLs ("https://evil.com"), protocol-relative URLs ("//evil.com")
+ * and backslash tricks ("/\evil.com") that browsers treat as "//".
+ */
+export function safeRedirectPath(target: string | null | undefined, fallback = '/'): string {
+	if (!target) return fallback;
+	if (!target.startsWith('/')) return fallback;
+	if (target.startsWith('//') || target.startsWith('/\\')) return fallback;
+	// Control characters (tabs, newlines) can be stripped by browsers and turn "/\t/evil.com" into "//evil.com"
+	if (/[\u0000-\u001f]/.test(target)) return fallback;
+
+	// Final check: resolving it against our own origin must stay on that origin.
+	try {
+		const base = 'http://localhost';
+		const url = new URL(target, base);
+		if (url.origin !== base) return fallback;
+	} catch {
+		return fallback;
+	}
+	return target;
 }

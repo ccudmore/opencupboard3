@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
-	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils"; // craig - fix thie import of servicedate2
+	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate } from "$lib/utils"; // craig - fix thie import of servicedate2
 	import {householdStatusOptions} from '$lib/labels'
 	import { ClientRelationship } from '$prisma/enums';
 
@@ -20,7 +20,7 @@
 
 	const familySize = $derived(calculateFamilySize($form.members));
 	const childCount = $derived(calculateChildCount($form.members));
-	const nextServiceDate = $derived(calculateNextServiceDate2(bookings));
+	const nextServiceDate = $derived(calculateNextServiceDate(bookings));
 
 	// Show the first few primary members; the rest sit behind a "+N more" toggle
 	const MEMBER_LIMIT = 2;

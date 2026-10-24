@@ -151,7 +151,7 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
     requirePermission(locals?.user?.permissions, url, ['login']);
 
 	let mode = <CalendarMode>('readonly'); // defaults to read-only
-	if (hasPermission(locals?.user?.permissions, ['manage-clients', 'manage-inventory'])) {
+	if (hasPermission(locals?.user?.permissions, ['manage-households', 'manage-inventory'])) {
 		mode = <CalendarMode>('full')
 	} else if (hasPermission(locals?.user?.permissions, ['manage-volunteers'])) {
 		mode = <CalendarMode>('volunteers')
