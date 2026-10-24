@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
 import { requirePermission } from '$lib/utils';
-import { EventStatus, AppointmentBookingStatus} from '$prisma/enums';
+import { EventStatus, AppointmentBookingStatus, HouseholdStatus } from '$prisma/enums';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
@@ -12,8 +12,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-    const services = await prisma.event.findMany({
-        where: {
+    const events = await prisma.event.findMany({
+          where: {
             type: 'Service Date',
             status: EventStatus.ACTIVE,
             startTime: {gt: oneYearAgo},
@@ -29,38 +29,33 @@ export const load: PageServerLoad = async ({ url, locals }) => {
             }
         }
     })
+  const services = events.map((event) => {
+	let booked = 0;
+	let available = 0;
 
-for (const event of services as any[]) {
-  let booked = 0;
-  let available = 0;
+	const appointments = event.appointments.map((appt) => {
+		const activeBookings = appt.bookings.filter(
+			(b) => b.status === AppointmentBookingStatus.ACTIVE
+		);
 
-  for (const appt of event.appointments) {
-    const activeBookings = appt.bookings.filter((b: any) => b.status === AppointmentBookingStatus.ACTIVE);
+		if (activeBookings.length === 0) {
+			available++;
+			return { ...appt, activeBookingHousehold: undefined };
+		}
 
-    if (activeBookings.length > 0) {
-      booked++;
-      const activeHousehold = activeBookings
-        .map((b: any) => b.household)
-        .find((h: any) => h?.status === 'Active');
+		booked++;
+		const activeBookingHousehold = activeBookings
+			.map((b) => b.household)
+			.find((h) => h.status === HouseholdStatus.ACTIVE);
 
-      if (activeHousehold) {
-        appt.activeBookingHousehold = activeHousehold;
-      } else {
-        delete appt.activeBookingHousehold;
-      }
-      
-    } else {
-      available++;
-      delete appt.activeBookingHousehold;
-    }
-  }
+		return { ...appt, activeBookingHousehold };
+	});
 
-  event.bookedAppointmentCount = booked;
-  event.availableAppointmentCount = available;
-}
- 
-    // sort bookings into active, historical
-
-    // for each service, get the countof 
-    return { services };
+	return {
+		...event,
+		appointments,
+		bookedAppointmentCount: booked,
+		availableAppointmentCount: available
+	};
+});
 };

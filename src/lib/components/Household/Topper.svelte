@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
-	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate } from "$lib/utils"; // craig - fix thie import of servicedate2
+	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate } from "$lib/utils"; 
 	import {householdStatusOptions} from '$lib/labels'
 	import { ClientRelationship } from '$prisma/enums';
 
 	let { form, errors, constraints, bookings, enhance } = $props();
 
 	const primaryMembers = $derived(
-//		($form.members ?? []).filter((m: { relationship: string }) => m.relationship === "Primary")
 		($form.members ?? []).filter((m: { relationship: ClientRelationship }) => m.relationship === ClientRelationship.PRIMARY)
 	);
 

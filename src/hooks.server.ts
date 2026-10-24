@@ -51,7 +51,6 @@ async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
     }
     return resolve(event)
 }
-// Start with report-only; see "Rolling out the CSP" below.
 const CSP = [
 	"default-src 'self'",
 	"script-src 'self' 'unsafe-inline'",
@@ -78,7 +77,6 @@ const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
 
 		// Don't override a stricter CSP a route sets itself (the /logo route does).
 		if (!h.has('Content-Security-Policy')) {
-			h.set('Content-Security-Policy-Report-Only', CSP);
         	h.set(CSP_HEADER, CSP);
 		}
 
