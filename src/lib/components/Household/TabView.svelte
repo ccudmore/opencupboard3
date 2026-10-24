@@ -16,7 +16,7 @@
   ]
 </script>
 
-<div class="p-1">
+<div class="p-1 tabs-scroll">
 <Tabs
   tabStyle="underline"
   contentClass="p-0 mt-0"
@@ -35,7 +35,7 @@
     <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
-        <UsersGroupSolid size="md" />Household Members
+        <UsersGroupSolid size="md" />Members
       </div>
     {/snippet}
 		<HouseholdMembers {form} {errors} {constraints} {validateForm}/>
@@ -53,7 +53,7 @@
   <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
-        <InfoCircleSolid size="md" />Additional Information
+        <InfoCircleSolid size="md" />Information
       </div>
     {/snippet}
 		<HouseholdNotes {form} {errors} {constraints}/>
@@ -64,7 +64,7 @@
   <TabItem>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
-        <Icon size="md" />{item.name} Requests
+        <Icon size="md" />{item.name}
       </div>
     {/snippet}
 		<HouseholdSpecialRequests {form} {errors} {constraints} type={item.name}/>
@@ -81,3 +81,15 @@
   </TabItem>
 </Tabs>
 </div>
+
+<style>
+  .tabs-scroll :global([role='tablist']) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-scroll :global([role='tab']) {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+</style>

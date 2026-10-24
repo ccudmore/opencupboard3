@@ -85,52 +85,84 @@
 
 </script>
 
-<Table striped={true}>
-  	<caption class="bg-white px-5 pb-3 pt-1 text-left text-lg font-semibold text-gray-900 dark:bg-gray-800 dark:text-white">
-    	<div class="flex items-center justify-between">
-      		<span>Household Members</span>
-      		<Button outline color="dark" onclick={addHouseholdMember}>
-        		New Household Member
-      		</Button>
-    	</div>
-  	</caption>
+<!-- ID status and the Confirm ID button, shared by the table and the phone cards -->
+{#snippet idStatus(i: number)}
+	{#if isIdVerificationNeeded($form.members[i].idCheckDate)}
+		<span class="inline-flex items-center gap-2 font-bold">
+			<CloseCircleOutline class="text-red-500" />
+			<Button size="sm" outline color="dark" onclick={(e: MouseEvent) => toggleIdConfirmation(i, e)}>Confirm ID</Button>
+		</span>
+	{:else}
+		<span class="inline-flex items-center gap-2 font-bold">
+			<CheckCircleOutline class="text-green-500" />
+			<Button size="sm" outline color="dark" onclick={(e: MouseEvent) => toggleIdConfirmation(i, e)}>Confirm ID</Button>
+		</span>
+		<div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			Next check: {nextIdVerificationDate($form.members[i].idCheckDate)}
+		</div>
+	{/if}
+{/snippet}
 
-	<TableHead>
-    	<TableHeadCell>First Name</TableHeadCell>
-    	<TableHeadCell>Last Name</TableHeadCell>
-		<TableHeadCell>Relationship</TableHeadCell>
-		<TableHeadCell>Id Status</TableHeadCell>
-  	</TableHead>
-  	<TableBody>
-    	{#each $form.members as item, i}
-      		<TableBodyRow onclick={() => toggleMemberDrawer(i)}>	
-				<TableBodyCell>
-					{$form.members[i].firstName}
-				</TableBodyCell>
-        		<TableBodyCell>
-					{$form.members[i].lastName}
-				</TableBodyCell>
-        		<TableBodyCell>
-					{relationshipLabels[$form.members[i].relationship as keyof typeof relationshipLabels]}
-				</TableBodyCell>
-        		<TableBodyCell>
-					{#if isIdVerificationNeeded($form.members[i].idCheckDate)}
-						<span class="font-bold inline-flex items-center gap-2">
-							<CloseCircleOutline class="text-red-500"/>
-							<Button class="h-2" outline color="dark" onclick={(e: MouseEvent) => toggleIdConfirmation(i,  e)}>Confirm ID</Button>
-						</span>
-					{:else}
-						<span class="font-bold inline-flex items-center gap-2">
-							<CheckCircleOutline class="text-green-500"/>
-							<Button class="h-2" outline color="dark" onclick={(e: MouseEvent) => toggleIdConfirmation(i, e)}>Confirm ID</Button>
-						</span><br>
-						Next check: {nextIdVerificationDate($form.members[i].idCheckDate)}
-					{/if}
-				</TableBodyCell>
-			</TableBodyRow>
-    	{/each}
-	</TableBody>
-</Table>
+<!-- Heading and action, shared by both layouts -->
+<div class="flex flex-wrap items-center justify-between gap-2 bg-white px-5 pb-3 pt-3 dark:bg-gray-800">
+	<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Household Members</h2>
+	<Button outline color="dark" onclick={addHouseholdMember}>
+		New Household Member
+	</Button>
+</div>
+
+{#if $form.members.length === 0}
+	<p class="px-5 pb-5 text-gray-500 dark:text-gray-400">No household members yet.</p>
+{:else}
+	<!-- Tablet and desktop: table -->
+	<div class="hidden md:block">
+		<Table striped={true}>
+			<TableHead>
+				<TableHeadCell>First Name</TableHeadCell>
+				<TableHeadCell>Last Name</TableHeadCell>
+				<TableHeadCell>Relationship</TableHeadCell>
+				<TableHeadCell>Id Status</TableHeadCell>
+			</TableHead>
+			<TableBody>
+				{#each $form.members as _, i}
+					<TableBodyRow onclick={() => toggleMemberDrawer(i)}>
+						<TableBodyCell>
+							{$form.members[i].firstName}
+						</TableBodyCell>
+						<TableBodyCell>
+							{$form.members[i].lastName}
+						</TableBodyCell>
+						<TableBodyCell>
+							{relationshipLabels[$form.members[i].relationship as keyof typeof relationshipLabels]}
+						</TableBodyCell>
+						<TableBodyCell>
+							{@render idStatus(i)}
+						</TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			</TableBody>
+		</Table>
+	</div>
+
+	<!-- Phones: one card per member -->
+	<ul class="space-y-3 px-3 pb-4 md:hidden">
+		{#each $form.members as _, i}
+			<li class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
+				<button type="button" class="w-full text-left" onclick={() => toggleMemberDrawer(i)}>
+					<div class="font-semibold text-gray-900 dark:text-white">
+						{$form.members[i].firstName} {$form.members[i].lastName}
+					</div>
+					<div class="text-sm text-gray-500 dark:text-gray-400">
+						{relationshipLabels[$form.members[i].relationship as keyof typeof relationshipLabels]}
+					</div>
+				</button>
+				<div class="mt-3">
+					{@render idStatus(i)}
+				</div>
+			</li>
+		{/each}
+	</ul>
+{/if}
 
 <Modal title="Identification Check" form size="xs" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
 	ID type presented<Select class="mb-2" items={idTypeOptions} name="idtype"/>
@@ -140,13 +172,13 @@
   	{/snippet}
 </Modal>
 
-<Drawer placement="bottom" bind:open={openMemberDrawer} class="backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
-	<div class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Household Member</div>
+<Drawer placement="bottom" bind:open={openMemberDrawer} class="max-h-[85vh] overflow-y-auto backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
+	<div class="mb-2 px-4 text-lg font-semibold text-gray-900 sm:pl-10 dark:text-white">Household Member</div>
 		{#if openMemberRow != null}
-	  		<div class="mt-0.5 gap-4 pl-10 pt-5 grid mb-0.5 grid-cols-3">
+	  		<div class="mt-0.5 mb-0.5 grid grid-cols-1 gap-4 px-4 pt-5 sm:grid-cols-2 sm:pl-10 lg:grid-cols-3">
 			<div>
 				<Label for="firstName" class="mb-2">First Name</Label>
-				<Input type="text" id="firstName" name="firstName" bind:value={$form.members[openMemberRow].firstName} {...$constraints.members?.firstName} />
+				<Input type="text" id="firstName" name="firstName" autocomplete="off" bind:value={$form.members[openMemberRow].firstName} {...$constraints.members?.firstName} />
 				{#if $errors.members?.[openMemberRow]?.firstName}
 					<Helper class="mt-2 text-red-500">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.firstName}</span>
@@ -155,7 +187,7 @@
 			</div>
 			<div>
    				<Label for="lastName" class="mb-2">Last Name</Label>
-				<Input type="text" id="lastName" name="lastName" bind:value={$form.members[openMemberRow].lastName} {...$constraints.members?.lastName} />
+				<Input type="text" id="lastName" name="lastName" autocomplete="off" bind:value={$form.members[openMemberRow].lastName} {...$constraints.members?.lastName} />
 				{#if $errors.members?.[openMemberRow]?.lastName}
 					<Helper class="mt-2 text-red-500">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.lastName}</span>
@@ -168,7 +200,7 @@
 			</div>
 			<div>
    				<Label for="phone" class="mb-2">Phone Number</Label>
-				<Input type="text" id="phone" name="phone" bind:value={$form.members[openMemberRow].phone} {...$constraints.members?.phone} />
+				<Input type="tel" inputmode="tel" autocomplete="off" id="phone" name="phone" bind:value={$form.members[openMemberRow].phone} {...$constraints.members?.phone} />
 				{#if $errors.members?.[openMemberRow]?.phone}
 					<Helper class="mt-2 text-red-500">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.phone}</span>
@@ -177,7 +209,7 @@
 			</div>
 			<div>
    				<Label for="email" class="mb-2">Email Address</Label>
-				<Input type="text" id="email" name="email" bind:value={$form.members[openMemberRow].email} {...$constraints.members?.email} />
+				<Input type="text" inputmode="email" autocomplete="off" id="email" name="email" bind:value={$form.members[openMemberRow].email} {...$constraints.members?.email} />
 				{#if $errors.members?.[openMemberRow]?.email}
 					<Helper class="mt-2 text-red-500">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.email}</span>
@@ -186,7 +218,7 @@
 			</div>
 			<div>
    				<Label for="birthYear" class="mb-2">Birth Year</Label>
-				<Input type="number" id="birthYear" name="birthYear" bind:value={$form.members[openMemberRow].birthYear} {...$constraints.members?.birthYear} />
+				<Input type="number" inputmode="numeric" id="birthYear" name="birthYear" bind:value={$form.members[openMemberRow].birthYear} {...$constraints.members?.birthYear} />
 				{#if $errors.members?.[openMemberRow]?.birthYear}
 					<Helper class="mt-2 text-red-500">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.birthYear}</span>
@@ -195,7 +227,7 @@
 			</div>
 		</div>
 
-		<div class="mt-0 pl-10 pb-5 pt-5">
+		<div class="mt-0 px-4 pb-5 pt-5 sm:pl-10">
 			{#if $form.members[openMemberRow].idChecked}
 				<p class="text-gray-500 dark:text-gray-400">
 					ID type {$form.members[openMemberRow].idChecked} checked on {formattedDate($form.members?.[openMemberRow]?.idCheckDate)}
@@ -205,11 +237,11 @@
 			{/if}
 		</div>
 
-		<p class="pl-10 text-sm text-gray-500 dark:text-gray-400">
+		<p class="px-4 text-sm text-gray-500 sm:pl-10 dark:text-gray-400">
 			Added on {formattedDate($form.members[openMemberRow].createdAt)} by {$form.members[openMemberRow].createdBy}
 		</p>
 
-		<div class="mt-0 pl-10 pb-10">
+		<div class="mt-0 px-4 pb-10 sm:pl-10">
 			<ButtonGroup class="*:ring-primary-700!">
 				<Button outline onclick={() => validateMemberUpdate(openMemberRow||0)}>Update</Button>
 				<Button outline onclick={confirmDelete}>Delete</Button>

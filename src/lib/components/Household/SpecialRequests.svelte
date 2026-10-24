@@ -92,25 +92,25 @@ class="bg-gray-100 border-gray-300 text-grey-600
  bind:checked={hideClosedDatedRequests}>Hide closed</Checkbox>
 <!--Button outline color="dark" onclick={addSpecialRequest}>New {type}</Button><br-->
 
-<Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
+<Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="max-h-[85vh] overflow-y-auto backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
 
 	<div class="mb-2 text-lg font-semibol">{type} Requests</div>
     {#if openSpecialRequestRow != null}
-  		<div class="mt-0.5 gap-4 pl-10 pt-5 mb-0.5">
+  		<div class="mt-0.5 gap-4 px-4 pt-5 mb-0.5">
 			<div>
    				<Label for="text" class="mb-2">Text</Label>
 				<Textarea id="text" class="w-full" bind:value={$form.datedRequests[openSpecialRequestRow].requestText} {...$constraints.datedRequests?.requestText} />
 			</div>
 			<div>
    				<Label for="status" class="mb-2">Status</Label>
-				<Select class="mb-2 w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
+				<Select class="mb-2 w-full sm:w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
 			<div>
 				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by { $form.datedRequests[openSpecialRequestRow].createdBy}
 			</div>
 		</div>
 
-	  	<div class="mt-0 pl-10 pb-10">
+	  	<div class="mt-0 px-4 pb-10">
 			<ButtonGroup class="*:ring-primary-700!">
 				<Button outline onclick={() => toggleSpecialRequestDrawer(openSpecialRequestRow||0)}>Update</Button>
 				<Button outline onclick={confirmDelete}>Delete</Button>
