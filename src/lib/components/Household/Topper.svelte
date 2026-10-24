@@ -3,10 +3,13 @@
 	import { Select, Label } from "flowbite-svelte";
 	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate2 } from "$lib/utils"; // craig - fix thie import of servicedate2
 	import {householdStatusOptions} from '$lib/labels'
+	import { ClientRelationship } from '$prisma/enums';
+
 	let { form, errors, constraints, bookings, enhance } = $props();
 
 	const primaryMembers = $derived(
-		($form.members ?? []).filter((m: { relationship: string }) => m.relationship === "Primary")
+//		($form.members ?? []).filter((m: { relationship: string }) => m.relationship === "Primary")
+		($form.members ?? []).filter((m: { relationship: ClientRelationship }) => m.relationship === ClientRelationship.PRIMARY)
 	);
 
 	const idNeeded = $derived(

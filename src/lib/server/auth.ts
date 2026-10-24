@@ -3,7 +3,6 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
-import { requested } from '$app/server';
 
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
@@ -39,7 +38,7 @@ export const auth = betterAuth({
 			clientId: env.GOOGLE_CLIENT_ID as string,
 			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       		scope: ["openid", "email", "profile"],
-			disableImplicitSignup: true,
+			disableImplicitSignUp: true,
 			disableSignUp: true,
   			mapProfileToUser: (profile) => {
     			return {
@@ -51,7 +50,8 @@ export const auth = betterAuth({
 			prompt: "select_account",
 			clientId: env.MICROSOFT_CLIENT_ID as string,
 			clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-			disableImplicitSignup: true,
+			disableImplicitSignUp: true,
+			disableSignUp: true,
 			// "common" allows both personal and work/school Microsoft accounts.
 			// Set MICROSOFT_TENANT_ID to a specific tenant GUID to restrict it.
 			tenantId: env.MICROSOFT_TENANT_ID || 'common',

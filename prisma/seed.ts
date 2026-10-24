@@ -2,7 +2,7 @@ import { HouseholdStatus, type Prisma } from './src/generated/prisma/client.js';
 import prisma from './db.js';
 import { seedReferenceData } from './reference-data.js';
 import { createUserWithPassword } from './users.js';
-import { PrismaClient, ClientIdentificationType, ClientRelationship, AppointmentBoookingStatus, DatedRequestStatus, ServiceTime, DeliveryType } from "./src/generated/prisma/client.js";
+import { EventStatus, ClientIdentificationType, ClientRelationship, AppointmentBookingStatus, DatedRequestStatus, ServiceTime, DeliveryType } from "./src/generated/prisma/client.js";
 
 // SAMPLE DATA for development and demos only. Never run this against real data.
 // Production gets reference data (seed-reference.ts) and the bootstrap admin.
@@ -125,7 +125,7 @@ async function main() {
 			create: {
 				id: e.id,
 				type: e.type,
-				status: 'Active',
+				status: EventStatus.ACTIVE,
 				title: e.title,
 				startTime: e.start,
 				endTime: e.end,
@@ -152,8 +152,8 @@ async function main() {
 						slot === 0 && {
 							bookings: {
 								create: [
-									{ status: AppointmentBoookingStatus.ACTIVE, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } },
-									{ status: AppointmentBoookingStatus.CANCELLED, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } }
+									{ status: AppointmentBookingStatus.ACTIVE, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } },
+									{ status: AppointmentBookingStatus.CANCELLED, createdBy: 'Seed', household: { connect: { id: HOUSEHOLD_ID } } }
 								]
 							}
 						})

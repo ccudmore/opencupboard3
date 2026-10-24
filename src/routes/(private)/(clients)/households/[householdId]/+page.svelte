@@ -5,17 +5,15 @@
 	import { toast } from "svelte-sonner";
 
 	import { Button, Input, ButtonGroup, Modal, Dropdown, DropdownItem, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
-	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline, DotsVerticalOutline } from "flowbite-svelte-icons";	import TabView from "$lib/components/Household/TabView.svelte";
+	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline } from "flowbite-svelte-icons";
+	import TabView from "$lib/components/Household/TabView.svelte";
 	import Topper from "$lib/components/Household/Topper.svelte";
 	import {formattedDate} from "$lib/utils"
-  	import { slide } from "svelte/transition";
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import { householdSchema } from '$lib/formschemas/household';
 
 	let { data } = $props()
 	
-  	let openComfirmDeleteModal = $state(false);
-
 	function handleSuccess() {
         toast('Updated successfully!');
     }
@@ -91,25 +89,6 @@ function toastFormErrors(errors: FormErrors) {
 		goto('/households');
 	}
 
-	/*
-	function confirmDelete() {
-		openComfirmDeleteModal=true
-	}
-		*/
-/*
-	async function actionDelete({ action }: { action: string }) {
-
-		if (action === 'yes') { // craig - can this be done a an action?
-    		const res = await fetch('?/deleteHousehold', {
- 		    	method: 'POST',
-      			headers: { 'Content-Type': 'multipart/form-data' },
-      			body: JSON.stringify({ id: $form.id })
-    		});
-			toast("Household deleted") // craig - toast not working
-			goto('/households');
-		}		
-	}
-	*/
 </script>
 
 <form action="?/updateHousehold" method="POST" use:enhance>
@@ -154,19 +133,7 @@ function toastFormErrors(errors: FormErrors) {
 			<ButtonGroup class="*:ring-primary-700!">
 				<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
 				<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
-				<!--
-				<Button outline size="lg" id="more-actions" aria-label="More actions" class="px-3">
-					<DotsVerticalOutline class="h-6 w-6" />
-				</Button>
-			-->
 			</ButtonGroup>
-			<!---
-			<Dropdown triggeredBy="#more-actions">
-				<DropdownItem type="button" class="font-semibold text-red-600 dark:text-red-400" onclick={confirmDelete}>
-					Delete household…
-				</DropdownItem>
-			</Dropdown>
-		-->
 		</div>
 	</div>
 
@@ -177,16 +144,3 @@ function toastFormErrors(errors: FormErrors) {
 </form>
 
 Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
-
-<!---
-<Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
-  <div class="text-center">
-    <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this household?</h3>
-    <div class="space-x-2">
-      <Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>
-      <Button outline type="submit" value="no" color="dark">No, cancel</Button>
-    </div>
-  </div>
-</Modal>
--->

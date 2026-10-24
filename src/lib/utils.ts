@@ -102,17 +102,3 @@ export function requirePermission( permissions: string[] | null | undefined, url
 		throw error(403, 'You do not have permission to view this page');
   	}
 }
-
-export function requireRole( locals: App.Locals, url: URL, allowedRoles: string[]) {
-  const user = locals.user;
-
-  if (!user) {
-    throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
-  }
-
-  if (!haveCommonElement(allowedRoles, user.roles)) {
-    throw error(403, 'You do not have permission to view this page');
-  }
-
-  return user;
-}

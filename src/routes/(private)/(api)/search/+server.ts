@@ -40,7 +40,7 @@ export async function GET({ url, locals }) {
 		const transformedVolunteers = volunteerResults.volunteers.map(volunteer => {
   			return {
 				id: volunteer.id,
-    			URL: `${urlbase.origin}/event/${volunteer.id}`, 
+    			URL: `${urlbase.origin}/volunteer/${volunteer.id}`, 
 				desc1: `${volunteer.firstName} ${volunteer.lastName}`,
   				desc2: volunteer.phone1,
 				desc3: volunteer.email1,

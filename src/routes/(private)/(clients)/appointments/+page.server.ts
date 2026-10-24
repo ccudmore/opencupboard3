@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
 import { requirePermission } from '$lib/utils';
+import { EventStatus, } from '$prisma/enums';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     const services = await prisma.event.findMany({
         where: {
             type: 'Service Date',
-            status: 'Active',
+            status: EventStatus.ACTIVE,
             startTime: {gt: oneYearAgo},
         },
         orderBy: {startTime: 'asc'},
@@ -23,9 +24,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
                 orderBy: { startTime: 'asc' }, 
                 include: {
                     bookings: {
-                        include: {household: false}
+                        include: {household: true}
                     }}
-                //craig - also include households
             }
         }
     })

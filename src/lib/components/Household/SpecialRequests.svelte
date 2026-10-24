@@ -19,7 +19,7 @@
 	}
 
 	function addSpecialRequest() {
-		$form.datedRequests.push({type: type, requestText: '', status: 'Active', createdAt: new Date(), });
+		$form.datedRequests.push({type: type, requestText: '', status: DatedRequestStatus.ACTIVE, createdAt: new Date(), });
 		toggleSpecialRequestDrawer($form.datedRequests.length-1)
 		form.set($form) // trigger reactivation
 	}

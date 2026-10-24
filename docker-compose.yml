@@ -1,11 +1,15 @@
 x-app-env: &app-env
-  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-  ORIGIN: ${ORIGIN:-http://localhost:3000}
-  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${ORIGIN:-http://localhost:3000}}
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@opencupboard-postgres-1:5432/${POSTGRES_DB}
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
-# craig - only needed for now
-#  BETTER_AUTH_URL: http://localhost:3000
-  PUBLIC_BETTER_AUTH_URL: "http://localhost:3000"
+  #BETTER_AUTH_URL: "http://foodbank.zapto.org"
+  #PUBLIC_BETTER_AUTH_URL: "http://foodbank.zapto.org"
+  #ORIGIN: "http://foodbank.zapto.org"
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+  PUBLIC_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+  ORIGIN: ${BETTER_AUTH_URL}
+  LOGO_PATH: ${LOGO_PATH:-}
+  LOGO_DARK_PATH: ${LOGO_DARK_PATH:-}
+  PUBLIC_ORGANIZATION_NAME: ${PUBLIC_ORGANIZATION_NAME:-}
 
 services:
   postgres:
@@ -21,6 +25,8 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - backend
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -28,26 +34,17 @@ services:
       retries: 10
       start_period: 10s
 
-  # One-shot job: pushes the Prisma schema using your own image, then exits.
-  # `prisma db push` is idempotent, so it is safe on every `up`.
-  # Requires the image to contain the Prisma CLI and prisma/schema.prisma.
+# One-shot job: applies the schema, then loads reference data (permissions and
+# roles). Both steps are safe to repeat on every `up`.
   db-push:
-    image: opencupboard3
-#    pull_policy: always
+    image: craigcudmore/opencupboard3:latest
     pull_policy: never
     # Clear any ENTRYPOINT baked into the image so it doesn't start the server
-##      && npx prisma migrate deploy
     entrypoint: []
-    command: >
-      sh -c "
-      npx prisma db push"
-##      && npx prisma db seed
+    # No npx: the runtime image has no npm. prisma and tsx come from node_modules/.bin.
+    command: ["sh", "-c", "prisma db push && tsx prisma/seed-reference.ts"]
     environment:
       <<: *app-env
-##    volumes:
-      # Prisma 7 needs a config file with datasource.url. Mounted into the
-      # image's working directory (assumed to be /app) so no rebuild is needed.
-      # - ./prisma.config.mjs:/app/prisma.config.mjs:ro
     networks:
       - backend
     depends_on:
@@ -56,10 +53,8 @@ services:
     restart: "no"
 
   opencupboard:
-    image: opencupboard3
-#    image: craigcudmore/opencupboard3:20261015
-#    pull_policy: always
-    pull_policy: never
+    image: craigcudmore/opencupboard3:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -72,11 +67,42 @@ services:
       - "3000:3000"
     networks:
       - backend
+    volumes:
+      - ./branding:/branding:ro
     depends_on:
       postgres:
         condition: service_healthy
       db-push:
         condition: service_completed_successfully
+
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    depends_on:
+      - opencupboard
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    # Reload every 6h so renewed certs get picked up
+    command: >
+      /bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done &
+      nginx -g "daemon off;"'
+    networks:
+      - backend
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c 'trap exit TERM;
+      while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h & wait $${!}; done'
 
 volumes:
   pgdata:

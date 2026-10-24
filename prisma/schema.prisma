@@ -173,6 +173,11 @@ model Appointment {
   @@map("appointment")
 }
 
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+}
+
 model Event {
   id           String                 @id @default(cuid())
   type         String
@@ -180,7 +185,7 @@ model Event {
   startTime    DateTime
   endTime      DateTime
   note         String?
-  status       String
+  status       EventStatus
   locationId   String
   location     Site                   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   volunteers   VolunteerAssignments[]
@@ -351,7 +356,7 @@ model VolunteerAssignments {
   @@map("volunteer_assignments")
 }
 
-enum AppointmentBoookingStatus {
+enum AppointmentBookingStatus {
   PENDING
   ACTIVE
   COMPLETE
@@ -365,7 +370,7 @@ model AppointmentBookings {
   appointmentId String
   household     Household   @relation(fields: [householdId], references: [id])
   householdId   String
-  status        AppointmentBoookingStatus
+  status        AppointmentBookingStatus
   confirmations Json?
   reminders     Json?
   createdAt     DateTime    @default(now())

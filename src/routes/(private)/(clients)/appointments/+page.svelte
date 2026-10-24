@@ -3,6 +3,7 @@
 import { Accordion, AccordionItem, Badge } from 'flowbite-svelte';
     	import { onMount } from 'svelte';
 
+
 	let { data } = $props();
 
 
@@ -16,8 +17,7 @@ import { Accordion, AccordionItem, Badge } from 'flowbite-svelte';
 		});
 	}
 
-//    	const isActive = (b: Booking) => b.status.toLowerCase() === 'active';
-//	const firstActive = (a: Appointment) => a.bookings.find(isActive);
+	// craig - get this as a prisma type
 	const firstActive = (a: { id: string; startTime: Date; endTime: Date; status: string | null; locationId: string; createdAt: Date; createdBy: string | null; confirmations: JsonValue | null; reminders: JsonValue | null; householdId: string | null; eventId: string; }) => 1;
  
 	let scrollEl: HTMLDivElement;
