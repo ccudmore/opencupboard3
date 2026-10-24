@@ -4,7 +4,7 @@
  	import { goto } from '$app/navigation';
 	import { toast } from "svelte-sonner";
 
-	import { Button, Input, ButtonGroup, Modal, Dropdown, DropdownItem, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
+	import { Button, Input, ButtonGroup, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
 	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline } from "flowbite-svelte-icons";
 	import TabView from "$lib/components/Household/TabView.svelte";
 	import Topper from "$lib/components/Household/Topper.svelte";
@@ -95,28 +95,39 @@ function toastFormErrors(errors: FormErrors) {
 	<Input type="hidden" id="id" name="id" value={$form.id} />
 	<!--SuperDebug data={$form}/-->
 
-	<!-- Breadcrumb and actions share one row -->
-	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-gray-50 px-5 py-2 dark:bg-gray-900">
-		<Breadcrumb>
-			<BreadcrumbItem href="/" home>
-				{#snippet icon()}
-					<HomeOutline class="me-2 h-4 w-4" />
-				{/snippet}
-				Home
-			</BreadcrumbItem>
-			<BreadcrumbItem href="/households">
-				{#snippet icon()}
-					<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-				{/snippet}
-				Household and Guests
-			</BreadcrumbItem>
-			<BreadcrumbItem>
-				{#snippet icon()}
-					<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-				{/snippet}
-				Edit
-			</BreadcrumbItem>
-		</Breadcrumb>
+	<!-- Navigation and actions: stacked on phones, one row from sm up -->
+	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-gray-50 px-3 py-2 sm:px-5 dark:bg-gray-900">
+		<!-- Phones: short back link -->
+		<a
+			href="/households"
+			class="text-sm font-medium text-blue-700 hover:underline sm:hidden dark:text-blue-400"
+		>
+			‹ Households
+		</a>
+
+		<!-- sm and up: full breadcrumb -->
+		<div class="hidden sm:block">
+			<Breadcrumb>
+				<BreadcrumbItem href="/" home>
+					{#snippet icon()}
+						<HomeOutline class="me-2 h-4 w-4" />
+					{/snippet}
+					Home
+				</BreadcrumbItem>
+				<BreadcrumbItem href="/households">
+					{#snippet icon()}
+						<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
+					{/snippet}
+					Household and Guests
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					{#snippet icon()}
+						<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
+					{/snippet}
+					Edit
+				</BreadcrumbItem>
+			</Breadcrumb>
+		</div>
 
 		<div class="flex flex-wrap items-center gap-3">
 			{#if isTainted($tainted)}
@@ -131,8 +142,8 @@ function toastFormErrors(errors: FormErrors) {
 			{/if}
 
 			<ButtonGroup class="*:ring-primary-700!">
-				<Button outline size="lg" type="submit" class="px-6 font-semibold">Save</Button>
-				<Button outline size="lg" onclick={close} class="px-6 font-semibold">Close</Button>
+				<Button outline size="md" type="submit" class="px-4 font-semibold sm:px-6">Save</Button>
+				<Button outline size="md" onclick={close} class="px-4 font-semibold sm:px-6">Close</Button>
 			</ButtonGroup>
 		</div>
 	</div>
@@ -143,4 +154,6 @@ function toastFormErrors(errors: FormErrors) {
 	</div>
 </form>
 
-Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
+<p class="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">
+	Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
+</p>

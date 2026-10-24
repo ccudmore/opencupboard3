@@ -183,7 +183,7 @@ export const actions: Actions = {
 	/** An edit: one event changed, possibly splitting a repeating series (so may also create one). */
 	update: ({ request, url, locals }) => 
 	{
-	    requirePermission(locals?.user?.permissions, url, ['login']);
+	    requirePermission(locals?.user?.permissions, url, ['login', 'manage-households', 'manage-inventory', 'manage-volunteers']);
 		handle(request, (c) =>
 			c.updated.length >= 1 && c.deleted.length === 0 ? null : 'Updating expects changed events only.'
 		);

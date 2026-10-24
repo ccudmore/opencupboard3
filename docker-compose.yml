@@ -8,7 +8,6 @@ x-app-env: &app-env
   LOGO_DARK_PATH: ${LOGO_DARK_PATH:-}
   PUBLIC_ORGANIZATION_NAME: ${PUBLIC_ORGANIZATION_NAME:-}
   CSP_ENFORCE: ${CSP_ENFORCE:-}
-  PORT: 3000
 
 services:
   postgres:
