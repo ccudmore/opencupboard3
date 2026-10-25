@@ -12,12 +12,25 @@ datasource db {
   provider = "postgresql"
 }
 
+// Inactive users can't sign in or use the app. Managed on the Admin > Users tab.
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// The permissions of an inactive role aren't given to anyone. Managed on the Admin > Roles tab.
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id            String     @id
   name          String
   email         String
   emailVerified Boolean    @default(false)
   image         String?
+  status        UserStatus @default(ACTIVE)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   sessions      Session[]
@@ -91,6 +104,7 @@ model Role {
   id          String   @id @default(cuid())
   name        String   @unique // e.g. "user", "manager", "admin"
   description String?
+  status      RoleStatus @default(ACTIVE)
   createdAt   DateTime @default(now())
   createdBy    String?
   users       UserRole[]

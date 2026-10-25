@@ -13,6 +13,7 @@ export const permissions: PermissionSeed[] = [
 	{ id: 'manage-households', name: 'Manage clients', description: 'Manage households' },
 	{ id: 'manage-appointments', name: 'Manage appointments', description: 'Manage appointments and bookings' },
 	{ id: 'manage-configuration', name: 'Manage system configuration', description: 'Manage system configuration' },
+	{ id: 'admin', name: 'Administration', description: 'Manage users, roles and their permissions' },
 	{ id: 'manage-volunteers', name: 'Manage volunteers', description: 'Manage volunteers' },
 	{ id: 'manage-inventory', name: 'Manage inventory', description: 'Manage inventory' },
 	{ id: 'manage-donors', name: 'Manage donors', description: 'Manage donors' },
@@ -20,9 +21,11 @@ export const permissions: PermissionSeed[] = [
 	{ id: 'access-volunteer', name: 'Volunteer', description: 'Volunteer' }
 ];
 
+const ADMINISTRATOR = 'Administrator';
+
 export const roles: RoleSeed[] = [
 	// Administrators always get every permission, including ones added later.
-	{ name: 'Administrator', permissionIds: permissions.map((p) => p.id) },
+	{ name: ADMINISTRATOR, permissionIds: permissions.map((p) => p.id) },
 	{ name: 'User', permissionIds: ['login'] },
 	{ name: 'Client Manager', permissionIds: ['login', 'manage-households', 'manage-appointments'] },
 	{ name: 'Volunteer Manager', permissionIds: ['login', 'manage-volunteers'] },
@@ -43,20 +46,18 @@ export async function seedReferenceData() {
 		}
 
 		for (const r of roles) {
-			const role = await tx.role.upsert({
-				where: { name: r.name },
-				update: {},
-				create: { name: r.name }
-			});
+			const existing = await tx.role.findUnique({ where: { name: r.name } });
+			const role = existing ?? (await tx.role.create({ data: { name: r.name } }));
 
-			// Remove links that are no longer listed, then add any missing ones.
-			await tx.rolePermission.deleteMany({
-				where: { roleId: role.id, permissionId: { notIn: r.permissionIds } }
-			});
-			await tx.rolePermission.createMany({
-				data: r.permissionIds.map((permissionId) => ({ roleId: role.id, permissionId })),
-				skipDuplicates: true
-			});
+			// Roles are edited on the Admin > Roles tab, so a role that already exists keeps the
+			// permissions it has. Only a new role gets the permissions listed above, and the
+			// Administrator role also gets any permission added later.
+			if (!existing || r.name === ADMINISTRATOR) {
+				await tx.rolePermission.createMany({
+					data: r.permissionIds.map((permissionId) => ({ roleId: role.id, permissionId })),
+					skipDuplicates: true
+				});
+			}
 		}
 	});
 }

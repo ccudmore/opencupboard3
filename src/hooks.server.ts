@@ -28,9 +28,11 @@ async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
 	}
 
     const authSession = await auth.api.getSession({ headers: event.request.headers });
-    if (authSession) {
+    // An inactive user is treated as signed out, even if they still have a session
+    if (authSession && authSession.user.status !== 'INACTIVE') {
         const roleRows = await prisma.userRole.findMany({
-            where: { userId: authSession.user.id },
+            // permissions of an inactive role aren't given out
+            where: { userId: authSession.user.id, role: { status: 'ACTIVE' } },
             select: { role: { select: { name: true, id: true, permissions: true } } }
         });
         event.locals.user = {

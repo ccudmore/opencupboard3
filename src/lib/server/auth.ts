@@ -60,6 +60,25 @@ export const auth = betterAuth({
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 		updateAge: 60 * 60 * 24 // refresh once per day of activity
+	},
+
+	// Lets the app see user.status (ACTIVE or INACTIVE) on the session
+	user: {
+		additionalFields: {
+			status: { type: 'string', required: false, defaultValue: 'ACTIVE', input: false }
+		}
+	},
+
+	databaseHooks: {
+		session: {
+			create: {
+				// An inactive user can't sign in, whichever way they try
+				before: async (session) => {
+					const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { status: true } });
+					if (user?.status === 'INACTIVE') return false;
+				}
+			}
+		}
 	}
 });
 

@@ -10,3 +10,55 @@
     @apply bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white;
   }
 }
+/* Checkboxes and radios: clear outline and fill in both themes (native and Flowbite) */
+input[type='checkbox'],
+input[type='radio'] {
+	appearance: none !important;
+	-webkit-appearance: none !important;
+	display: inline-block;
+	flex-shrink: 0;
+	width: 1.25rem;
+	height: 1.25rem;
+	cursor: pointer;
+	border: 2px solid #6b7280 !important;
+	background-color: #ffffff !important;
+	background-position: center !important;
+	background-repeat: no-repeat !important;
+	background-size: 100% 100% !important;
+}
+input[type='checkbox'] {
+	border-radius: 0.25rem;
+}
+input[type='radio'] {
+	border-radius: 9999px;
+}
+input[type='checkbox']:checked {
+	border-color: #2563eb !important;
+	background-color: #2563eb !important;
+	background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.2 5.2 6.9 10.5 3.8 7.4' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e") !important;
+}
+input[type='radio']:checked {
+	border-color: #2563eb !important;
+	background-color: #2563eb !important;
+	background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e") !important;
+}
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
+	outline: 2px solid #60a5fa;
+	outline-offset: 2px;
+}
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.dark input[type='checkbox'],
+.dark input[type='radio'] {
+	border-color: #9ca3af !important;
+	background-color: #1f2937 !important;
+}
+.dark input[type='checkbox']:checked,
+.dark input[type='radio']:checked {
+	border-color: #3b82f6 !important;
+	background-color: #3b82f6 !important;
+}
