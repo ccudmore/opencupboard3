@@ -31,12 +31,12 @@ jobs:
         uses: actions/setup-node@v6   # use the current major you trust
         with:
           node-version: 24            # match the Node version in your Dockerfile
-          cache: npm
+#          cache: npm
 
       - run: npm ci
       - run: npx prisma generate
 #      - run: npm exec vite sync
-      - run: npx svelte-kit sync
+#      - run: npx svelte-kit sync
 
       - run: npm run check
       - run: npm run build
