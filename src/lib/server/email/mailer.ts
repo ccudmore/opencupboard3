@@ -1,14 +1,16 @@
 import nodemailer from 'nodemailer';
 import { env } from '$env/dynamic/private';
+import type { Transporter } from 'nodemailer';
 
 /** True when SMTP_HOST and MAIL_FROM are both set. */
 export function isMailConfigured(): boolean {
 	return Boolean(env.SMTP_HOST && env.MAIL_FROM);
 }
 
-let transport: nodemailer.Transporter | undefined;
+let transport: Transporter | undefined;
 
-function getTransport(): nodemailer.Transporter {
+function getTransport(): Transporter {
+	
 	if (!isMailConfigured()) throw new Error('Email is not configured (set SMTP_HOST and MAIL_FROM).');
 
 	transport ??= nodemailer.createTransport({
