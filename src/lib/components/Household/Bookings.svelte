@@ -383,6 +383,7 @@
 		</Table>
 	</div>
 
+	
 	<!-- Phones: one card per booking -->
 	<ul class="space-y-3 px-3 pb-4 md:hidden">
 		{#each bookings as b (b.id)}
