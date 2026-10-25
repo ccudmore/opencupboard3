@@ -35,6 +35,7 @@ jobs:
 
       - run: npm ci
       - run: npx prisma generate
+      - run: npm vite sync
       - run: npm run check
       - run: npm run build
       - name: Audit dependencies
