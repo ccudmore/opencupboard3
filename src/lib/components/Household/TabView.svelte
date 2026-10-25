@@ -17,12 +17,11 @@
 </script>
 
 <div class="p-1 tabs-scroll">
-<Tabs
-  tabStyle="underline"
-  classes="p-0 mt-0"
-  divider={false}
-  class="mt-3 p-1 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
->
+  <Tabs
+    tabStyle="underline"
+    divider={false}
+    class="mt-3 p-1 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+  >
   <TabItem open>
     {#snippet titleSlot()}
       <div class="flex items-center gap-2">
