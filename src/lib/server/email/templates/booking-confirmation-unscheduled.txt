@@ -1,0 +1,11 @@
+Subject: Your booking with {{organization}}
+
+Hello {{firstNames}},
+
+We have added your household to our list with {{organization}}. No appointment time has been set yet, and we will contact you when one is available.
+
+{{specialRequestSection}}
+If you have any questions, please contact us.
+
+Thank you,
+{{organization}}

@@ -6,7 +6,10 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { householdSchema } from '$lib/formschemas/household';
 import type { HouseholdWithRelations, } from "$lib/types/household";
 import { householdInclude } from '$lib/server/household';
-import { requirePermission } from '$lib/utils';
+import { requirePermission, calculateNextServiceDate } from '$lib/utils';
+import { getHouseholdBookings, getAvailableServices } from '$lib/server/queries/booking';
+import { isMailConfigured } from '$lib/server/email/mailer';
+import { createBooking, updateBooking, deleteBooking, previewConfirmation, sendConfirmation } from '$lib/server/bookingActions';
 
 export const load: PageServerLoad = async ({params, locals, url }) => {
 	requirePermission(locals?.user?.permissions, url, ['manage-households']);
@@ -19,12 +22,24 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
   	if (!householdAll) {
 		throw error(404, "Household not found")
 	}
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
 
-	const {bookings, ...household} = householdAll;
+	// The household form does not carry bookings; they have their own queries below
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { bookings: _bookings, ...household } = householdAll;
 	const form = await superValidate(household, zod4(householdSchema));
-  	return { form , bookings} // craig - maybe bookings is in its own form?
+
+	const [bookings, services] = await Promise.all([
+		getHouseholdBookings(params.householdId),
+		getAvailableServices()
+	]);
+
+	return {
+		form,
+		bookings,            // newest first, including "unscheduled" ones
+		services,            // future service dates with open appointments
+		eligibleDate: calculateNextServiceDate(bookings), // null = eligible now
+		emailEnabled: isMailConfigured()
+	}
 }
 
 export const actions: Actions = {
@@ -71,26 +86,32 @@ export const actions: Actions = {
 		}
 		return { formData }
 	},
-	/*
-	deleteHousehold: async ( { request, params, locals, url} ) => {
-		const user = requirePermission(locals, url, ['manage-households']);
-		const id = params.householdId
-		
-		if (!id) {
-			return fail(400, { message: "Invalid request" })
-		}
-		try {
-			await prisma.household.delete({
-				where: {
-					id: id,
-				},
-			})
-		} catch (err) {
-			console.error(err)
-			return fail(500, {
-				message: "Something went wrong deleting your household",
-			})
-		}
+
+	// ---- Bookings (called with fetch from Bookings.svelte) ----
+	// Everything below needs the manage-households permission.
+
+	createBooking: async ({ request, locals, url, params }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
+		return createBooking(params.householdId, locals.user?.id, await request.formData());
 	},
-	*/
+
+	updateBooking: async ({ request, locals, url, params }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
+		return updateBooking(params.householdId, locals.user?.id, await request.formData());
+	},
+
+	deleteBooking: async ({ request, locals, url, params }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
+		return deleteBooking(params.householdId, await request.formData());
+	},
+
+	previewConfirmation: async ({ request, locals, url, params }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
+		return previewConfirmation(params.householdId, await request.formData());
+	},
+
+	sendConfirmation: async ({ request, locals, url, params }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households']);
+		return sendConfirmation(params.householdId, locals.user?.id, await request.formData());
+	},
 }

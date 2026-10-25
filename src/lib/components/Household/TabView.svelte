@@ -8,7 +8,7 @@
 	import AddressMap from "$lib/components/Household/AddressMap.svelte";
   import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
 
-	let { form, errors, constraints, validateForm, bookings, enhance} = $props()
+	let { form, errors, constraints, validateForm, bookings, services, eligibleDate, emailEnabled, enhance} = $props()
 
   const requestsTypes = [
     {name: 'Special', icon: QuestionCircleSolid},
@@ -29,7 +29,7 @@
         <CalendarMonthSolid  size="md" />Appointments
       </div>
     {/snippet}
-		<Bookings {bookings}/>
+		<Bookings {bookings} {services} {eligibleDate} {emailEnabled} {form}/>
   </TabItem>
 
     <TabItem>

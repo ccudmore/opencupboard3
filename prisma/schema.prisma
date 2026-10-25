@@ -366,9 +366,9 @@ enum AppointmentBookingStatus {
 }
 
 model AppointmentBookings {
-  id            String      @default(cuid())
+  id            String      @id @default(cuid())
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
-  appointmentId String
+  appointmentId String?     // null = "unscheduled" booking
   household     Household   @relation(fields: [householdId], references: [id])
   householdId   String
   status        AppointmentBookingStatus
@@ -379,8 +379,8 @@ model AppointmentBookings {
   datedRequest   DatedRequest? @relation("BookingDatedRequest", fields: [datedRequestId], references: [id], onDelete: SetNull)
   datedRequestId String?       @unique
 
-  @@unique([appointmentId, householdId, status]) // optional: one booking per household per appointment
+  // One ACTIVE booking per appointment is enforced in bookingActions.ts (Serializable transaction)
   @@index([householdId])
-  @@id([id, appointmentId, householdId])
+  @@index([appointmentId])
   @@map("appointment_bookings")
 }

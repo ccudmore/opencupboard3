@@ -150,7 +150,7 @@ function toastFormErrors(errors: FormErrors) {
 
 	<div class="p-0">
 		<Topper {form} {errors} {constraints} {enhance} bookings={data.bookings} />
-		<TabView {form} {errors} {constraints} {enhance} {validateForm} bookings={data.bookings}/>
+		<TabView {form} {errors} {constraints} {enhance} {validateForm} bookings={data.bookings} services={data.services} eligibleDate={data.eligibleDate} emailEnabled={data.emailEnabled}/>
 	</div>
 </form>
 

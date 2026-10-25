@@ -1,0 +1,15 @@
+Subject: Your appointment on {{date}} at {{time}}
+
+Hello {{firstNames}},
+
+This is to confirm your appointment with {{organization}}.
+
+Date: {{date}}
+Time: {{time}}
+Location: {{location}}
+
+{{specialRequestSection}}
+If you need to change or cancel your appointment, please contact us as soon as you can.
+
+Thank you,
+{{organization}}

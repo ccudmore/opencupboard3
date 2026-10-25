@@ -8,6 +8,16 @@ x-app-env: &app-env
   LOGO_DARK_PATH: ${LOGO_DARK_PATH:-}
   PUBLIC_ORGANIZATION_NAME: ${PUBLIC_ORGANIZATION_NAME:-}
   CSP_ENFORCE: ${CSP_ENFORCE:-}
+  # Booking confirmation emails. Leave SMTP_HOST empty to turn email off.
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_SECURE: ${SMTP_SECURE:-false}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  MAIL_FROM: ${MAIL_FROM:-}
+  MAIL_REPLY_TO: ${MAIL_REPLY_TO:-}
+  TIMEZONE: ${TIMEZONE:-America/Toronto}
+  EMAIL_TEMPLATE_DIR: ${EMAIL_TEMPLATE_DIR:-}
 
 services:
   postgres:

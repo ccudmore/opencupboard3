@@ -56,7 +56,8 @@ export function isIdVerificationNeeded(date: Date | undefined | null) {
 
 export function calculateNextServiceDate(bookings: BookingWithAppointment[]) {
 	const times = (bookings as any[])
-		.filter((b) => b.status !== AppointmentBookingStatus.CANCELLED)
+		// unscheduled bookings have no appointment, so they don't count
+		.filter((b) => b.status !== AppointmentBookingStatus.CANCELLED && b.appointment)
   		.map((b) => new Date(b.appointment.startTime).getTime());
 
 	if (times.length === 0) {
