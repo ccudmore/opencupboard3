@@ -1,0 +1,15 @@
+Subject: You are scheduled to volunteer on {{date}}
+
+Hello {{firstName}},
+
+Thank you for volunteering with {{organization}}. This is to confirm that you are scheduled{{roleText}} for {{eventTitle}}.
+
+Date: {{date}}
+Time: {{time}} to {{endTime}}
+Location: {{location}}
+
+{{noteSection}}
+If you can no longer make it, please let us know as soon as you can.
+
+Thank you,
+{{organization}}

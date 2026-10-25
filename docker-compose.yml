@@ -69,6 +69,10 @@ services:
       MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
       PORT: 3000
+      # Uploaded volunteer documents are stored in the database.
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      # adapter-node refuses larger request bodies (default 512K); must be above MAX_UPLOAD_MB
+      BODY_SIZE_LIMIT: 25M
     networks:
       - backend
     volumes:

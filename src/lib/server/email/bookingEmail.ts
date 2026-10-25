@@ -10,12 +10,22 @@ import { renderTemplate, type TemplateVars } from './templates';
 export const emailBookingInclude = {
 	household: { include: { members: true } },
 	appointment: { include: { event: { include: { location: true } } } },
+	plannedSite: true,
 	datedRequest: true
 } satisfies Prisma.AppointmentBookingsInclude;
 
 type EmailBooking = Prisma.AppointmentBookingsGetPayload<{ include: typeof emailBookingInclude }>;
 
 export type Recipient = { name: string; email: string };
+
+/** The messages a booking can send. Each kind is remembered in its own JSON column. */
+export type EmailKind = 'confirmation' | 'reminder' | 'cancellation';
+
+export const EMAIL_KINDS: Record<EmailKind, { template: string; unscheduledTemplate?: string; column: 'confirmations' | 'reminders' | 'cancellations' }> = {
+	confirmation: { template: 'booking-confirmation', unscheduledTemplate: 'booking-confirmation-unscheduled', column: 'confirmations' },
+	reminder: { template: 'booking-reminder', column: 'reminders' }, // needs a date and time
+	cancellation: { template: 'booking-cancellation', unscheduledTemplate: 'booking-cancellation-unscheduled', column: 'cancellations' }
+};
 
 const MAX_SUBJECT = 200;
 const MAX_BODY = 10_000;
@@ -46,7 +56,9 @@ export function recipientsFor(booking: EmailBooking): Recipient[] {
 export function buildVars(booking: EmailBooking, options: { organization: string; timeZone: string }): TemplateVars {
 	const primaries = booking.household.members.filter((m) => m.relationship === ClientRelationship.PRIMARY);
 	const appt = booking.appointment;
-	const loc = appt?.event.location;
+	// An unscheduled booking may still have a planned day, time and place
+	const start = appt?.startTime ?? booking.plannedStart;
+	const loc = appt?.event.location ?? booking.plannedSite;
 
 	const dateFormat = new Intl.DateTimeFormat('en-CA', { dateStyle: 'full', timeZone: options.timeZone });
 	const timeFormat = new Intl.DateTimeFormat('en-CA', { timeStyle: 'short', timeZone: options.timeZone });
@@ -57,8 +69,8 @@ export function buildVars(booking: EmailBooking, options: { organization: string
 	return {
 		primaryNames: joinNames(primaries.map(fullName)),
 		firstNames: joinNames(primaries.map((m) => m.firstName.trim())),
-		date: appt ? dateFormat.format(appt.startTime) : '',
-		time: appt ? timeFormat.format(appt.startTime) : '',
+		date: start ? dateFormat.format(start) : '',
+		time: start ? timeFormat.format(start) : '',
 		endTime: appt ? timeFormat.format(appt.endTime) : '',
 		serviceTitle: appt?.event.title ?? '',
 		location: [loc?.name, address].filter(Boolean).join(', '),
@@ -88,8 +100,8 @@ async function loadBooking(householdId: string, bookingId: string) {
 export type EmailDraft = { to: Recipient[]; subject: string; body: string };
 export type DraftResult = { ok: true; draft: EmailDraft } | { ok: false; status: number; message: string };
 
-/** Builds the confirmation message from the template. Nothing is sent. */
-export async function buildConfirmationEmail(householdId: string, bookingId: string): Promise<DraftResult> {
+/** Builds the message from its template. Nothing is sent. */
+export async function buildEmail(householdId: string, bookingId: string, kind: EmailKind): Promise<DraftResult> {
 	const booking = await loadBooking(householdId, bookingId);
 	if (!booking) return { ok: false, status: 404, message: 'Booking not found.' };
 
@@ -98,7 +110,12 @@ export async function buildConfirmationEmail(householdId: string, bookingId: str
 		return { ok: false, status: 400, message: 'No primary member of this household has an email address.' };
 	}
 
-	const template = booking.appointment ? 'booking-confirmation' : 'booking-confirmation-unscheduled';
+	const config = EMAIL_KINDS[kind];
+	const hasTime = Boolean(booking.appointment || booking.plannedStart);
+	if (!hasTime && !config.unscheduledTemplate) {
+		return { ok: false, status: 400, message: 'A reminder needs a booking with a date and time.' };
+	}
+	const template = hasTime ? config.template : config.unscheduledTemplate!;
 	const { subject, body } = await renderTemplate(template, buildVars(booking, settings()));
 	return { ok: true, draft: { to, subject, body } };
 }
@@ -106,11 +123,12 @@ export async function buildConfirmationEmail(householdId: string, bookingId: str
 export type SendResult = { ok: true; to: Recipient[] } | { ok: false; status: number; message: string };
 
 /**
- * Sends the confirmation to every primary member with an email address.
+ * Sends the message to every primary member with an email address.
  * Recipients always come from the database. If `subject` and `body` are given
  * (the user edited the text) they replace the template text.
  */
-export async function sendConfirmationEmail(args: {
+export async function sendBookingEmail(args: {
+	kind: EmailKind;
 	householdId: string;
 	bookingId: string;
 	userId?: string;
@@ -119,7 +137,7 @@ export async function sendConfirmationEmail(args: {
 }): Promise<SendResult> {
 	if (!isMailConfigured()) return { ok: false, status: 503, message: 'Email is not set up on this server.' };
 
-	const built = await buildConfirmationEmail(args.householdId, args.bookingId);
+	const built = await buildEmail(args.householdId, args.bookingId, args.kind);
 	if (!built.ok) return built;
 
 	const subject = (args.subject?.trim() || built.draft.subject).replace(/[\r\n]+/g, ' ').slice(0, MAX_SUBJECT);
@@ -129,20 +147,22 @@ export async function sendConfirmationEmail(args: {
 	try {
 		await sendMail({ to: emails, subject, text: body });
 	} catch (err) {
-		console.error('Sending confirmation email failed:', err);
+		console.error(`Sending ${args.kind} email failed:`, err);
 		return { ok: false, status: 502, message: 'The email could not be sent. Please try again later.' };
 	}
 
 	// Remember that it was sent (shown in the bookings list)
+	const column = EMAIL_KINDS[args.kind].column;
 	const existing = await prisma.appointmentBookings.findUnique({
 		where: { id: args.bookingId },
-		select: { confirmations: true }
+		select: { confirmations: true, reminders: true, cancellations: true }
 	});
-	const history = Array.isArray(existing?.confirmations) ? existing.confirmations : [];
+	const current = existing?.[column];
+	const history = Array.isArray(current) ? current : [];
 	await prisma.appointmentBookings.update({
 		where: { id: args.bookingId },
 		data: {
-			confirmations: [
+			[column]: [
 				...history,
 				{ sentAt: new Date().toISOString(), to: emails, sentBy: args.userId ?? null }
 			] as Prisma.InputJsonValue

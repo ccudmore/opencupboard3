@@ -1,0 +1,15 @@
+Subject: Reminder: your appointment on {{date}} at {{time}}
+
+Hello {{firstNames}},
+
+This is a reminder of your upcoming appointment with {{organization}}.
+
+Date: {{date}}
+Time: {{time}}
+Location: {{location}}
+
+{{specialRequestSection}}
+If you can no longer come, please contact us as soon as you can so that someone else can use your time.
+
+Thank you,
+{{organization}}

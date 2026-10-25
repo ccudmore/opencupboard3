@@ -7,7 +7,10 @@ import type {
 	EventVolunteer,
 } from '$lib/components/Calendar.svelte';
 import { requirePermission, hasPermission } from '$lib/utils';
+import { rolesFor } from '$lib/volunteerRoles';
+import { VolunteerAssignmentsStatus } from '$prisma/enums';
 import prisma from '$lib/prisma';
+import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 //import getVoluteers from 
 
@@ -24,36 +27,30 @@ import type { Actions, PageServerLoad } from './$types';
 
 async function getCategories(): Promise<CalendarCategory[]> {
 	return [
-		{ name: 'Service Date', color: '#2563eb', roles: ['Supervisor', 'Assistant', 'Setup'] },
-		{ name: 'Meeting', color: '#7c3aed', roles: ['Chair', 'Secretary', 'Member', 'Guest'] },
-		{ name: 'Shopping', color: '#FFD580', roles: ['Shopper', ] },
-		{ name: 'Food Drives & Events', color: '#EDC8FF', roles: ['Supervisor', 'Assistant', 'Setup'] },
-		{ name: 'Lion Hearts', color: '#90EE90', roles: ['Driver', 'Sorter',] },
-		{ name: 'Inventory', color: '#16a34a', roles: ['Supervisor', 'Sorter',] },
+		{ name: 'Service Date', color: '#2563eb', roles: rolesFor('Service Date') },
+		{ name: 'Meeting', color: '#7c3aed', roles: rolesFor('Meeting') },
+		{ name: 'Shopping', color: '#FFD580', roles: rolesFor('Shopping') },
+		{ name: 'Food Drives & Events', color: '#EDC8FF', roles: rolesFor('Food Drives & Events') },
+		{ name: 'Lion Hearts', color: '#90EE90', roles: rolesFor('Lion Hearts') },
+		{ name: 'Inventory', color: '#16a34a', roles: rolesFor('Inventory') },
 		{ name: 'COBS', color: '#ea580c' } // no roles
 	];
 }
 
 const categories = await getCategories()
-const volunteers = await getVolunteers();
+/** Used for volunteers who are assigned to an event without a role. */
+const NO_ROLE = '';
 
 async function getVolunteers(): Promise<Volunteer[]> {
-	/*
-	const results = await prisma.volunteer.findMany({
-		select: {
-    		id: true,
-    		firstName: true,
-    		lastName: true,
-  		},
+	return prisma.volunteer.findMany({
+		select: { id: true, firstName: true, lastName: true },
+		orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
 	});
-	const volunteers: Volunteer[] = results.map(v => ({
-    	firstName: v.firstName,
-		lastName: v.lastName,
-    	id: v.id
-	}));
-	return volunteers
-	*/
-	return []
+}
+
+/** Read fresh for every request, so a new volunteer can be assigned straight away. */
+async function volunteerIds(): Promise<Set<string>> {
+	return new Set((await getVolunteers()).map((v) => v.id));
 }
 
 async function getEvents(): Promise<CalendarEvent[]> {
@@ -78,7 +75,10 @@ async function getEvents(): Promise<CalendarEvent[]> {
 		end: v.endTime,
     	category: v.type,
 		repeating: false,
-		// volunteers: 
+		// cancelled assignments aren't shown on the calendar
+		volunteers: v.volunteers
+			.filter((a) => a.status !== VolunteerAssignmentsStatus.CANCELLED)
+			.map((a) => (a.eventRole === NO_ROLE ? { id: a.volunteerId } : { id: a.volunteerId, role: a.eventRole }))
 	}));
 
 /*
@@ -180,13 +180,22 @@ export const actions: Actions = {
 		);
 	},
  
-	/** An edit: one event changed, possibly splitting a repeating series (so may also create one). */
-	update: ({ request, url, locals }) => 
-	{
-	    requirePermission(locals?.user?.permissions, url, ['login', 'manage-households', 'manage-inventory', 'manage-volunteers']);
-		handle(request, (c) =>
-			c.updated.length >= 1 && c.deleted.length === 0 ? null : 'Updating expects changed events only.'
-		);
+	/**
+	 * An edit: one event changed, possibly splitting a repeating series (so may also create one).
+	 * For now only the volunteers (and their roles) are saved; other event changes are not stored yet.
+	 */
+	update: async ({ request, url, locals }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-households', 'manage-inventory', 'manage-volunteers']);
+
+		const parsed = readChanges(await request.formData(), await volunteerIds());
+		if ('error' in parsed) return fail(400, { message: parsed.error });
+		if (parsed.changes.updated.length < 1 || parsed.changes.deleted.length > 0) {
+			return fail(400, { message: 'Updating expects changed events only.' });
+		}
+
+		const result = await saveVolunteerAssignments(parsed.changes.updated, locals.user?.id);
+		if (result) return fail(400, { message: result });
+		return { saved: true };
 	},
  
 	/** A delete: removed events, and/or a series trimmed (exception or earlier end date). */
@@ -215,14 +224,14 @@ async function handle(
 	rule: (c: CalendarChanges) => string | null // action-specific shape check
 ) {
 //	console.log('CRAIG2 - handle')
-		const parsed = readChanges(await request.formData());
+		const parsed = readChanges(await request.formData(), await volunteerIds());
 
 //	console.log(request)
 //	console.log(rule) 
 }
 
 /** Parses and validates the `changes` form field sent by the calendar. */
-function readChanges(form: FormData): { changes: CalendarChanges } | { error: string } {
+function readChanges(form: FormData, volunteerIds: Set<string>): { changes: CalendarChanges } | { error: string } {
 	let raw: unknown;
 	try {
 		raw = JSON.parse(String(form.get('changes') ?? ''));
@@ -236,7 +245,7 @@ function readChanges(form: FormData): { changes: CalendarChanges } | { error: st
 		const list = raw[key] ?? [];
 		if (!Array.isArray(list)) return { error: `"${key}" must be a list.` };
 		for (const item of list) {
-			const r = cleanEvent(item);
+			const r = cleanEvent(item, volunteerIds);
 			if ('error' in r) return { error: r.error };
 			out[key].push(r.event);
 		}
@@ -253,7 +262,7 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
 const validDate = (v: unknown) => (typeof v === 'string' || v instanceof Date) && !isNaN(+new Date(v));
 
 /** Returns a clean copy of `raw` containing only known fields, or an error message. */
-function cleanEvent(raw: unknown): { event: CalendarEvent } | { error: string } {
+function cleanEvent(raw: unknown, volunteerIds: Set<string>): { event: CalendarEvent } | { error: string } {
 	if (!isObject(raw)) return { error: 'Event must be an object.' };
 	const { id, title, location, start, end, category } = raw;
  
@@ -300,7 +309,7 @@ function cleanEvent(raw: unknown): { event: CalendarEvent } | { error: string } 
 		for (const v of raw.volunteers) {
 			const vid = typeof v === 'string' ? v : isObject(v) ? v.id : undefined;
 			const role = isObject(v) && typeof v.role === 'string' ? v.role : undefined;
-			if (typeof vid !== 'string' || !volunteers.some((x) => x.id === vid))
+			if (typeof vid !== 'string' || !volunteerIds.has(vid))
 				return { error: `Unknown volunteer "${String(vid)}".` };
 			if (role && !cat.roles?.includes(role))
 				return { error: `"${role}" isn't a role for ${cat.name} events.` };
@@ -309,4 +318,56 @@ function cleanEvent(raw: unknown): { event: CalendarEvent } | { error: string } 
 		event.volunteers = list;
 	}
 	return { event };
+}
+
+/**
+ * Makes each event's volunteers match the list sent by the calendar. Assignments that are
+ * unchanged are left alone (so their status and history stay), the rest are removed or added.
+ * Returns an error message, or null when everything was saved.
+ */
+async function saveVolunteerAssignments(events: CalendarEvent[], userId: string | undefined): Promise<string | null> {
+	for (const ev of events) {
+		if (!ev.id || !ev.volunteers) continue; // nothing about volunteers changed
+
+		const dbEvent = await prisma.event.findUnique({ where: { id: ev.id }, select: { id: true, type: true } });
+		if (!dbEvent) continue; // not an event from the database
+
+		// The roles allowed come from the saved event's category, not from what the browser says
+		const allowedRoles = rolesFor(dbEvent.type);
+		const wanted = new Map<string, string>(); // volunteerId -> role
+		for (const v of ev.volunteers) {
+			const id = typeof v === 'string' ? v : v.id;
+			const role = typeof v === 'string' ? NO_ROLE : (v.role ?? NO_ROLE);
+			if (role !== NO_ROLE && !allowedRoles.includes(role)) return `"${role}" isn't a role for ${dbEvent.type} events.`;
+			wanted.set(id, role);
+		}
+
+		await prisma.$transaction(async (tx) => {
+			const existing = await tx.volunteerAssignments.findMany({ where: { eventId: dbEvent.id } });
+
+			// Volunteers who are no longer on the list are removed, and role changes are saved on the
+			// same assignment (its status and the emails already sent are kept). Cancelled assignments
+			// aren't shown on the calendar, so they are left alone unless the volunteer is added again.
+			for (const a of existing) {
+				if (a.status === VolunteerAssignmentsStatus.CANCELLED) continue;
+				const role = wanted.get(a.volunteerId);
+				if (role === undefined) await tx.volunteerAssignments.delete({ where: { id: a.id } });
+				else if (role !== a.eventRole) await tx.volunteerAssignments.update({ where: { id: a.id }, data: { eventRole: role } });
+			}
+			for (const [volunteerId, role] of wanted) {
+				const old = existing.find((a) => a.volunteerId === volunteerId);
+				if (!old) {
+					await tx.volunteerAssignments.create({
+						data: { volunteerId, eventId: dbEvent.id, eventRole: role, status: VolunteerAssignmentsStatus.ACTIVE, createdBy: userId }
+					});
+				} else if (old.status === VolunteerAssignmentsStatus.CANCELLED) {
+					await tx.volunteerAssignments.update({
+						where: { id: old.id },
+						data: { eventRole: role, status: VolunteerAssignmentsStatus.ACTIVE }
+					});
+				}
+			}
+		});
+	}
+	return null;
 }

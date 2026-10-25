@@ -1,4 +1,4 @@
-import { HouseholdStatus, AppointmentBookingStatus, ClientIdentificationType, ClientRelationship, ServiceTime, DeliveryType, DatedRequestStatus} from '$prisma/browser';
+import { HouseholdStatus, AppointmentBookingStatus, VolunteerAssignmentsStatus, ClientIdentificationType, ClientRelationship, ServiceTime, DeliveryType, DatedRequestStatus} from '$prisma/browser';
 
 export const householdStatusLabels = {
   	ACTIVE: 'Active',
@@ -16,6 +16,15 @@ const appointmentBookingStatusLabels = {
 
 } as const satisfies Record<AppointmentBookingStatus, string>;
 export const appointmentBookingStatusOptions = Object.entries(appointmentBookingStatusLabels).map(([value, name]) => ({ value, name }));
+
+const volunteerAssignmentStatusLabels = {
+  	ACTIVE: 'Active',
+  	NO_SHOW: 'No Show',
+  	CANCELLED: 'Cancelled',
+    COMPLETE: 'Complete',
+    PENDING: 'Pending',
+} as const satisfies Record<VolunteerAssignmentsStatus, string>;
+export const volunteerAssignmentStatusOptions = Object.entries(volunteerAssignmentStatusLabels).map(([value, name]) => ({ value, name }));
 
 const idTypeLabels = {
     DRIVERS_LICENSE: 'Drivers License',

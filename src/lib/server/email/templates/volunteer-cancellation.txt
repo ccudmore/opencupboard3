@@ -1,0 +1,10 @@
+Subject: Your volunteer shift on {{date}} has been cancelled
+
+Hello {{firstName}},
+
+This is to let you know that your volunteer shift{{roleText}} for {{eventTitle}} on {{date}} at {{time}} has been cancelled.
+
+Thank you for your support of {{organization}}. If you have any questions, please contact us.
+
+Thank you,
+{{organization}}

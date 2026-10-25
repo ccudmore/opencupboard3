@@ -1,0 +1,15 @@
+Subject: Reminder: you are volunteering on {{date}}
+
+Hello {{firstName}},
+
+This is a reminder that you are scheduled{{roleText}} for {{eventTitle}}.
+
+Date: {{date}}
+Time: {{time}} to {{endTime}}
+Location: {{location}}
+
+{{noteSection}}
+If you can no longer make it, please let us know as soon as you can.
+
+Thank you,
+{{organization}}

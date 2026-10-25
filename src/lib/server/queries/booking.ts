@@ -5,12 +5,13 @@ import { AppointmentBookingStatus, EventStatus } from '$prisma/enums';
 /** Everything the bookings list needs for one booking. */
 export const bookingInclude = {
 	appointment: { include: { event: { include: { location: true } } } },
+	plannedSite: true,
 	datedRequest: true
 } satisfies Prisma.AppointmentBookingsInclude;
 
 /**
  * All bookings for a household, most recent first.
- * Bookings without an appointment ("unscheduled") sort by the day they were created.
+ * Bookings without an appointment ("unscheduled") sort by their planned start, or the day they were created.
  */
 export async function getHouseholdBookings(householdId: string) {
 	const bookings = await prisma.appointmentBookings.findMany({
@@ -18,8 +19,13 @@ export async function getHouseholdBookings(householdId: string) {
 		include: bookingInclude
 	});
 
-	const sortKey = (b: (typeof bookings)[number]) => (b.appointment?.startTime ?? b.createdAt).getTime();
+	const sortKey = (b: (typeof bookings)[number]) => (b.appointment?.startTime ?? b.plannedStart ?? b.createdAt).getTime();
 	return bookings.sort((a, b) => sortKey(b) - sortKey(a));
+}
+
+/** Locations to choose from for an unscheduled booking. */
+export async function getSites() {
+	return prisma.site.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } });
 }
 
 /**

@@ -1,0 +1,392 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String     @id
+  name          String
+  email         String
+  emailVerified Boolean    @default(false)
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  roles         UserRole[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// Application RBAC tables
+//
+//   User --(UserRole)--> Role --(RolePermission)--> Permission
+//
+// Both links are many-to-many: a user can hold several roles, and a role
+// bundles together one or more permissions. All access-control checks in
+// the app resolve down to "does this user have permission X", computed by
+// walking User -> Role -> Permission at request time.
+// ---------------------------------------------------------------------------
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g. "user", "manager", "admin"
+  description String?
+  createdAt   DateTime @default(now())
+  createdBy    String?
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  createdAt DateTime @default(now())
+  createdBy    String?
+  roles           RolePermission[]
+  
+  @@map("permission")
+}
+
+model UserRole {
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_role")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+  createdBy    String?
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+// - custom stuff starts here
+
+model Site {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  street       String?
+  city         String?
+  postalCode   String?
+  province     String        @default("Ontario")
+  country      String        @default("Canada")
+  createdTime  DateTime      @default(now())
+  events       Event[]
+  createdAt    DateTime      @default(now())
+  createdBy    String?
+  appointments Appointment[]
+  plannedBookings AppointmentBookings[] @relation("BookingPlannedSite")
+
+  @@map("site")
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  //  location   Site     @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  //  locationId String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  bookings AppointmentBookings[] // renamed from "appointments"
+  site     Site?                 @relation(fields: [siteId], references: [id])
+  siteId   String?
+
+  //  @@index([locationId])
+  @@index([eventId])
+  @@map("appointment")
+}
+
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model Event {
+  id           String                 @id @default(cuid())
+  type         String
+  title        String?
+  startTime    DateTime
+  endTime      DateTime
+  note         String?
+  status       EventStatus
+  locationId   String
+  location     Site                   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  volunteers   VolunteerAssignments[]
+  createdAt    DateTime               @default(now())
+  createdBy    String?
+  appointments Appointment[]
+
+  @@index([locationId])
+  @@map("event")
+}
+
+enum ClientIdentificationType {
+  DRIVERS_LICENSE
+  ID_CARD
+  HEALTH_CARD
+  BILL
+  OTHER
+}
+
+enum ClientRelationship {
+  PRIMARY
+  SPOUSE
+  PARENT
+  CHILD
+  GRANDPARENT
+  SIBLING
+  OTHER
+}
+
+model Client {
+  id                    String    @id @default(cuid())
+  firstName             String
+  lastName              String
+  email                 String?
+  phone                 String?
+  idChecked             ClientIdentificationType?
+  birthYear             Int?
+  idCheckDate           DateTime?
+  relationship          ClientRelationship?
+  memberOf              Household @relation("HouseholdMembership", fields: [householdMembershipId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  householdMembershipId String
+  createdAt             DateTime  @default(now())
+  createdBy             String?
+
+  @@index([householdMembershipId])
+  @@map("client")
+}
+
+/**
+ * model Message {
+ * id          String     @id @default(cuid())
+ * content     String
+ * senderId    String
+ * recipient    User @relation("Message Recipient", fields: [recipientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+ * sender      User @relation("Message Sender", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+ * recipientId   String
+ * status        String
+ * createdAt     DateTime        @default(now())
+ * }
+ */
+
+enum DatedRequestStatus {
+  ACTIVE
+  CLOSED
+}
+
+model DatedRequest {
+  id          String    @id @default(cuid())
+  household   Household @relation("DatedRequestMembership", fields: [householdId], references: [id])
+  householdId String
+  requestText String?
+  status      DatedRequestStatus?
+  type        String?
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+  booking     AppointmentBookings? @relation("BookingDatedRequest")
+
+  @@index([householdId])
+  @@map("dated_request")
+}
+
+enum HouseholdStatus {
+  ACTIVE
+  ARCHIVED
+  INACTIVE
+}
+
+enum DeliveryType {
+  IN_PERSON
+  DELIVERY
+  PICKUP
+}
+
+enum ServiceTime {
+  MONDAY_MORNING
+  MONDAY_EVENING
+  TUESDAY_MORNING
+  TUESDAY_EVENING
+  WEDNESDAY_MORNING
+  WEDNESDAY_EVENING
+  THURSDAY_MORNING
+  THURSDAY_EVENING
+  FRIDAY_MORNING
+  FRIDAY_EVENING
+}
+
+model Household {
+  id                    String                @id @default(cuid())
+  status                HouseholdStatus       @default(ACTIVE)
+  uniqueId              String?               @unique
+  datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
+  dietaryRestrictions   String[]
+  pets                  String?
+  notes                 String?
+  preferredServiceTypes DeliveryType[]
+  preferredTimeOfDay    ServiceTime[]
+  languagesSpoken       String[]
+  howHeard              String?
+  street                String?
+  street2               String?
+  city                  String?
+  postalCode            String?
+  province              String
+  country               String
+  //  appointments          Appointment[]
+  bookings              AppointmentBookings[]
+  members               Client[]              @relation("HouseholdMembership")
+  createdAt             DateTime              @default(now())
+  createdBy             String?
+  @@map("household")
+}
+
+model Volunteer {
+  id              String                 @id @default(cuid())
+  //person          Person  @relation(fields: [personId], references: [id])
+  //personId        String  @unique
+  firstName       String
+  lastName        String
+  street          String?
+  city            String?
+  postalCode      String?
+  province        String                 @default("Ontario")
+  country         String                 @default("Canada")
+  email1          String?
+  email2          String?
+  phone1          String?
+  phone2          String?
+  availability    Json?
+  attachments     Json?
+  trainingCourses Json?
+  assignments     VolunteerAssignments[]
+  createdAt       DateTime               @default(now())
+  createdBy       String?
+  @@map("volunteer")
+}
+
+model VolunteerAssignments {
+  volunteer   Volunteer @relation(fields: [volunteerId], references: [id])
+  volunteerId String
+  event       Event     @relation(fields: [eventId], references: [id])
+  eventId     String
+  eventRole   String
+  status      String
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+
+  @@id([volunteerId, eventId, eventRole])
+  @@index([eventId])
+  @@map("volunteer_assignments")
+}
+
+enum AppointmentBookingStatus {
+  PENDING
+  ACTIVE
+  COMPLETE
+  NO_SHOW
+  CANCELLED
+}
+
+model AppointmentBookings {
+  id            String      @id @default(cuid())
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  appointmentId String?     // null = "unscheduled" booking
+  household     Household   @relation(fields: [householdId], references: [id])
+  householdId   String
+  status        AppointmentBookingStatus
+  confirmations Json?
+  reminders     Json?
+  // For "unscheduled" bookings (no appointment): the day, time and place the household is expected
+  plannedStart  DateTime?
+  plannedSite   Site?       @relation("BookingPlannedSite", fields: [plannedSiteId], references: [id], onDelete: SetNull)
+  plannedSiteId String?
+  createdAt     DateTime    @default(now())
+  createdBy     String?
+  datedRequest   DatedRequest? @relation("BookingDatedRequest", fields: [datedRequestId], references: [id], onDelete: SetNull)
+  datedRequestId String?       @unique
+
+  // One ACTIVE booking per appointment is enforced in bookingActions.ts (Serializable transaction)
+  @@index([householdId])
+  @@index([appointmentId])
+  @@index([plannedSiteId])
+  @@map("appointment_bookings")
+}

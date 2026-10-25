@@ -2,5 +2,5 @@ import type { LayoutServerLoad } from '../../$types';
 import { requirePermission } from '$lib/utils';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
-    requirePermission(locals?.user?.permissions, url, ['manage-households','manage-volunteers']);    
+    requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
 }

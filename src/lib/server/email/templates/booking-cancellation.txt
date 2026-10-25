@@ -1,0 +1,14 @@
+Subject: Your appointment on {{date}} has been cancelled
+
+Hello {{firstNames}},
+
+This is to let you know that your appointment with {{organization}} has been cancelled.
+
+Date: {{date}}
+Time: {{time}}
+Location: {{location}}
+
+If you would like to book another appointment, or if you think this is a mistake, please contact us.
+
+Thank you,
+{{organization}}

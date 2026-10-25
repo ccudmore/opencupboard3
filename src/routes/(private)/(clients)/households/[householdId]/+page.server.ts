@@ -7,9 +7,9 @@ import { householdSchema } from '$lib/formschemas/household';
 import type { HouseholdWithRelations, } from "$lib/types/household";
 import { householdInclude } from '$lib/server/household';
 import { requirePermission, calculateNextServiceDate } from '$lib/utils';
-import { getHouseholdBookings, getAvailableServices } from '$lib/server/queries/booking';
+import { getHouseholdBookings, getAvailableServices, getSites } from '$lib/server/queries/booking';
 import { isMailConfigured } from '$lib/server/email/mailer';
-import { createBooking, updateBooking, deleteBooking, previewConfirmation, sendConfirmation } from '$lib/server/bookingActions';
+import { createBooking, updateBooking, deleteBooking, previewEmail, sendEmail } from '$lib/server/bookingActions';
 
 export const load: PageServerLoad = async ({params, locals, url }) => {
 	requirePermission(locals?.user?.permissions, url, ['manage-households']);
@@ -28,15 +28,17 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
 	const { bookings: _bookings, ...household } = householdAll;
 	const form = await superValidate(household, zod4(householdSchema));
 
-	const [bookings, services] = await Promise.all([
+	const [bookings, services, sites] = await Promise.all([
 		getHouseholdBookings(params.householdId),
-		getAvailableServices()
+		getAvailableServices(),
+		getSites()
 	]);
 
 	return {
 		form,
 		bookings,            // newest first, including "unscheduled" ones
 		services,            // future service dates with open appointments
+		sites,               // locations for unscheduled bookings
 		eligibleDate: calculateNextServiceDate(bookings), // null = eligible now
 		emailEnabled: isMailConfigured()
 	}
@@ -105,13 +107,13 @@ export const actions: Actions = {
 		return deleteBooking(params.householdId, await request.formData());
 	},
 
-	previewConfirmation: async ({ request, locals, url, params }) => {
+	previewEmail: async ({ request, locals, url, params }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-households']);
-		return previewConfirmation(params.householdId, await request.formData());
+		return previewEmail(params.householdId, await request.formData());
 	},
 
-	sendConfirmation: async ({ request, locals, url, params }) => {
+	sendEmail: async ({ request, locals, url, params }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-households']);
-		return sendConfirmation(params.householdId, locals.user?.id, await request.formData());
+		return sendEmail(params.householdId, locals.user?.id, await request.formData());
 	},
 }

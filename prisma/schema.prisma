@@ -149,6 +149,7 @@ model Site {
   createdAt    DateTime      @default(now())
   createdBy    String?
   appointments Appointment[]
+  plannedBookings AppointmentBookings[] @relation("BookingPlannedSite")
 
   @@map("site")
 }
@@ -337,22 +338,53 @@ model Volunteer {
   attachments     Json?
   trainingCourses Json?
   assignments     VolunteerAssignments[]
+  documents       VolunteerDocument[]
   createdAt       DateTime               @default(now())
   createdBy       String?
   @@map("volunteer")
 }
 
-model VolunteerAssignments {
-  volunteer   Volunteer @relation(fields: [volunteerId], references: [id])
+// A file uploaded for a volunteer, stored in the database. Only load `content` to send the file.
+model VolunteerDocument {
+  id          String    @id @default(cuid())
+  volunteer   Volunteer @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
   volunteerId String
-  event       Event     @relation(fields: [eventId], references: [id])
-  eventId     String
-  eventRole   String
-  status      String
+  name        String // the file name people see
+  contentType String // chosen by the server from the file type, never taken from the browser
+  size        Int // bytes
+  content     Bytes
   createdAt   DateTime  @default(now())
   createdBy   String?
 
-  @@id([volunteerId, eventId, eventRole])
+  @@index([volunteerId])
+  @@map("volunteer_document")
+}
+
+// Same values as AppointmentBookingStatus
+enum VolunteerAssignmentsStatus {
+  PENDING
+  ACTIVE
+  COMPLETE
+  NO_SHOW
+  CANCELLED
+}
+
+model VolunteerAssignments {
+  id            String                     @id @default(cuid())
+  volunteer     Volunteer                  @relation(fields: [volunteerId], references: [id])
+  volunteerId   String
+  event         Event                      @relation(fields: [eventId], references: [id])
+  eventId       String
+  eventRole     String                     @default("") // "" = no role; the roles allowed depend on the event's type
+  status        VolunteerAssignmentsStatus @default(ACTIVE)
+  // Each is a list of { sentAt, to, sentBy }, one entry per email sent
+  confirmations Json?
+  reminders     Json?
+  cancellations Json?
+  createdAt     DateTime                   @default(now())
+  createdBy     String?
+
+  @@unique([volunteerId, eventId]) // a volunteer has one role per event
   @@index([eventId])
   @@map("volunteer_assignments")
 }
@@ -374,6 +406,11 @@ model AppointmentBookings {
   status        AppointmentBookingStatus
   confirmations Json?
   reminders     Json?
+  cancellations Json?
+  // For "unscheduled" bookings (no appointment): the day, time and place the household is expected
+  plannedStart  DateTime?
+  plannedSite   Site?       @relation("BookingPlannedSite", fields: [plannedSiteId], references: [id], onDelete: SetNull)
+  plannedSiteId String?
   createdAt     DateTime    @default(now())
   createdBy     String?
   datedRequest   DatedRequest? @relation("BookingDatedRequest", fields: [datedRequestId], references: [id], onDelete: SetNull)
@@ -382,5 +419,6 @@ model AppointmentBookings {
   // One ACTIVE booking per appointment is enforced in bookingActions.ts (Serializable transaction)
   @@index([householdId])
   @@index([appointmentId])
+  @@index([plannedSiteId])
   @@map("appointment_bookings")
 }

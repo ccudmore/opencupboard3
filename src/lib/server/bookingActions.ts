@@ -4,7 +4,7 @@ import prisma from '$lib/prisma';
 import { AppointmentBookingStatus, DatedRequestStatus, EventStatus } from '$prisma/enums';
 import { calculateNextServiceDate } from '$lib/utils';
 import { bookingInclude, getHouseholdBookings } from '$lib/server/queries/booking';
-import { buildConfirmationEmail, sendConfirmationEmail } from '$lib/server/email/bookingEmail';
+import { buildEmail, sendBookingEmail } from '$lib/server/email/bookingEmail';
 
 /** Matches the type used by the "Special Requests" tab on the household page. */
 const SPECIAL_REQUEST_TYPE = 'Special';
@@ -40,8 +40,22 @@ function requestForClient(r: { id: string; householdId: string; requestText: str
 const createSchema = z.object({
 	appointmentId: z.string().trim().optional(),
 	specialRequest: z.string().trim().max(MAX_REQUEST_LENGTH).optional(),
-	acknowledgedEarly: z.string().optional()
+	acknowledgedEarly: z.string().optional(),
+	// Unscheduled bookings only: when and where the household is expected (both optional)
+	plannedStart: z.string().trim().optional(),
+	plannedSiteId: z.string().trim().optional()
 });
+
+/** "" or missing = no date. Anything else must be a valid date. */
+function parseDate(value: string | undefined): Date | null | 'invalid' {
+	if (!value) return null;
+	const d = new Date(value);
+	return Number.isNaN(d.getTime()) ? 'invalid' : d;
+}
+
+async function siteExists(id: string) {
+	return (await prisma.site.findUnique({ where: { id }, select: { id: true } })) !== null;
+}
 
 export async function createBooking(householdId: string, userId: string | undefined, formData: FormData) {
 	const parsed = createSchema.safeParse(formToObject(formData));
@@ -49,7 +63,18 @@ export async function createBooking(householdId: string, userId: string | undefi
 	const appointmentId = parsed.data.appointmentId || undefined; // empty string = "unscheduled"
 	const specialRequest = parsed.data.specialRequest || undefined;
 
+	// A planned date and place only apply to unscheduled bookings
+	const planned = appointmentId ? null : parseDate(parsed.data.plannedStart);
+	if (planned === 'invalid') return fail(400, { message: 'Invalid date.' });
+	const plannedSiteId = appointmentId ? undefined : parsed.data.plannedSiteId || undefined;
+
 	try {
+		if (plannedSiteId && !(await siteExists(plannedSiteId))) {
+			return fail(400, { message: 'That location does not exist.' });
+		}
+
+		// The day this booking is for: the service date, or the planned date
+		let target: Date | null = planned;
 		if (appointmentId) {
 			const appt = await prisma.appointment.findUnique({
 				where: { id: appointmentId },
@@ -58,13 +83,16 @@ export async function createBooking(householdId: string, userId: string | undefi
 			if (!appt || appt.event.status !== EventStatus.ACTIVE || appt.startTime <= new Date()) {
 				return fail(409, { message: 'That appointment is no longer available.' });
 			}
+			target = appt.event.startTime;
+		}
 
-			// Booking a service date before the household is eligible needs an explicit acknowledgement
+		// Booking a date before the household is eligible needs an explicit acknowledgement
+		if (target) {
 			const eligibleDate = calculateNextServiceDate(await getHouseholdBookings(householdId));
-			if (eligibleDate && appt.event.startTime < eligibleDate && parsed.data.acknowledgedEarly !== 'true') {
+			if (eligibleDate && target < eligibleDate && parsed.data.acknowledgedEarly !== 'true') {
 				return fail(409, {
 					code: 'not-eligible',
-					message: 'This service date is before the household is eligible.',
+					message: 'This date is before the household is eligible.',
 					eligibleDate
 				});
 			}
@@ -85,6 +113,8 @@ export async function createBooking(householdId: string, userId: string | undefi
 						createdBy: userId,
 						household: { connect: { id: householdId } },
 						...(appointmentId ? { appointment: { connect: { id: appointmentId } } } : {}),
+						...(planned instanceof Date ? { plannedStart: planned } : {}),
+						...(plannedSiteId ? { plannedSite: { connect: { id: plannedSiteId } } } : {}),
 						...(specialRequest
 							? {
 									datedRequest: {
@@ -116,7 +146,10 @@ export async function createBooking(householdId: string, userId: string | undefi
 const updateSchema = z.object({
 	bookingId: z.string().min(1),
 	status: z.enum(AppointmentBookingStatus),
-	specialRequest: z.string().trim().max(MAX_REQUEST_LENGTH).optional()
+	specialRequest: z.string().trim().max(MAX_REQUEST_LENGTH).optional(),
+	// Unscheduled bookings only. Present but empty = clear it; absent = leave it alone.
+	plannedStart: z.string().trim().optional(),
+	plannedSiteId: z.string().trim().optional()
 });
 
 export async function updateBooking(householdId: string, userId: string | undefined, formData: FormData) {
@@ -125,7 +158,15 @@ export async function updateBooking(householdId: string, userId: string | undefi
 	const { bookingId, status } = parsed.data;
 	const specialRequest = parsed.data.specialRequest || '';
 
+	const planned = parseDate(parsed.data.plannedStart);
+	if (planned === 'invalid') return fail(400, { message: 'Invalid date.' });
+	const plannedSiteId = parsed.data.plannedSiteId || null;
+
 	try {
+		if (plannedSiteId && !(await siteExists(plannedSiteId))) {
+			return fail(400, { message: 'That location does not exist.' });
+		}
+
 		const result = await prisma.$transaction(
 			async (tx) => {
 				const booking = await tx.appointmentBookings.findFirst({
@@ -153,10 +194,16 @@ export async function updateBooking(householdId: string, userId: string | undefi
 					datedRequest = null;
 				}
 
+				const isUnscheduled = !booking.appointmentId;
 				const updated = await tx.appointmentBookings.update({
 					where: { id: booking.id },
 					data: {
 						status,
+						// Only unscheduled bookings have a planned time and place
+						...(isUnscheduled && parsed.data.plannedStart !== undefined ? { plannedStart: planned } : {}),
+						...(isUnscheduled && parsed.data.plannedSiteId !== undefined
+							? { plannedSite: plannedSiteId ? { connect: { id: plannedSiteId } } : { disconnect: true } }
+							: {}),
 						...(specialRequest && !booking.datedRequest
 							? {
 									datedRequest: {
@@ -212,27 +259,31 @@ export async function deleteBooking(householdId: string, formData: FormData) {
 
 // ---------------------------------------------------------------- email
 
-/** Returns the recipients and the text that would be sent. Nothing is sent. */
-export async function previewConfirmation(householdId: string, formData: FormData) {
-	const bookingId = formToObject(formData).bookingId;
-	if (!bookingId) return fail(400, { message: 'Invalid request.' });
+const kindSchema = z.enum(['confirmation', 'reminder', 'cancellation']);
 
-	const result = await buildConfirmationEmail(householdId, bookingId);
+/** Returns the recipients and the text that would be sent. Nothing is sent. */
+export async function previewEmail(householdId: string, formData: FormData) {
+	const fields = formToObject(formData);
+	const kind = kindSchema.safeParse(fields.kind);
+	if (!fields.bookingId || !kind.success) return fail(400, { message: 'Invalid request.' });
+
+	const result = await buildEmail(householdId, fields.bookingId, kind.data);
 	if (!result.ok) return fail(result.status, { message: result.message });
 	return { to: result.draft.to, subject: result.draft.subject, body: result.draft.body };
 }
 
 const sendSchema = z.object({
+	kind: kindSchema,
 	bookingId: z.string().min(1),
 	subject: z.string().max(200).optional(),
 	body: z.string().max(10_000).optional()
 });
 
-export async function sendConfirmation(householdId: string, userId: string | undefined, formData: FormData) {
+export async function sendEmail(householdId: string, userId: string | undefined, formData: FormData) {
 	const parsed = sendSchema.safeParse(formToObject(formData));
 	if (!parsed.success) return fail(400, { message: 'Invalid request.' });
 
-	const result = await sendConfirmationEmail({ householdId, userId, ...parsed.data });
+	const result = await sendBookingEmail({ householdId, userId, ...parsed.data });
 	if (!result.ok) return fail(result.status, { message: result.message });
 	return { to: result.to };
 }
