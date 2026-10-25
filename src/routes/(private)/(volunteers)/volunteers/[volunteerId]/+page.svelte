@@ -3,18 +3,20 @@
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { enhance as plainEnhance } from '$app/forms';
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import {
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
+		ButtonGroup,
 		Helper,
 		Input,
 		Label,
 		Modal,
 		Textarea
 	} from 'flowbite-svelte';
-	import { HomeOutline, ChevronDoubleRightOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { HomeOutline, ChevronDoubleRightOutline, PlusOutline, TrashBinOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { volunteerSchema, WEEKDAYS } from '$lib/formschemas/volunteer';
 	import Documents from '$lib/components/Volunteer/Documents.svelte';
 	import Assignments from '$lib/components/Volunteer/Assignments.svelte';
@@ -23,7 +25,8 @@
 
 	// superForm only needs the initial value; it manages its own state afterwards
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, submitting, message }: any = superForm(data.form, {
+	const { form, errors, enhance, submitting, message, tainted, isTainted }: any = superForm(data.form, {
+		taintedMessage: 'Are you sure you want to leave? Your changes will not be saved.',
 		dataType: 'json', // the form has a list (training courses)
 		validators: zod4Client(volunteerSchema),
 		resetForm: false,
@@ -37,6 +40,11 @@
 	});
 
 	let deleteOpen = $state(false);
+
+	// Nothing is saved until Save is clicked; Close leaves the page and the edits are discarded
+	function close() {
+		goto('/volunteers');
+	}
 
 	const title = $derived(data.isNew ? 'New volunteer' : `${$form.firstName} ${$form.lastName}`.trim() || 'Volunteer');
 
@@ -62,7 +70,18 @@
 	<title>{title}</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
+{#snippet fieldError(messages: string[] | undefined)}
+	{#if messages && messages.length}
+		<Helper color="red" class="mt-1">{messages.join(', ')}</Helper>
+	{/if}
+{/snippet}
+
+<form method="POST" action="?/save" use:enhance>
+	<!-- Navigation and actions, as on the household page -->
+	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-gray-50 px-3 py-2 sm:px-5 dark:bg-gray-900">
+		<a href="/volunteers" class="text-sm font-medium text-blue-700 hover:underline sm:hidden dark:text-blue-400">‹ Volunteers</a>
+		<div class="hidden sm:block">
+			<Breadcrumb>
 	<BreadcrumbItem href="/" home>
 		{#snippet icon()}
 			<HomeOutline class="me-2 h-4 w-4" />
@@ -81,18 +100,27 @@
 		{data.isNew ? 'New' : title}
 	</BreadcrumbItem>
 </Breadcrumb>
+		</div>
+		<div class="flex flex-wrap items-center gap-3">
+			{#if isTainted($tainted)}
+				<span
+					role="status"
+					class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900 dark:bg-amber-900/50 dark:text-amber-100"
+				>
+					<ExclamationCircleOutline class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
+					Unsaved changes
+				</span>
+			{/if}
+			<ButtonGroup class="*:ring-primary-700!">
+				<Button outline size="md" type="submit" disabled={$submitting} class="px-4 font-semibold sm:px-6">{$submitting ? 'Saving…' : 'Save'}</Button>
+				<Button outline size="md" type="button" onclick={close} class="px-4 font-semibold sm:px-6">Close</Button>
+			</ButtonGroup>
+		</div>
+	</div>
 
-{#snippet fieldError(messages: string[] | undefined)}
-	{#if messages && messages.length}
-		<Helper color="red" class="mt-1">{messages.join(', ')}</Helper>
-	{/if}
-{/snippet}
-
-<div class="mx-auto w-full max-w-4xl min-w-0 p-3 sm:p-5">
-	<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-white">{title}</h1>
-
-	<form method="POST" action="?/save" use:enhance class="space-y-6">
-		<!-- Name and contact -->
+	<div class="mx-auto w-full max-w-4xl min-w-0 space-y-6 p-3 sm:p-5">
+		<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{title}</h1>
+<!-- Name and contact -->
 		<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Contact</h2>
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -228,19 +256,21 @@
 
 		<div class="flex flex-wrap gap-2">
 			<Button type="submit" color="dark" disabled={$submitting}>{$submitting ? 'Saving…' : 'Save'}</Button>
-			<Button type="button" outline color="dark" href="/volunteers">Back to list</Button>
+			<Button type="button" outline color="dark" onclick={close}>Close</Button>
 			{#if !data.isNew}
 				<Button type="button" outline color="red" class="sm:ml-auto" onclick={() => (deleteOpen = true)}>
 					Delete volunteer
 				</Button>
 			{/if}
 		</div>
-	</form>
+	</div>
+</form>
 
+<div class="mx-auto w-full max-w-4xl min-w-0 px-3 pb-5 sm:px-5">
 	<!-- Outside the form above: these save with their own requests -->
-	<div class="mt-6">
+	<div class="mt-1">
 		<Assignments
-			volunteerId={data.isNew ? null : page.params.volunteerId}
+			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
 			assignments={data.assignments}
 			events={data.events}
 			emailEnabled={data.emailEnabled}
@@ -249,7 +279,7 @@
 
 	<div class="mt-6">
 		<Documents
-			volunteerId={data.isNew ? null : page.params.volunteerId}
+			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
 			documents={data.documents}
 			accept={data.accept}
 			maxMb={data.maxMb}
