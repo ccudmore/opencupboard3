@@ -18,8 +18,8 @@
 	const dateFmt = $derived(new Intl.DateTimeFormat('en-CA', { weekday: 'short', month: 'short', day: 'numeric', timeZone: data.timeZone }));
 	const timeFmt = $derived(new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: data.timeZone }));
 
-	const pendingEvents = $derived(data.board.filter((e) => e.pending.length > 0));
-	const pendingTotal = $derived(pendingEvents.reduce((n, e) => n + e.pending.length, 0));
+	const pendingEvents = $derived(data.board.filter((e: Shift) => e.pending.length > 0));
+	const pendingTotal = $derived(pendingEvents.reduce((n: number, e: Shift) => n + e.pending.length, 0));
 
 	function value(e: Shift, role: string, saved: number) {
 		return edits[e.id]?.[role] ?? saved;
@@ -27,11 +27,11 @@
 	function setValue(e: Shift, role: string, v: string) {
 		edits[e.id] = { ...(edits[e.id] ?? {}), [role]: Math.max(0, Math.floor(Number(v) || 0)) };
 	}
-	const changed = (e: Shift) => e.roles.some((r) => value(e, r.role, r.required) !== r.required);
+	const changed = (e: Shift) => e.roles.some((r: Shift["roles"][number]) => value(e, r.role, r.required) !== r.required);
 
 	async function saveNeeds(e: Shift) {
 		busy = `needs:${e.id}`;
-		const counts = Object.fromEntries(e.roles.map((r) => [r.role, value(e, r.role, r.required)]));
+		const counts = Object.fromEntries(e.roles.map((r: Shift["roles"][number]) => [r.role, value(e, r.role, r.required)]));
 		const r = await callAction('setNeeds', { eventId: e.id, counts: JSON.stringify(counts) });
 		busy = '';
 		if (!r.ok) return toast(r.message);
@@ -103,7 +103,7 @@
 			{:else}
 				{#each pendingEvents as e (e.id)}
 					<Card class="max-w-none p-4">
-						<h3 class="font-semibold break-words text-gray-900 dark:text-white">{e.title}</h3>
+						<h3 class="font-semibold wrap-break-word text-gray-900 dark:text-white">{e.title}</h3>
 						<p class="mb-2 text-sm text-gray-600 dark:text-gray-300">
 							{dateFmt.format(new Date(e.startTime))}, {timeFmt.format(new Date(e.startTime))} to {timeFmt.format(new Date(e.endTime))} · {e.location}
 						</p>
@@ -138,7 +138,7 @@
 			{/if}
 			{#each data.board as e (e.id)}
 				<Card class="max-w-none p-4">
-					<h3 class="font-semibold break-words text-gray-900 dark:text-white">{e.title}</h3>
+					<h3 class="font-semibold wrap-break-word text-gray-900 dark:text-white">{e.title}</h3>
 					<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
 						{dateFmt.format(new Date(e.startTime))}, {timeFmt.format(new Date(e.startTime))} to {timeFmt.format(new Date(e.endTime))} · {e.location} · {e.type}
 					</p>
@@ -153,7 +153,7 @@
 									max="50"
 									class="w-24"
 									value={value(e, r.role, r.required)}
-									oninput={(ev: Event & { currentTarget: HTMLInputElement }) => setValue(e, r.role, ev.currentTarget.value)}
+									oninput={(ev) => setValue(e, r.role, (ev.currentTarget as HTMLInputElement).value)}
 								/>
 								<span class="text-sm text-gray-600 dark:text-gray-300">
 									{r.filled} filled{r.pending ? `, ${r.pending} pending` : ''}

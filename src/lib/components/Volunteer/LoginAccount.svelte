@@ -64,7 +64,7 @@
 	{:else if login}
 		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">This volunteer can sign in as:</p>
 		<div class="mb-3 min-w-0 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-			<div class="font-medium break-words text-gray-900 dark:text-white">{login.name}</div>
+			<div class="font-medium wrap-break-word text-gray-900 dark:text-white">{login.name}</div>
 			<div class="text-sm break-all text-gray-600 dark:text-gray-300">{login.email}</div>
 		</div>
 		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">

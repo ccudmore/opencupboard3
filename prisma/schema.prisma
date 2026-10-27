@@ -370,7 +370,7 @@ model Volunteer {
   userId          String?                @unique // the login this volunteer signs in with
   createdAt       DateTime               @default(now())
   createdBy       String?
-  skills	  String[]
+  skills	  String[]	@default([])
   @@map("volunteer")
 }
 

@@ -667,7 +667,7 @@
 						{:else}
 							<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-200">
 								{#each sends.toReversed() as e, i (i)}
-									<li class="break-words">
+									<li class="wrap-break-word">
 										{fmtDateTime(e.sentAt)}{e.to.length ? ` to ${e.to.join(', ')}` : ''}
 									</li>
 								{/each}

@@ -185,7 +185,7 @@
 </section>
 
 <Modal title="Delete document" bind:open={deleteOpen} size="xs">
-	<p class="break-words text-gray-600 dark:text-gray-300">
+	<p class="wrap-break-word text-gray-600 dark:text-gray-300">
 		Delete "{toDelete?.name}"? The file is removed and can't be recovered.
 	</p>
 	{#snippet footer()}

@@ -53,7 +53,7 @@
 		<Card class="max-w-none p-4 sm:p-6">
 			<h1 class="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Change password</h1>
 			{#if data.email}
-				<p class="mb-4 text-sm break-words text-gray-600 dark:text-gray-300">Signed in as {data.email}</p>
+				<p class="mb-4 text-sm wrap-break-word text-gray-600 dark:text-gray-300">Signed in as {data.email}</p>
 			{/if}
 
 			{#if !data.hasPassword}

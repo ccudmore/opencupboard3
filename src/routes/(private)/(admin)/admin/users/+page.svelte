@@ -303,7 +303,7 @@
 		<div class="mx-auto w-full max-w-3xl min-w-0 space-y-6 px-4 pt-2 pb-8">
 			<div>
 				<h3 class="text-lg font-semibold">{editing.name}{isSelf ? ' (you)' : ''}</h3>
-				<p class="text-sm break-words text-gray-600 dark:text-gray-300">{editing.email} · added {fmtDate(editing.createdAt)}</p>
+				<p class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">{editing.email} · added {fmtDate(editing.createdAt)}</p>
 			</div>
 
 			{#if editError}

@@ -64,7 +64,7 @@
 	<Card class="max-w-none p-4">
 		<div class="flex flex-wrap items-start justify-between gap-2">
 			<div class="min-w-0">
-				<h3 class="text-lg font-semibold break-words text-gray-900 dark:text-white">{r.title}</h3>
+				<h3 class="text-lg font-semibold wrap-break-word text-gray-900 dark:text-white">{r.title}</h3>
 				{#if r.role}<p class="text-sm text-gray-600 dark:text-gray-300">Your role: <span class="font-medium">{r.role}</span></p>{/if}
 			</div>
 			<Badge color={statusColor[r.status] ?? 'blue'}>{r.status === 'PENDING' ? 'Waiting for approval' : (statusLabel[r.status] ?? r.status)}</Badge>
@@ -72,9 +72,9 @@
 		<ul class="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-200">
 			<li class="flex items-start gap-2"><CalendarMonthOutline class="mt-0.5 h-4 w-4 shrink-0" />{day(r.startTime)}</li>
 			<li class="flex items-start gap-2"><ClockOutline class="mt-0.5 h-4 w-4 shrink-0" />{time(r.startTime)} to {time(r.endTime)}</li>
-			<li class="flex items-start gap-2"><MapPinOutline class="mt-0.5 h-4 w-4 shrink-0" /><span class="break-words">{r.location}</span></li>
+			<li class="flex items-start gap-2"><MapPinOutline class="mt-0.5 h-4 w-4 shrink-0" /><span class="wrap-break-word">{r.location}</span></li>
 		</ul>
-		{#if r.note}<p class="mt-3 text-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-300">{r.note}</p>{/if}
+		{#if r.note}<p class="mt-3 text-sm wrap-break-word whitespace-pre-line text-gray-600 dark:text-gray-300">{r.note}</p>{/if}
 		{#if r.status === 'PENDING' && r.endTime >= new Date()}
 			<div class="mt-3">
 				<Button size="xs" outline color="dark" disabled={busy === r.id} onclick={() => run(r.id, 'withdraw', { assignmentId: r.id }, 'Signup withdrawn.')}>
@@ -116,13 +116,13 @@
 					<p class="text-sm text-gray-600 dark:text-gray-300">A coordinator approves each signup, and then you get a confirmation email.</p>
 					{#each data.openShifts as e (e.id)}
 						<Card class="max-w-none p-4">
-							<h3 class="text-lg font-semibold break-words text-gray-900 dark:text-white">{e.title}</h3>
+							<h3 class="text-lg font-semibold wrap-break-word text-gray-900 dark:text-white">{e.title}</h3>
 							<ul class="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-200">
 								<li class="flex items-start gap-2"><CalendarMonthOutline class="mt-0.5 h-4 w-4 shrink-0" />{day(e.startTime)}</li>
 								<li class="flex items-start gap-2"><ClockOutline class="mt-0.5 h-4 w-4 shrink-0" />{time(e.startTime)} to {time(e.endTime)}</li>
-								<li class="flex items-start gap-2"><MapPinOutline class="mt-0.5 h-4 w-4 shrink-0" /><span class="break-words">{e.location}</span></li>
+								<li class="flex items-start gap-2"><MapPinOutline class="mt-0.5 h-4 w-4 shrink-0" /><span class="wrap-break-word">{e.location}</span></li>
 							</ul>
-							{#if e.note}<p class="mt-2 text-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-300">{e.note}</p>{/if}
+							{#if e.note}<p class="mt-2 text-sm wrap-break-word whitespace-pre-line text-gray-600 dark:text-gray-300">{e.note}</p>{/if}
 							<div class="mt-3 flex flex-wrap gap-2">
 								{#each e.spots as s (s.role)}
 									<Button

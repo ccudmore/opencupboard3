@@ -124,7 +124,7 @@
 
 <Modal title={`Send ${word} email`} bind:open={askSendOpen} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">Send a {word} email to {toWhom}?</p>
-	<p class="mt-2 text-sm break-words text-gray-600 dark:text-gray-300">{recipientText}</p>
+	<p class="mt-2 text-sm wrap-break-word text-gray-600 dark:text-gray-300">{recipientText}</p>
 	{#snippet footer()}
 		<Button type="button" color="dark" onclick={() => answerSend(true)}>Yes</Button>
 		<Button type="button" outline color="dark" onclick={() => answerSend(false)}>No</Button>
@@ -140,7 +140,7 @@
 	}}
 >
 	<p class="text-gray-600 dark:text-gray-300">Would you like to review and change the {word} email before it is sent?</p>
-	<p class="mt-2 text-sm break-words text-gray-600 dark:text-gray-300">{recipientText}</p>
+	<p class="mt-2 text-sm wrap-break-word text-gray-600 dark:text-gray-300">{recipientText}</p>
 	{#snippet footer()}
 		<Button type="button" color="dark" disabled={busy} onclick={() => answerCustomize(true)}>Yes, let me edit it</Button>
 		<Button type="button" outline color="dark" disabled={busy} onclick={() => answerCustomize(false)}>
@@ -152,7 +152,7 @@
 <Modal title={`Edit the ${word} email`} bind:open={editorOpen} size="lg" onclose={() => (draft = null)}>
 	{#if draft}
 		<div class="min-w-0 space-y-4">
-			<p class="text-sm break-words text-gray-600 dark:text-gray-300">To: {recipientText}</p>
+			<p class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">To: {recipientText}</p>
 			<div>
 				<Label for="email-subject" class="mb-2">Subject</Label>
 				<Input id="email-subject" type="text" maxlength={200} bind:value={draft.subject} onkeydown={ignoreEnter} />

@@ -106,7 +106,7 @@
 		<!-- Email -->
 		<Card class="max-w-none p-4 sm:p-6">
 			<h2 class="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Email address</h2>
-			<p class="mb-4 text-sm break-words text-gray-600 dark:text-gray-300">
+			<p class="mb-4 text-sm wrap-break-word text-gray-600 dark:text-gray-300">
 				You sign in with this address. Currently {page.data.user?.email}.
 			</p>
 
