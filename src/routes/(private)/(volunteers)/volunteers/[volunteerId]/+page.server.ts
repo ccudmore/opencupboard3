@@ -8,6 +8,7 @@ import { requirePermission } from '$lib/utils';
 import { volunteerSchema, readAvailability, readTrainingCourses } from '$lib/formschemas/volunteer';
 import { ALLOWED_EXTENSIONS, identifyDocument, cleanFileName, maxUploadBytes } from '$lib/server/documentTypes';
 import { EventStatus } from '$prisma/enums';
+import { linkExistingLogin, createVolunteerLogin, unlinkLogin } from '$lib/server/volunteerLogin';
 import { isMailConfigured } from '$lib/server/email/mailer';
 import {
 	createAssignment,
@@ -40,6 +41,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			emailEnabled: isMailConfigured(),
 			assignmentCount: 0,
 			documents: [],
+			login: null,
 			...uploadSettings()
 		};
 	}
@@ -47,6 +49,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 	const volunteer = await prisma.volunteer.findUnique({
 		where: { id: params.volunteerId },
 		include: {
+			user: { select: { id: true, name: true, email: true } },
 			_count: { select: { assignments: true } },
 			documents: {
 				orderBy: { createdAt: 'desc' },
@@ -57,7 +60,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 	if (!volunteer) throw error(404, 'Volunteer not found');
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { availability, trainingCourses, attachments: _links, documents, ...rest } = volunteer;
+	const { availability, trainingCourses, attachments: _links, documents, user, userId: _userId, ...rest } = volunteer;
 	const form = await superValidate(
 		{
 			...rest,
@@ -97,6 +100,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 		emailEnabled: isMailConfigured(),
 		assignmentCount: assignments.length,
 		documents,
+		login: user,
 		...uploadSettings()
 	};
 };
@@ -186,6 +190,36 @@ export const actions: Actions = {
 			// already gone: fall through to the list
 		}
 		throw redirect(303, '/volunteers');
+	},
+
+	/** Links this volunteer to a user that already exists. */
+	linkLogin: async ({ request, params, locals, url }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
+		if (params.volunteerId === NEW) return fail(400, { message: 'Save the volunteer first.' });
+		const email = String((await request.formData()).get('email') ?? '');
+		const r = await linkExistingLogin(params.volunteerId, email);
+		return r.ok ? { success: true } : fail(r.status, { message: r.message });
+	},
+
+	/** Creates a login for this volunteer. */
+	createLogin: async ({ request, params, locals, url }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
+		if (params.volunteerId === NEW) return fail(400, { message: 'Save the volunteer first.' });
+		const data = await request.formData();
+		const r = await createVolunteerLogin(params.volunteerId, {
+			name: String(data.get('name') ?? ''),
+			email: String(data.get('email') ?? ''),
+			password: String(data.get('password') ?? '')
+		});
+		return r.ok ? { success: true } : fail(r.status, { message: r.message });
+	},
+
+	/** Disconnects this volunteer from their login. */
+	unlinkLogin: async ({ params, locals, url }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
+		if (params.volunteerId === NEW) return fail(400, { message: 'Nothing to unlink.' });
+		await unlinkLogin(params.volunteerId);
+		return { success: true };
 	},
 
 	/** Stores an uploaded file for this volunteer. */

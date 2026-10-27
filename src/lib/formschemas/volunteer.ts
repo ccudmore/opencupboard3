@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ALL_ROLES } from '$lib/volunteerRoles';
 
 // Same rules as the household form: Canadian postal codes and North American phone numbers.
 const POSTAL_REGEX = /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/;
@@ -70,7 +71,9 @@ export const volunteerSchema = z.object({
 	phone1: optionalPhone,
 	phone2: optionalPhone,
 	availability: availabilitySchema.default({ days: [], notes: '' }),
-	trainingCourses: z.array(trainingCourseSchema).default([])
+	trainingCourses: z.array(trainingCourseSchema).default([]),
+	// The roles this volunteer may sign up for (see ALL_ROLES)
+	skills: z.array(z.string().refine((r) => ALL_ROLES.includes(r), 'Unknown skill')).default([])
 });
 
 export type VolunteerSchema = typeof volunteerSchema;

@@ -69,7 +69,8 @@
 			<div class="w-full md:w-64">
 				<Search bind:value={searchTerm} placeholder="Search" size="md" />
 			</div>
-			<div class="md:ml-auto">
+			<div class="flex flex-wrap gap-2 md:ml-auto">
+				<Button outline color="dark" class="shrink-0" onclick={() => goto('/volunteers/shifts')}>Shifts</Button>
 				<Button outline color="dark" class="shrink-0" onclick={() => goto('/volunteers/new')}>
 					<PlusOutline class="mr-2 h-3.5 w-3.5" />New Volunteer
 				</Button>

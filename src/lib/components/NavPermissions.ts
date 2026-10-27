@@ -9,14 +9,14 @@ import { hasPermission } from '$lib/utils';
     admin: {name: "Admin", label: "Admin", href: "/admin", icon: CogOutline, subContent: ""},
     donors: {name: "Donors", label: "Donors", href: "/donors", icon: CogOutline, subContent: ""},
     inventory: {name: "Inventory", label: "Inventory", href: "/inventory", icon: CogOutline, subContent: ""},
-    volunteer: {name: "Volunteer", label: "Volunteer", href: "/inventory", icon: CogOutline, subContent: ""},
+    volunteer: {name: "Volunteer", label: "My Volunteering", href: "/volunteer", icon: AwardOutline, subContent: ""},
   }
 
 export function getPermittedApps(permissions: string[] | null | undefined,) {
     const apps = Array()
     if (hasPermission(permissions, ['manage-households'])) { apps.push(availableApps.households) }
     if (hasPermission(permissions, ['manage-appointments', 'manage-volunteers'])) { apps.push(availableApps.calendar) }
-    if (hasPermission(permissions, ['admin'])) { apps.push(availableApps.admin) }
+    if (hasPermission(permissions, ['manage-configuration'])) { apps.push(availableApps.admin) }
     if (hasPermission(permissions, ['manage-volunteers'])) { apps.push(availableApps.volunteers) }
     if (hasPermission(permissions, ['manage-inventory'])) { apps.push(availableApps.inventory) }
     if (hasPermission(permissions, ['manage-donors'])) { apps.push(availableApps.donors) }

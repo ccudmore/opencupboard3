@@ -18,7 +18,9 @@
 	} from 'flowbite-svelte';
 	import { HomeOutline, ChevronDoubleRightOutline, PlusOutline, TrashBinOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { volunteerSchema, WEEKDAYS } from '$lib/formschemas/volunteer';
+	import { ALL_ROLES } from '$lib/volunteerRoles';
 	import Documents from '$lib/components/Volunteer/Documents.svelte';
+	import LoginAccount from '$lib/components/Volunteer/LoginAccount.svelte';
 	import Assignments from '$lib/components/Volunteer/Assignments.svelte';
 
 	let { data } = $props();
@@ -56,6 +58,12 @@
 	}
 	function removeCourse(i: number) {
 		$form.trainingCourses = $form.trainingCourses.filter((_: unknown, n: number) => n !== i);
+	}
+
+	function toggleSkill(skill: string, on: boolean) {
+		const skills: string[] = $form.skills.filter((x: string) => x !== skill);
+		if (on) skills.push(skill);
+		$form.skills = ALL_ROLES.filter((r) => skills.includes(r));
 	}
 
 	function toggleDay(day: string, on: boolean) {
@@ -189,6 +197,27 @@
 			</div>
 		</section>
 
+		<!-- Skills -->
+		<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
+			<h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Skills</h2>
+			<p class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+				A volunteer can only sign up for shift spots in roles they have the skill for.
+			</p>
+			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+				{#each ALL_ROLES as skill (skill)}
+					<label class="flex cursor-pointer items-center gap-2 text-gray-900 dark:text-gray-100">
+						<input
+							type="checkbox"
+							class={checkClass}
+							checked={$form.skills.includes(skill)}
+							onchange={(e) => toggleSkill(skill, (e.currentTarget as HTMLInputElement).checked)}
+						/>
+						{skill}
+					</label>
+				{/each}
+			</div>
+		</section>
+
 		<!-- Availability -->
 		<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Availability</h2>
@@ -269,6 +298,15 @@
 <div class="mx-auto w-full max-w-4xl min-w-0 px-3 pb-5 sm:px-5">
 	<!-- Outside the form above: these save with their own requests -->
 	<div class="mt-1">
+		<LoginAccount
+			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
+			login={data.login}
+			defaultName={`${$form.firstName} ${$form.lastName}`.trim()}
+			defaultEmail={$form.email1 ?? ''}
+		/>
+	</div>
+
+	<div class="mt-6">
 		<Assignments
 			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
 			assignments={data.assignments}

@@ -36,6 +36,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   roles         UserRole[]
+  volunteer	Volunteer?
 
   @@unique([email])
   @@map("user")
@@ -207,9 +208,21 @@ model Event {
   createdAt    DateTime               @default(now())
   createdBy    String?
   appointments Appointment[]
+  needs        EventVolunteerNeed[]
 
   @@index([locationId])
   @@map("event")
+}
+
+model EventVolunteerNeed {
+  id      String @id @default(cuid())
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+  role    String
+  count   Int
+
+  @@unique([eventId, role])
+  @@map("event_volunteer_need")
 }
 
 enum ClientIdentificationType {
@@ -353,8 +366,11 @@ model Volunteer {
   trainingCourses Json?
   assignments     VolunteerAssignments[]
   documents       VolunteerDocument[]
+  user            User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?                @unique // the login this volunteer signs in with
   createdAt       DateTime               @default(now())
   createdBy       String?
+  skills	  String[]
   @@map("volunteer")
 }
 

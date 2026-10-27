@@ -14,3 +14,6 @@ export const EVENT_ROLES: Record<string, string[]> = {
 export function rolesFor(eventType: string): string[] {
 	return Object.hasOwn(EVENT_ROLES, eventType) ? EVENT_ROLES[eventType] : [];
 }
+
+/** Every role there is, once each. A volunteer's skills are chosen from this list. */
+export const ALL_ROLES: string[] = [...new Set(Object.values(EVENT_ROLES).flat())].sort();
