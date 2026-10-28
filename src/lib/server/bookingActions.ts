@@ -10,7 +10,14 @@ import { buildEmail, sendBookingEmail } from '$lib/server/email/bookingEmail';
 const SPECIAL_REQUEST_TYPE = 'Special';
 const MAX_REQUEST_LENGTH = 1000;
 
-class BookingError extends Error {}
+class BookingError extends Error {
+	/** e.g. 'taken': someone else got the appointment first */
+	code?: string;
+	constructor(message: string, code?: string) {
+		super(message);
+		this.code = code;
+	}
+}
 
 function formToObject(formData: FormData): Record<string, string> {
 	const out: Record<string, string> = {};
@@ -19,7 +26,7 @@ function formToObject(formData: FormData): Record<string, string> {
 }
 
 function handleError(err: unknown) {
-	if (err instanceof BookingError) return fail(409, { message: err.message });
+	if (err instanceof BookingError) return fail(409, { message: err.message, code: err.code });
 	// P2034: two people changed the same rows at once
 	if ((err as { code?: string })?.code === 'P2034') {
 		return fail(409, { message: 'Someone else changed this at the same time. Please try again.' });
@@ -104,7 +111,7 @@ export async function createBooking(householdId: string, userId: string | undefi
 					const taken = await tx.appointmentBookings.count({
 						where: { appointmentId, status: AppointmentBookingStatus.ACTIVE }
 					});
-					if (taken > 0) throw new BookingError('That appointment was just booked by someone else.');
+					if (taken > 0) throw new BookingError('That appointment was just booked by someone else.', 'taken');
 				}
 
 				return tx.appointmentBookings.create({

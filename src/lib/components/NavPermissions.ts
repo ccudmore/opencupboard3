@@ -3,6 +3,7 @@ import { hasPermission } from '$lib/utils';
 
   const availableApps = {
     households: {name: "Houesholds and Guests", label: "Households and Guests", href: "/households", icon: ProfileCardOutline, subContent: ""},
+    servicedates: {name: "Service Dates", label: "Service Dates", href: "/servicedates", icon: CalendarEditOutline, subContent: ""},
     calendar: {name: "Calendar", label: "Calendar", href: "/calendar", icon: CalendarEditOutline, subContent: ""},
     volunteers: {name: "Manage Volunteers", label: "Manage Volunteers", href: "/volunteers", icon: AwardOutline, subContent: ""},
     reports: {name: "Reports", label: "Reports", href: "/reports", icon: ChartPieOutline, subContent: ""},
@@ -15,6 +16,7 @@ import { hasPermission } from '$lib/utils';
 export function getPermittedApps(permissions: string[] | null | undefined,) {
     const apps = Array()
     if (hasPermission(permissions, ['manage-households'])) { apps.push(availableApps.households) }
+    if (hasPermission(permissions, ['manage-appointments'])) { apps.push(availableApps.servicedates) }
     if (hasPermission(permissions, ['manage-appointments', 'manage-volunteers'])) { apps.push(availableApps.calendar) }
     if (hasPermission(permissions, ['manage-configuration'])) { apps.push(availableApps.admin) }
     if (hasPermission(permissions, ['manage-volunteers'])) { apps.push(availableApps.volunteers) }

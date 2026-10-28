@@ -3,7 +3,6 @@
   import { GridSolid } from 'flowbite-svelte-icons';
   import { page } from "$app/state";
   import { getPermittedApps } from "$lib/components/NavPermissions";
- // const apps = getPermittedApps(page?.data?.user?.roles);
   const apps = getPermittedApps(page?.data?.user?.permissions)
 </script>
 
