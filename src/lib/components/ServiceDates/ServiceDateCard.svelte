@@ -105,17 +105,20 @@
 	// ------------------------------------------------ appointments
 	let openAppointment = $state('');
 	let addMode = $state<'one' | 'several'>('one');
-	let add = $state({ startClock: '', count: '8', lengthMinutes: '15', everyMinutes: '15' });
+	let add = $state({ count: '8', lengthMinutes: '15', everyMinutes: '15' });
+	// The first appointment starts when the service date starts, unless it is changed here
+	let addStart = $state<string | null>(null);
+	const startClock = $derived(addStart ?? service.startClock);
 	let addError = $state('');
 	let deleteTarget = $state<Appointment | null>(null);
 
 	async function addAppointments() {
 		addError = '';
-		if (!add.startClock) return (addError = 'Enter the start time.');
+		if (!startClock) return (addError = 'Enter the start time.');
 		busy = 'add';
 		const r = await callAction('addAppointments', {
 			eventId: service.id,
-			startClock: add.startClock,
+			startClock,
 			count: addMode === 'one' ? '1' : add.count,
 			lengthMinutes: add.lengthMinutes,
 			everyMinutes: addMode === 'one' ? add.lengthMinutes : add.everyMinutes
@@ -377,8 +380,8 @@
 									{#each clientResults as c (c.householdId)}
 										<li class="flex flex-wrap items-center justify-between gap-2 py-2">
 											<div class="min-w-0">
-												<div class="font-medium break-words text-gray-900 dark:text-white">{c.name}</div>
-												{#if c.detail}<div class="text-sm break-words text-gray-600 dark:text-gray-300">{c.detail}</div>{/if}
+												<div class="font-medium wrap-break-word text-gray-900 dark:text-white">{c.name}</div>
+												{#if c.detail}<div class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">{c.detail}</div>{/if}
 											</div>
 											<Button size="xs" color="dark" disabled={busy === `book:${c.householdId}`} onclick={() => book(a.id, c.householdId, c.name)}>
 												{busy === `book:${c.householdId}` ? 'Booking…' : 'Book'}
@@ -409,7 +412,7 @@
 				<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 					<div class="min-w-0">
 						<Label for={`add-start-${service.id}`} class="mb-1">{addMode === 'one' ? 'Time' : 'First one at'}</Label>
-						<Input id={`add-start-${service.id}`} type="time" bind:value={add.startClock} />
+						<Input id={`add-start-${service.id}`} type="time" value={startClock} oninput={(e) => (addStart = (e.currentTarget as HTMLInputElement).value)} />
 					</div>
 					<div class="min-w-0">
 						<Label for={`add-length-${service.id}`} class="mb-1">Length (minutes)</Label>
@@ -433,6 +436,12 @@
 					</Button>
 				</div>
 			</div>
+		{:else}
+			<p class="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-700 dark:bg-gray-900 dark:text-gray-200">
+				{cancelled
+					? 'This service date is cancelled. Reinstate it (under Details) to add appointments or book clients.'
+					: 'This service date has already ended, so appointments can no longer be added or booked. To set up a new one, use Duplicate under Details and pick a future date.'}
+			</p>
 		{/if}
 	</section>
 
@@ -474,7 +483,7 @@
 								<ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
 									{#each volunteerResults as v (v.id)}
 										<li class="flex items-center justify-between gap-2 py-2">
-											<span class="min-w-0 break-words text-gray-900 dark:text-white">{v.name}</span>
+											<span class="min-w-0 wrap-break-word text-gray-900 dark:text-white">{v.name}</span>
 											<Button size="xs" color="dark" disabled={busy === `vol:${v.id}`} onclick={() => addVolunteer(v.id, v.name)}>Add</Button>
 										</li>
 									{/each}
