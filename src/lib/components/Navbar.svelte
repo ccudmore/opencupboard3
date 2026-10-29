@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AppsMenu, UserMenu, NavDrawer } from '$lib'
+  import NotificationsMenu from '$lib/components/NotificationsMenu.svelte'
   import { DarkMode, NavBrand, Navbar, Search } from 'flowbite-svelte';
   import { env } from '$env/dynamic/public'
   import SearchBox from '$lib/components/SearchBox.svelte';
@@ -24,6 +25,7 @@
   </div>
   <div class="ms-auto flex items-center text-gray-500 sm:order-2 dark:text-gray-300">
     <AppsMenu />
+    <NotificationsMenu />
     <DarkMode />
     <UserMenu />
   </div>

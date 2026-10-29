@@ -37,6 +37,7 @@ model User {
   accounts      Account[]
   roles         UserRole[]
   volunteer	Volunteer?
+  notifications Notification[]
 
   @@unique([email])
   @@map("user")
@@ -262,18 +263,21 @@ model Client {
   @@map("client")
 }
 
-/**
- * model Message {
- * id          String     @id @default(cuid())
- * content     String
- * senderId    String
- * recipient    User @relation("Message Recipient", fields: [recipientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
- * sender      User @relation("Message Sender", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
- * recipientId   String
- * status        String
- * createdAt     DateTime        @default(now())
- * }
- */
+ model Notification {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  subject   String
+  body      String?
+  link      String? // a path on this site, e.g. /volunteers/shifts
+  readAt    DateTime? // null = unread
+  createdAt DateTime  @default(now())
+  createdBy String? // who or what caused it
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notification")
+}
 
 enum DatedRequestStatus {
   ACTIVE

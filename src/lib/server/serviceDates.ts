@@ -11,6 +11,7 @@ import {
 import { calculateNextServiceDate } from '$lib/utils';
 import { rolesFor } from '$lib/volunteerRoles';
 import { zonedParts, zonedToDate } from '$lib/timezone';
+import { notifyAssignment } from '$lib/server/shifts';
 
 /** Managing service dates: the event, its appointments, who is booked and which volunteers help. */
 
@@ -362,11 +363,13 @@ export async function addVolunteerToService(eventId: string, volunteerId: string
 		if (existing) {
 			// They were cancelled earlier: bring the same row back
 			await prisma.volunteerAssignments.update({ where: { id: existing.id }, data: { status: VolunteerAssignmentsStatus.ACTIVE, eventRole: role, createdBy: userId } });
+			await notifyAssignment(existing.id, 'added');
 			return { ok: true, assignmentId: existing.id };
 		}
 		const created = await prisma.volunteerAssignments.create({
 			data: { volunteerId, eventId, eventRole: role, status: VolunteerAssignmentsStatus.ACTIVE, createdBy: userId }
 		});
+		await notifyAssignment(created.id, 'added');
 		return { ok: true, assignmentId: created.id };
 	} catch (err) {
 		if ((err as { code?: string })?.code === 'P2002') return fail(409, 'That volunteer is already on this service date.');
@@ -381,7 +384,9 @@ export async function removeVolunteerFromService(assignmentId: string): Promise<
 		where: { id: assignmentId, status: { not: VolunteerAssignmentsStatus.CANCELLED } },
 		data: { status: VolunteerAssignmentsStatus.CANCELLED }
 	});
-	return count === 0 ? fail(409, 'That volunteer was already removed.') : { ok: true };
+	if (count === 0) return fail(409, 'That volunteer was already removed.');
+	await notifyAssignment(assignmentId, 'removed');
+	return { ok: true };
 }
 
 // ---------------------------------------------------------------- duplicate

@@ -1,7 +1,9 @@
 import { Prisma } from '$prisma/client';
 import { EventStatus, VolunteerAssignmentsStatus } from '$prisma/enums';
 import prisma from '$lib/prisma';
+import { env as privateEnv } from '$env/dynamic/private';
 import { rolesFor } from '$lib/volunteerRoles';
+import { notifyPermission, notifyVolunteer } from '$lib/server/notifications';
 
 /**
  * Shift signups. An event can say how many volunteers it needs in each role (EventVolunteerNeed).
@@ -16,6 +18,43 @@ const fail = (status: number, message: string): { ok: false; status: number; mes
 const HOLDS_SPOT: VolunteerAssignmentsStatus[] = ['PENDING', 'ACTIVE', 'COMPLETE'];
 
 export const MAX_NEED = 50;
+
+// ---------------------------------------------------------------- notifications
+
+/**
+ * Tells the right people about something that happened to a volunteer's assignment.
+ * 'signup' goes to the people who approve signups; the rest go to the volunteer (if they have a login).
+ */
+export async function notifyAssignment(assignmentId: string, kind: 'signup' | 'approved' | 'declined' | 'added' | 'removed') {
+	const a = await prisma.volunteerAssignments.findUnique({
+		where: { id: assignmentId },
+		include: {
+			event: { select: { title: true, type: true, startTime: true } },
+			volunteer: { select: { id: true, firstName: true, lastName: true } }
+		}
+	});
+	if (!a) return;
+
+	const when = new Intl.DateTimeFormat('en-CA', { dateStyle: 'full', timeStyle: 'short', timeZone: privateEnv.TIMEZONE || 'America/Toronto' }).format(a.event.startTime);
+	const what = `${a.event.title ?? a.event.type}${a.eventRole ? ` as ${a.eventRole}` : ''}`;
+	const name = `${a.volunteer.firstName} ${a.volunteer.lastName}`.trim();
+
+	if (kind === 'signup') {
+		await notifyPermission('manage-volunteers', {
+			subject: `${name} signed up for ${what}`,
+			body: `${name} signed up for ${what} on ${when}. It is waiting for your approval.`,
+			link: '/volunteers/shifts'
+		});
+		return;
+	}
+	const text = {
+		approved: { subject: `Your signup was approved: ${what}`, body: `You are confirmed for ${what} on ${when}.` },
+		declined: { subject: `Your signup was not accepted: ${what}`, body: `Your signup for ${what} on ${when} was not accepted. Please contact your volunteer coordinator if you have questions.` },
+		added: { subject: `You were added to ${what}`, body: `You have been added to ${what} on ${when}.` },
+		removed: { subject: `You were removed from ${what}`, body: `You have been removed from ${what} on ${when}. Please contact your volunteer coordinator if you have questions.` }
+	}[kind];
+	await notifyVolunteer(a.volunteer.id, { ...text, link: '/volunteer' });
+}
 
 // ---------------------------------------------------------------- what volunteers see
 
@@ -67,10 +106,10 @@ export async function openShiftsFor(volunteer: { id: string; skills: string[] })
 }
 
 /** A volunteer signs up. Creates (or revives a cancelled) PENDING assignment. */
-export async function signUp(volunteerId: string, eventId: string, role: string, userId: string): Promise<Result> {
+export async function signUp(volunteerId: string, eventId: string, role: string, userId: string): Promise<Result<{ assignmentId: string }>> {
 	try {
-		return await prisma.$transaction(
-			async (tx): Promise<Result> => {
+		const result = await prisma.$transaction(
+			async (tx): Promise<Result<{ assignmentId: string }>> => {
 				const volunteer = await tx.volunteer.findUnique({ where: { id: volunteerId }, select: { skills: true } });
 				if (!volunteer) return fail(404, 'Volunteer not found.');
 				if (!volunteer.skills.includes(role)) return fail(403, `You don't have the ${role} skill. Ask a volunteer coordinator.`);
@@ -96,15 +135,17 @@ export async function signUp(volunteerId: string, eventId: string, role: string,
 						where: { id: existing.id },
 						data: { status: 'PENDING', eventRole: role, createdBy: userId }
 					});
-				} else {
-					await tx.volunteerAssignments.create({
-						data: { volunteerId, eventId, eventRole: role, status: 'PENDING', createdBy: userId }
-					});
+					return { ok: true, assignmentId: existing.id };
 				}
-				return { ok: true };
+				const created = await tx.volunteerAssignments.create({
+					data: { volunteerId, eventId, eventRole: role, status: 'PENDING', createdBy: userId }
+				});
+				return { ok: true, assignmentId: created.id };
 			},
 			{ isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
 		);
+		if (result.ok) await notifyAssignment(result.assignmentId, 'signup'); // tell the approvers
+		return result;
 	} catch (err) {
 		return mapError(err);
 	}
@@ -129,7 +170,9 @@ export async function approveSignup(assignmentId: string): Promise<Result<{ volu
 		where: { id: assignmentId, status: 'PENDING' },
 		data: { status: 'ACTIVE' }
 	});
-	return count === 0 ? fail(409, 'That signup was already handled.') : { ok: true, volunteerId: a.volunteerId };
+	if (count === 0) return fail(409, 'That signup was already handled.');
+	await notifyAssignment(assignmentId, 'approved');
+	return { ok: true, volunteerId: a.volunteerId };
 }
 
 /** Declines a pending signup. The spot opens up again. */
@@ -138,7 +181,9 @@ export async function declineSignup(assignmentId: string): Promise<Result> {
 		where: { id: assignmentId, status: 'PENDING' },
 		data: { status: 'CANCELLED' }
 	});
-	return count === 0 ? fail(409, 'That signup was already handled.') : { ok: true };
+	if (count === 0) return fail(409, 'That signup was already handled.');
+	await notifyAssignment(assignmentId, 'declined');
+	return { ok: true };
 }
 
 /** Sets how many volunteers an event needs in each role. A count of 0 (or missing) removes the need. */

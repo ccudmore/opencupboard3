@@ -4,6 +4,7 @@ import prisma from '$lib/prisma';
 import { EventStatus, VolunteerAssignmentsStatus } from '$prisma/enums';
 import { rolesFor } from '$lib/volunteerRoles';
 import { buildAssignmentEmail, sendAssignmentEmail } from '$lib/server/email/volunteerEmail';
+import { notifyAssignment } from '$lib/server/shifts';
 
 // Everything here belongs to one volunteer's page; the caller has already checked manage-volunteers.
 
@@ -55,6 +56,7 @@ export async function createAssignment(volunteerId: string, userId: string | und
 		const assignment = await prisma.volunteerAssignments.create({
 			data: { volunteerId, eventId, eventRole: role, status: VolunteerAssignmentsStatus.ACTIVE, createdBy: userId }
 		});
+		await notifyAssignment(assignment.id, 'added'); // lets the volunteer know, if they have a login
 		return { assignmentId: assignment.id };
 	} catch (err) {
 		return handleError(err);
