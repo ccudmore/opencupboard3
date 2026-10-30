@@ -6,6 +6,7 @@
 	import { callAction } from '$lib/client/callAction';
 	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
 	import type { Service, Site, Appointment } from './types';
+	import TabView from "$lib/components/ServiceDates/TabView.svelte";
 
 	let {
 		service,
@@ -23,7 +24,7 @@
 		/** called with the id of a service date that should be opened (after a duplicate) */
 		onopen: (id: string) => void;
 	} = $props();
-
+/*
 	const timeFmt = $derived(new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit', timeZone }));
 	const time = (d: Date | string) => timeFmt.format(new Date(d));
 	const range = (a: { startTime: Date; endTime: Date }) => `${time(a.startTime)} to ${time(a.endTime)}`;
@@ -35,8 +36,9 @@
 	const siteItems = $derived(sites.map((s) => ({ value: s.id, name: s.name })));
 	const cancelled = $derived(service.status === 'CANCELLED');
 	const editable = $derived(!service.past && !cancelled);
-
+*/
 	/** Runs an action; shows its error as a toast. Returns the result data, or null on failure. */
+	/*
 	async function run(key: string, action: string, fields: Record<string, string>, done?: string) {
 		busy = key;
 		const r = await callAction(action, fields);
@@ -137,8 +139,10 @@
 		const ok = await run('delete', 'deleteAppointment', { appointmentId: deleteTarget.id }, 'Appointment removed.');
 		if (ok) deleteTarget = null;
 	}
+		*/
 
 	// ------------------------------------------------ booking a client
+	/*
 	let clientQuery = $state('');
 	let clientResults = $state<{ householdId: string; name: string; detail: string }[]>([]);
 	let clientSearched = $state(false);
@@ -264,13 +268,17 @@
 			await volunteerPrompts?.start(v.assignmentId, 'cancellation', true);
 		}
 	}
-
+*/
 	const sectionClass = 'rounded-lg border border-gray-200 p-3 sm:p-4 dark:border-gray-700';
 	const headingClass = 'mb-3 text-base font-semibold text-gray-900 dark:text-white';
 </script>
 
-<div class="space-y-4">
+<div class="space-y-4"> <!-- craig - has been moved over to the tabview-->
+
+
+<TabView {service} {sites} {timeZone} {emailEnabled} {onopen} {canManageVolunteers}/>
 	<!-- Details -->
+	 <!--
 	<section class={sectionClass}>
 		<h3 class={headingClass}>Details</h3>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -309,8 +317,10 @@
 			{/if}
 		</div>
 	</section>
+-->
 
 	<!-- Appointments -->
+	 <!--
 	<section class={sectionClass}>
 		<div class="mb-3 flex flex-wrap items-center gap-2">
 			<h3 class="text-base font-semibold text-gray-900 dark:text-white">Appointments</h3>
@@ -444,8 +454,9 @@
 			</p>
 		{/if}
 	</section>
-
+-->
 	<!-- Volunteers -->
+	 <!--
 	{#if canManageVolunteers}
 		<section class={sectionClass}>
 			<h3 class={headingClass}>Volunteers</h3>
@@ -498,9 +509,11 @@
 			</div>
 		</section>
 	{/if}
+-->
 </div>
 
 <!-- Confirmations -->
+ <!--
 <Modal title="Cancel this service date?" bind:open={cancelOpen} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">
 		{service.counts.booked > 0
@@ -513,7 +526,8 @@
 		<Button outline color="dark" onclick={() => (cancelOpen = false)}>Keep it</Button>
 	{/snippet}
 </Modal>
-
+-->
+<!--
 <Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">
 		Cancel the booking for {cancelBookingTarget?.booking?.name} at {cancelBookingTarget ? time(cancelBookingTarget.startTime) : ''}? The time becomes open again.
@@ -523,7 +537,8 @@
 		<Button outline color="dark" onclick={() => (cancelBookingTarget = null)}>Keep it</Button>
 	{/snippet}
 </Modal>
-
+-->
+<!--
 <Modal title="Remove this appointment?" open={deleteTarget !== null} onclose={() => (deleteTarget = null)} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">Remove the {deleteTarget ? range(deleteTarget) : ''} appointment? It has no bookings.</p>
 	{#snippet footer()}
@@ -531,7 +546,8 @@
 		<Button outline color="dark" onclick={() => (deleteTarget = null)}>Keep it</Button>
 	{/snippet}
 </Modal>
-
+-->
+<!--
 <Modal title="Remove this volunteer?" open={removeTarget !== null} onclose={() => (removeTarget = null)} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">Remove {removeTarget?.name} from this service date? You'll be asked whether to send them a cancellation email.</p>
 	{#snippet footer()}
@@ -539,7 +555,8 @@
 		<Button outline color="dark" onclick={() => (removeTarget = null)}>Keep</Button>
 	{/snippet}
 </Modal>
-
+-->
+<!--
 <Modal title="Duplicate this service date" bind:open={duplicateOpen} size="sm">
 	<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
 		Copies the site, appointments and the number of volunteers needed. Bookings and the volunteers themselves are not copied.
@@ -568,6 +585,8 @@
 		<Button outline color="dark" onclick={() => (duplicateOpen = false)}>Cancel</Button>
 	{/snippet}
 </Modal>
-
+-->
+<!--
 <EmailPrompts bind:this={bookingPrompts} {emailEnabled} previewAction="previewBookingEmail" sendAction="sendBookingEmail" idField="bookingId" audience="household" />
 <EmailPrompts bind:this={volunteerPrompts} {emailEnabled} previewAction="previewVolunteerEmail" sendAction="sendVolunteerEmail" idField="assignmentId" audience="volunteer" />
+-->

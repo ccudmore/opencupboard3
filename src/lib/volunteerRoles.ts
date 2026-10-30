@@ -3,11 +3,12 @@
 // page and the checks on the server all read this list. Types that aren't listed have no roles.
 
 export const EVENT_ROLES: Record<string, string[]> = {
-	'Service Date': ['Supervisor', 'Shopper', 'Service Assistant'],
+	'Service Date': ['Supervisor', 'Service Assistant'],
 	Meeting: ['Chair', 'Secretary', 'Member', 'Guest'],
 	Shopping: ['Shopper'],
 	'Food Drives & Events': ['Supervisor', 'Assistant', 'Setup'],
 	'Lion Hearts': ['Driver', 'Sorter'],
+	'COBS Bread': ['Driver', 'Sorter'],
 	Inventory: ['Supervisor', 'Sorter']
 };
 

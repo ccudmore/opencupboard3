@@ -20,6 +20,13 @@
 
 	let selected = $state<Item | null>(null);
 	let detailsOpen = $state(false);
+	let confirmingDeleteAll = $state(false);
+
+	async function deleteAll() {
+		await act('deleteAll');
+		confirmingDeleteAll = false;
+		detailsOpen = false;
+	}
 
 	const dateFmt = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
 	const timeFmt = new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit' });
@@ -59,7 +66,7 @@
 		loaded = true;
 	}
 
-	async function act(action: 'read' | 'unread' | 'delete' | 'readAll' | 'deleteRead', id?: string) {
+	async function act(action: 'read' | 'unread' | 'delete' | 'readAll' | 'deleteRead' | 'deleteAll', id?: string) {
 		const r = await request({ method: 'POST', body: JSON.stringify({ action, id }) });
 		if (!r) {
 			error = 'That did not work. Please try again.';
@@ -73,6 +80,7 @@
 		else if (action === 'delete') items = items.filter((i) => i.id !== id);
 		else if (action === 'readAll') items = items.map((i) => ({ ...i, readAt: i.readAt ?? now }));
 		else if (action === 'deleteRead') items = items.filter((i) => !i.readAt);
+		else if (action === 'deleteAll') items = [];
 		return true;
 	}
 
@@ -99,6 +107,7 @@
 
 	$effect(() => {
 		if (isOpen) void refreshList();
+		else confirmingDeleteAll = false;
 	});
 
 	onMount(() => {
@@ -119,7 +128,7 @@
 	<BellOutline size="lg" />
 	{#if unread > 0}
 		<span
-			class="absolute -inset-e-0.5-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-5 text-white"
+			class="absolute -inset-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-5 text-white"
 			aria-hidden="true">{badge}</span>
 	{/if}
 </ToolbarButton>
@@ -127,9 +136,15 @@
 <Dropdown bind:isOpen class="w-88 max-w-[calc(100vw-1rem)] p-0">
 	<div class="flex items-center justify-between gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-600">
 		<div class="font-semibold text-gray-900 dark:text-white">Notifications</div>
-		<div class="flex gap-2 text-xs">
-			<button type="button" class="text-blue-700 hover:underline disabled:text-gray-400 dark:text-blue-400" disabled={unread === 0} onclick={() => act('readAll')}>Mark all read</button>
-			<button type="button" class="text-blue-700 hover:underline disabled:text-gray-400 dark:text-blue-400" disabled={!items.some((i) => i.readAt)} onclick={() => act('deleteRead')}>Delete read</button>
+		<div class="flex items-center gap-2 text-xs">
+			{#if confirmingDeleteAll}
+				<span class="text-gray-800 dark:text-gray-100">Delete all?</span>
+				<button type="button" class="font-semibold text-red-700 hover:underline dark:text-red-400" onclick={deleteAll}>Yes</button>
+				<button type="button" class="text-blue-700 hover:underline dark:text-blue-400" onclick={() => (confirmingDeleteAll = false)}>No</button>
+			{:else}
+				<button type="button" class="text-blue-700 hover:underline disabled:text-gray-400 dark:text-blue-400" disabled={unread === 0} onclick={() => act('readAll')}>Mark all read</button>
+				<button type="button" class="text-blue-700 hover:underline disabled:text-gray-400 dark:text-blue-400" disabled={items.length === 0} onclick={() => (confirmingDeleteAll = true)}>Delete all</button>
+			{/if}
 		</div>
 	</div>
 

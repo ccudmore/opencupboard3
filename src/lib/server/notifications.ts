@@ -128,6 +128,10 @@ export async function remove(userId: string, id: string) {
 	return count > 0;
 }
 
+export async function removeAll(userId: string) {
+	await prisma.notification.deleteMany({ where: { userId } });
+}
+
 export async function removeAllRead(userId: string) {
 	await prisma.notification.deleteMany({ where: { userId, readAt: { not: null } } });
 }

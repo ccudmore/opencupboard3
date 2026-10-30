@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
-import { listFor, unreadCount, markRead, markAllRead, remove, removeAllRead } from '$lib/server/notifications';
+import { listFor, unreadCount, markRead, markAllRead, remove, removeAll, removeAllRead } from '$lib/server/notifications';
 
 // The bell in the header talks to this. Everything is about the signed-in user's own notifications.
 // (API routes don't go through the (private) layout, so the sign-in is checked here.)
@@ -18,7 +18,7 @@ export async function GET({ locals, url }) {
 }
 
 const bodySchema = z.object({
-	action: z.enum(['read', 'unread', 'delete', 'readAll', 'deleteRead']),
+	action: z.enum(['read', 'unread', 'delete', 'readAll', 'deleteRead', 'deleteAll']),
 	id: z.string().min(1).optional()
 });
 
@@ -30,6 +30,7 @@ export async function POST({ locals, request }) {
 
 	if (action === 'readAll') await markAllRead(id);
 	else if (action === 'deleteRead') await removeAllRead(id);
+	else if (action === 'deleteAll') await removeAll(id);
 	else {
 		if (!notificationId) throw error(400, 'Missing id.');
 		const ok = action === 'delete' ? await remove(id, notificationId) : await markRead(id, notificationId, action === 'read');

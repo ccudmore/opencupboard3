@@ -14,7 +14,7 @@
   <Sidebar alwaysOpen class="z-50 h-full text-sm w-80" position="absolute">
     <!--EventPicker data={data} events={data.events}/-->
     <SidebarGroup>
-      {#each apps as { label, href, icon: Icon, subContent }}
+      {#each apps as { label, href, icon: Icon, subContent, submenus }}
         <SidebarItem {label} {href} {spanClass}>
           {#snippet icon()}
             <Icon class="h-5 w-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"></Icon>
@@ -24,6 +24,11 @@
               {subContent}
             </span>
           {/snippet}
+          <!--
+          {#each submenus as { label, href, icon: Icon, subContent }}
+            {label}
+          {/each}
+          -->
         </SidebarItem>
       {/each}
     </SidebarGroup>

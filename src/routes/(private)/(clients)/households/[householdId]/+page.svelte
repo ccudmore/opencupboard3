@@ -118,7 +118,7 @@ function toastFormErrors(errors: FormErrors) {
 					{#snippet icon()}
 						<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
 					{/snippet}
-					Household and Guests
+					Household
 				</BreadcrumbItem>
 				<BreadcrumbItem>
 					{#snippet icon()}
