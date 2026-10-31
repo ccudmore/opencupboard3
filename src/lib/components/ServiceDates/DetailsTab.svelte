@@ -1,39 +1,38 @@
 <script lang="ts">
-    import { Alert, Badge, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
-    import { callAction } from '$lib/client/callAction';
-    import { toast } from 'svelte-sonner';
+	import { Button, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
+	import { callAction } from '$lib/client/callAction';
+	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-    import type { Service, Site, Appointment } from './types';
-	import { PlusOutline, TrashBinOutline, FileCopyOutline } from 'flowbite-svelte-icons';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import type { Service, Site } from './types';
+	import { FileCopyOutline } from 'flowbite-svelte-icons';
+	import { getActionRunner } from '$lib/client/actionRunner.svelte';
 
-    let { service,
-          sites,
-          timeZone,
-          emailEnabled,
-          onopen,
-          canManageVolunteers,
-        }: {
-            service:Service;
-            sites: Site[];
-            timeZone: string;
-            emailEnabled: boolean;
-            onopen: (id: string) => void;
-            canManageVolunteers: boolean;
-        }  = $props();
+	let {
+		service,
+		sites,
+		timeZone,
+		emailEnabled,
+		onopen,
+		canManageVolunteers
+	}: {
+		service: Service;
+		sites: Site[];
+		timeZone: string;
+		emailEnabled: boolean;
+		onopen: (id: string) => void;
+		canManageVolunteers: boolean;
+	} = $props();
 
-    const timeFmt = $derived(new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit', timeZone }));
-	const time = (d: Date | string) => timeFmt.format(new Date(d));
+	const runner = getActionRunner();
+	const { run } = runner;
 
-
-    const sectionClass = 'rounded-lg border border-gray-200 p-3 sm:p-4 dark:border-gray-700';
+	const sectionClass = 'rounded-lg border border-gray-200 p-3 sm:p-4 dark:border-gray-700';
 	const headingClass = 'mb-3 text-base font-semibold text-gray-900 dark:text-white';
 	const cancelled = $derived(service.status === 'CANCELLED');
 	const siteItems = $derived(sites.map((s) => ({ value: s.id, name: s.name })));
 
-    // svelte-ignore state_referenced_locally
+	// svelte-ignore state_referenced_locally
 	let details = $state({ title: service.title, date: service.date, startClock: service.startClock, endClock: service.endClock, siteId: service.siteId, note: service.note });
-    let busy = $state('');
 
 	const detailsChanged = $derived(
 		details.title !== service.title || details.date !== service.date || details.startClock !== service.startClock ||
@@ -69,10 +68,10 @@
 		duplicateOpen = true;
 	}
 	async function duplicate() {
-		busy = 'dup';
+		runner.busy = 'dup';
 		dupError = '';
 		const r = await callAction('duplicate', { eventId: service.id, ...dup });
-		busy = '';
+		runner.busy = '';
 		if (!r.ok) {
 			dupError = r.message;
 			return;
@@ -82,76 +81,48 @@
 		await invalidateAll();
 		onopen(r.data.id);
 	}
-
-    // craig - run is shared between components
-    async function run(key: string, action: string, fields: Record<string, string>, done?: string) {
-		busy = key;
-		const r = await callAction(action, fields);
-		busy = '';
-		if (!r.ok) {
-			toast(r.message);
-			await invalidateAll();
-			return null;
-		}
-		if (done) toast(done);
-		await invalidateAll();
-		return r.data;
-	}
-	let bookingPrompts: ReturnType<typeof EmailPrompts> | undefined = $state();
-
-	let cancelBookingTarget = $state<Appointment | null>(null);
-	async function cancelBooking() {
-		const booking = cancelBookingTarget?.booking;
-		if (!booking) return;
-		const ok = await run('cancel-booking', 'cancelBooking', { bookingId: booking.id }, 'Booking cancelled.');
-		if (ok) {
-			cancelBookingTarget = null;
-			await bookingPrompts?.start(booking.id, 'cancellation', true);
-		}
-	}
-
-
 </script>
-    <section class={sectionClass}>
-		<h3 class={headingClass}>Details</h3>
-		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-			<div class="min-w-0 sm:col-span-2">
-				<Label for={`title-${service.id}`} class="mb-1">Title</Label>
-				<Input id={`title-${service.id}`} bind:value={details.title} />
-			</div>
-			<div class="min-w-0">
-				<Label for={`date-${service.id}`} class="mb-1">Date</Label>
-				<Input id={`date-${service.id}`} type="date" bind:value={details.date} />
-			</div>
-			<div class="min-w-0">
-				<Label for={`site-${service.id}`} class="mb-1">Site</Label>
-				<Select id={`site-${service.id}`} items={siteItems} bind:value={details.siteId} />
-			</div>
-			<div class="min-w-0">
-				<Label for={`start-${service.id}`} class="mb-1">Starts</Label>
-				<Input id={`start-${service.id}`} type="time" bind:value={details.startClock} />
-			</div>
-			<div class="min-w-0">
-				<Label for={`end-${service.id}`} class="mb-1">Ends</Label>
-				<Input id={`end-${service.id}`} type="time" bind:value={details.endClock} />
-			</div>
-			<div class="min-w-0 sm:col-span-2">
-				<Label for={`note-${service.id}`} class="mb-1">Note</Label>
-				<Textarea id={`note-${service.id}`} rows={2} class="block w-full max-w-full min-w-0" bind:value={details.note} />
-			</div>
-		</div>
-		<div class="mt-3 flex flex-wrap gap-2">
-			<Button size="sm" color="dark" disabled={!detailsChanged || busy === 'details'} onclick={saveDetails}>{busy === 'details' ? 'Saving…' : 'Save details'}</Button>
-			<Button size="sm" outline color="dark" onclick={openDuplicate}><FileCopyOutline class="me-2 h-4 w-4" />Duplicate</Button>
-			{#if cancelled}
-				<Button size="sm" outline color="dark" disabled={busy === 'status'} onclick={() => setStatus('ACTIVE')}>Reinstate</Button>
-			{:else}
-				<Button size="sm" outline color="red" onclick={() => (cancelOpen = true)}>Cancel this service date</Button>
-			{/if}
-		</div>
-	</section>
 
-    <!-- Confirmations -->
+<section class={sectionClass}>
+	<h3 class={headingClass}>Details</h3>
+	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+		<div class="min-w-0 sm:col-span-2">
+			<Label for={`title-${service.id}`} class="mb-1">Title</Label>
+			<Input id={`title-${service.id}`} bind:value={details.title} />
+		</div>
+		<div class="min-w-0">
+			<Label for={`date-${service.id}`} class="mb-1">Date</Label>
+			<Input id={`date-${service.id}`} type="date" bind:value={details.date} />
+		</div>
+		<div class="min-w-0">
+			<Label for={`site-${service.id}`} class="mb-1">Site</Label>
+			<Select id={`site-${service.id}`} items={siteItems} bind:value={details.siteId} />
+		</div>
+		<div class="min-w-0">
+			<Label for={`start-${service.id}`} class="mb-1">Starts</Label>
+			<Input id={`start-${service.id}`} type="time" bind:value={details.startClock} />
+		</div>
+		<div class="min-w-0">
+			<Label for={`end-${service.id}`} class="mb-1">Ends</Label>
+			<Input id={`end-${service.id}`} type="time" bind:value={details.endClock} />
+		</div>
+		<div class="min-w-0 sm:col-span-2">
+			<Label for={`note-${service.id}`} class="mb-1">Note</Label>
+			<Textarea id={`note-${service.id}`} rows={2} class="block w-full max-w-full min-w-0" bind:value={details.note} />
+		</div>
+	</div>
+	<div class="mt-3 flex flex-wrap gap-2">
+		<Button size="sm" color="dark" disabled={!detailsChanged || runner.busy === 'details'} onclick={saveDetails}>{runner.busy === 'details' ? 'Saving…' : 'Save details'}</Button>
+		<Button size="sm" outline color="dark" onclick={openDuplicate}><FileCopyOutline class="me-2 h-4 w-4" />Duplicate</Button>
+		{#if cancelled}
+			<Button size="sm" outline color="dark" disabled={runner.busy === 'status'} onclick={() => setStatus('ACTIVE')}>Reinstate</Button>
+		{:else}
+			<Button size="sm" outline color="red" onclick={() => (cancelOpen = true)}>Cancel this service date</Button>
+		{/if}
+	</div>
+</section>
+
+<!-- Confirmations -->
 <Modal title="Cancel this service date?" bind:open={cancelOpen} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">
 		{service.counts.booked > 0
@@ -160,18 +131,8 @@
 		The service date will be hidden from clients and volunteers. You can reinstate it later.
 	</p>
 	{#snippet footer()}
-		<Button color="red" disabled={busy === 'status'} onclick={() => setStatus('CANCELLED')}>Yes, cancel it</Button>
+		<Button color="red" disabled={runner.busy === 'status'} onclick={() => setStatus('CANCELLED')}>Yes, cancel it</Button>
 		<Button outline color="dark" onclick={() => (cancelOpen = false)}>Keep it</Button>
-	{/snippet}
-</Modal>
-
-<Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
-		Cancel the booking for {cancelBookingTarget?.booking?.name} at {cancelBookingTarget ? time(cancelBookingTarget.startTime) : ''}? The time becomes open again.
-	</p>
-	{#snippet footer()}
-		<Button color="red" disabled={busy === 'cancel-booking'} onclick={cancelBooking}>Yes, cancel it</Button>
-		<Button outline color="dark" onclick={() => (cancelBookingTarget = null)}>Keep it</Button>
 	{/snippet}
 </Modal>
 
@@ -199,8 +160,7 @@
 	</div>
 	{#if dupError}<p class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">{dupError}</p>{/if}
 	{#snippet footer()}
-		<Button color="dark" disabled={busy === 'dup'} onclick={duplicate}>{busy === 'dup' ? 'Copying…' : 'Duplicate'}</Button>
+		<Button color="dark" disabled={runner.busy === 'dup'} onclick={duplicate}>{runner.busy === 'dup' ? 'Copying…' : 'Duplicate'}</Button>
 		<Button outline color="dark" onclick={() => (duplicateOpen = false)}>Cancel</Button>
 	{/snippet}
 </Modal>
-<EmailPrompts bind:this={bookingPrompts} {emailEnabled} previewAction="previewBookingEmail" sendAction="sendBookingEmail" idField="bookingId" audience="household" />
