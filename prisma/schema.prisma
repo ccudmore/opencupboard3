@@ -165,6 +165,7 @@ model Site {
   createdAt    DateTime      @default(now())
   createdBy    String?
   appointments Appointment[]
+  inventoryItems InventoryItem[]
   plannedBookings AppointmentBookings[] @relation("BookingPlannedSite")
 
   @@map("site")
@@ -455,4 +456,35 @@ model AppointmentBookings {
   @@index([appointmentId])
   @@index([plannedSiteId])
   @@map("appointment_bookings")
+}
+
+model InventoryCategory {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  items     InventoryItem[]
+  createdAt DateTime        @default(now())
+  createdBy String?
+
+  @@map("inventory_category")
+}
+
+model InventoryItem {
+  id          String            @id @default(cuid())
+  name        String
+  category    InventoryCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId  String
+  site        Site              @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId      String
+  room        String
+  shelfNumber String?
+  boxNumber   String?
+  quantity    Int               @default(1)
+  notes       String?
+  createdAt   DateTime          @default(now())
+  createdBy   String?
+  updatedAt   DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@index([siteId])
+  @@map("inventory_item")
 }
