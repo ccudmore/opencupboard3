@@ -155,6 +155,7 @@ model RolePermission {
 model Site {
   id           String        @id @default(cuid())
   name         String        @unique
+  unitNumber   String?
   street       String?
   city         String?
   postalCode   String?
@@ -337,6 +338,7 @@ model Household {
   preferredTimeOfDay    ServiceTime[]
   languagesSpoken       String[]
   howHeard              String?
+  unitNumber            String?
   street                String?
   street2               String?
   city                  String?
@@ -351,19 +353,24 @@ model Household {
   @@map("household")
 }
 
+enum VolunteerStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 model Volunteer {
   id              String                 @id @default(cuid())
   //person          Person  @relation(fields: [personId], references: [id])
   //personId        String  @unique
   firstName       String
   lastName        String
+  unitNumber      String?
   street          String?
   city            String?
   postalCode      String?
   province        String                 @default("Ontario")
   country         String                 @default("Canada")
-  email1          String?
-  email2          String?
+  email2          String? // a second address to reach them; the login email is user.email
   phone1          String?
   phone2          String?
   availability    Json?
@@ -371,8 +378,11 @@ model Volunteer {
   trainingCourses Json?
   assignments     VolunteerAssignments[]
   documents       VolunteerDocument[]
-  user            User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId          String?                @unique // the login this volunteer signs in with
+  // Every volunteer is a user: the login, the email and the Volunteer role live on the user.
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId          String                 @unique
+  status          VolunteerStatus        @default(ACTIVE)
+  archivedAt      DateTime?
   createdAt       DateTime               @default(now())
   createdBy       String?
   skills	  String[]	@default([])
@@ -458,13 +468,18 @@ model AppointmentBookings {
   @@map("appointment_bookings")
 }
 
+// Categories can sit inside other categories (Meat > Beef). Names only need to be unique within the same parent.
 model InventoryCategory {
-  id        String          @id @default(cuid())
-  name      String          @unique
+  id        String              @id @default(cuid())
+  name      String
+  parent    InventoryCategory?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  parentId  String?
+  children  InventoryCategory[] @relation("CategoryTree")
   items     InventoryItem[]
-  createdAt DateTime        @default(now())
+  createdAt DateTime            @default(now())
   createdBy String?
 
+  @@index([parentId])
   @@map("inventory_category")
 }
 

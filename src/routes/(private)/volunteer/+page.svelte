@@ -91,9 +91,11 @@
 
 		{#if !data.volunteer}
 			<Alert color="blue">
-				Your login isn't connected to a volunteer record yet, so there are no shifts to show. Please ask a volunteer manager to
-				link it.
+				You don't have a volunteer profile yet, so there are no shifts to show. Please ask a volunteer manager to add you as a
+				volunteer.
 			</Alert>
+		{:else if data.volunteer.status === 'ARCHIVED'}
+			<Alert color="yellow">Your volunteer profile is archived, so you can't sign up for shifts. Please ask a volunteer manager to restore it.</Alert>
 		{:else}
 			<section class="space-y-3">
 				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Your upcoming shifts</h2>

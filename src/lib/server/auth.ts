@@ -3,6 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { env } from '$env/dynamic/private';
 import prisma from "$lib/prisma"
 import { error, redirect } from '@sveltejs/kit';
+import { sendResetPasswordEmail, RESET_HOURS } from '$lib/server/accountEmail';
 
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
@@ -30,6 +31,16 @@ export const auth = betterAuth({
 		minPasswordLength: 8,
 		autoSignIn: true,
 		disableSignUp: true,
+		// "Forgot password" and volunteer invitations both email a link to /reset-password
+		resetPasswordTokenExpiresIn: 60 * 60 * RESET_HOURS,
+		revokeSessionsOnPasswordReset: true,
+		sendResetPassword: async ({ user, url }) => {
+			try {
+				await sendResetPasswordEmail({ name: user.name, email: user.email }, url);
+			} catch (err) {
+				console.error('Could not send the password email', err);
+			}
+		}
 	},
 
 	socialProviders: {

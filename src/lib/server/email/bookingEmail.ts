@@ -1,3 +1,4 @@
+import { streetWithUnit } from '$lib/address';
 import { z } from 'zod';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
@@ -63,7 +64,7 @@ export function buildVars(booking: EmailBooking, options: { organization: string
 	const dateFormat = new Intl.DateTimeFormat('en-CA', { dateStyle: 'full', timeZone: options.timeZone });
 	const timeFormat = new Intl.DateTimeFormat('en-CA', { timeStyle: 'short', timeZone: options.timeZone });
 
-	const address = [loc?.street, loc?.city].filter(Boolean).join(', ');
+	const address = [streetWithUnit(loc?.street, loc?.unitNumber), loc?.city].filter(Boolean).join(', ');
 	const request = booking.datedRequest?.requestText?.trim() ?? '';
 
 	return {

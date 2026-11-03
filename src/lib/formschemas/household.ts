@@ -20,6 +20,7 @@ const normalizePostal = (value: string): string =>
 
 export const householdSchema = z.object({
     id: z.string(),
+    unitNumber: z.string().trim().max(30).nullish(),
     street: z.string().min(1).nullish(),
     street2: z.string().nullish(),
     city: z.string().nullable(),
@@ -113,6 +114,7 @@ export const newHouseholdSchema = householdSchema
         howHeard: true,
         notes: true,
         languagesSpoken: true,
+        unitNumber: true,
         street: true,
         street2: true,
         city: true,

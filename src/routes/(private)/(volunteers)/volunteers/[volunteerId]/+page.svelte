@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import {
+		Alert,
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
@@ -20,7 +21,7 @@
 	import { volunteerSchema, WEEKDAYS } from '$lib/formschemas/volunteer';
 	import { ALL_ROLES } from '$lib/volunteerRoles';
 	import Documents from '$lib/components/Volunteer/Documents.svelte';
-	import LoginAccount from '$lib/components/Volunteer/LoginAccount.svelte';
+	import Account from '$lib/components/Volunteer/Account.svelte';
 	import Assignments from '$lib/components/Volunteer/Assignments.svelte';
 
 	let { data } = $props();
@@ -48,7 +49,7 @@
 		goto('/volunteers');
 	}
 
-	const title = $derived(data.isNew ? 'New volunteer' : `${$form.firstName} ${$form.lastName}`.trim() || 'Volunteer');
+	const title = $derived(`${$form.firstName} ${$form.lastName}`.trim() || 'Volunteer');
 
 	// Native checkboxes, styled so they are clear in light and dark mode
 	const checkClass = 'h-5 w-5 shrink-0 cursor-pointer rounded accent-primary-600 dark:accent-primary-400';
@@ -105,7 +106,7 @@
 		{#snippet icon()}
 			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
 		{/snippet}
-		{data.isNew ? 'New' : title}
+		{title}
 	</BreadcrumbItem>
 </Breadcrumb>
 		</div>
@@ -128,6 +129,9 @@
 
 	<div class="mx-auto w-full max-w-4xl min-w-0 space-y-6 p-3 sm:p-5">
 		<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{title}</h1>
+		{#if data.status === 'ARCHIVED'}
+			<Alert color="yellow">This volunteer is archived. Restore them under Login and status to use them again.</Alert>
+		{/if}
 <!-- Name and contact -->
 		<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Contact</h2>
@@ -143,12 +147,12 @@
 					{@render fieldError($errors.lastName)}
 				</div>
 				<div class="min-w-0">
-					<Label for="email1" class="mb-2">Email</Label>
-					<Input id="email1" type="email" autocomplete="off" bind:value={$form.email1} />
-					{@render fieldError($errors.email1)}
+					<Label for="login-email-shown" class="mb-2">Email (login)</Label>
+					<Input id="login-email-shown" type="email" value={data.account?.email ?? ''} readonly disabled />
+					<Helper class="mt-1">Change it under Login and status below.</Helper>
 				</div>
 				<div class="min-w-0">
-					<Label for="email2" class="mb-2">Second email</Label>
+					<Label for="email2" class="mb-2">Second email (optional)</Label>
 					<Input id="email2" type="email" autocomplete="off" bind:value={$form.email2} />
 					{@render fieldError($errors.email2)}
 				</div>
@@ -169,6 +173,11 @@
 		<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Address</h2>
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+				<div class="min-w-0">
+					<Label for="unitNumber" class="mb-2">Unit number (optional)</Label>
+					<Input id="unitNumber" autocomplete="off" bind:value={$form.unitNumber} />
+					{@render fieldError($errors.unitNumber)}
+				</div>
 				<div class="min-w-0 md:col-span-2">
 					<Label for="street" class="mb-2">Street</Label>
 					<Input id="street" autocomplete="off" bind:value={$form.street} />
@@ -286,11 +295,9 @@
 		<div class="flex flex-wrap gap-2">
 			<Button type="submit" color="dark" disabled={$submitting}>{$submitting ? 'Saving…' : 'Save'}</Button>
 			<Button type="button" outline color="dark" onclick={close}>Close</Button>
-			{#if !data.isNew}
-				<Button type="button" outline color="red" class="sm:ml-auto" onclick={() => (deleteOpen = true)}>
-					Delete volunteer
-				</Button>
-			{/if}
+			<Button type="button" outline color="red" class="sm:ml-auto" onclick={() => (deleteOpen = true)}>
+				Delete volunteer
+			</Button>
 		</div>
 	</div>
 </form>
@@ -298,17 +305,12 @@
 <div class="mx-auto w-full max-w-4xl min-w-0 px-3 pb-5 sm:px-5">
 	<!-- Outside the form above: these save with their own requests -->
 	<div class="mt-1">
-		<LoginAccount
-			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
-			login={data.login}
-			defaultName={`${$form.firstName} ${$form.lastName}`.trim()}
-			defaultEmail={$form.email1 ?? ''}
-		/>
+		<Account account={data.account} status={data.status} />
 	</div>
 
 	<div class="mt-6">
 		<Assignments
-			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
+			volunteerId={page.params.volunteerId ?? null}
 			assignments={data.assignments}
 			events={data.events}
 			emailEnabled={data.emailEnabled}
@@ -317,7 +319,7 @@
 
 	<div class="mt-6">
 		<Documents
-			volunteerId={data.isNew ? null : (page.params.volunteerId ?? null)}
+			volunteerId={page.params.volunteerId ?? null}
 			documents={data.documents}
 			accept={data.accept}
 			maxMb={data.maxMb}
@@ -328,7 +330,7 @@
 <!-- A separate form, outside the one above: forms can't be nested -->
 <Modal title="Delete volunteer" bind:open={deleteOpen} size="xs">
 	<p class="text-gray-600 dark:text-gray-300">
-		Delete {title}?
+		Delete {title}? Archiving is usually better: it keeps their history.
 		{#if data.assignmentCount > 0}
 			They will also be removed from {data.assignmentCount}
 			{data.assignmentCount === 1 ? 'event' : 'events'}, including past ones.

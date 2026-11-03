@@ -7,7 +7,8 @@ import {
 	listItems,
 	listRooms,
 	createCategory,
-	renameCategory,
+	updateCategory,
+	withDescendants,
 	deleteCategory,
 	addCommonCategories,
 	createItem,
@@ -27,12 +28,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const siteId = url.searchParams.get('site') ?? '';
 	const q = url.searchParams.get('q') ?? '';
 
-	const [categories, sites, rooms, list] = await Promise.all([
-		listCategories(),
-		getSites(),
-		listRooms(),
-		listItems({ categoryId, siteId, q })
-	]);
+	const [categories, sites, rooms] = await Promise.all([listCategories(), getSites(), listRooms()]);
+	const selected = categories.some((c) => c.id === categoryId) ? categoryId : '';
+	// Choosing a category shows what is in it and in everything nested inside it
+	const list = await listItems({ categoryIds: selected ? withDescendants(categories, selected) : [], siteId, q }, categories);
 
 	return {
 		categories,
@@ -42,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		total: list.total,
 		limit: MAX_ITEMS_SHOWN,
 		allItemCount: categories.reduce((n, c) => n + c.itemCount, 0),
-		categoryId: categories.some((c) => c.id === categoryId) ? categoryId : '',
+		categoryId: selected,
 		siteId,
 		q
 	};
@@ -73,14 +72,15 @@ export const actions: Actions = {
 
 	createCategory: async ({ request, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, PERMISSION);
-		const r = await createCategory(fields(await request.formData()).name ?? '', locals.user?.id);
+		const f = fields(await request.formData());
+		const r = await createCategory(f.name ?? '', f.parentId, locals.user?.id);
 		return r.ok ? { id: r.id } : bad(r);
 	},
 
-	renameCategory: async ({ request, locals, url }) => {
+	updateCategory: async ({ request, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, PERMISSION);
 		const f = fields(await request.formData());
-		const r = await renameCategory(f.id ?? '', f.name ?? '');
+		const r = await updateCategory(f.id ?? '', f.name ?? '', f.parentId);
 		return r.ok ? { success: true } : bad(r);
 	},
 

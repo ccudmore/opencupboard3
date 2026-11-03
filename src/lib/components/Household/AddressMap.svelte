@@ -20,6 +20,8 @@
 
 	interface Props {
 		street?: string;
+		/** Apartment or suite number. Shown in the popup but not used for geocoding. */
+		unitNumber?: string;
 		/** Unit / suite / floor. Shown in the popup but not used for geocoding. */
 		street2?: string;
 		city?: string;
@@ -33,6 +35,7 @@
 
 	let {
 		street = '',
+		unitNumber = '',
 		street2 = '',
 		city = '',
 		province = '',
@@ -65,7 +68,7 @@
 
 	// What the popup shows: the full address including the unit.
 	const label = $derived(
-		[street, street2, city, province, country]
+		[unitNumber ? `Unit ${unitNumber}` : '', street, street2, city, province, country]
 			.map((part) => part?.trim())
 			.filter(Boolean)
 			.join(', ')

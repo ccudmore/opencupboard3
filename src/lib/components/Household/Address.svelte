@@ -5,6 +5,22 @@
 </script>
 
 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div>
+        <Label for="unitNumber" class="mb-2">Unit number (optional)</Label>
+        <Input
+            type="text"
+            id="unitNumber"
+            name="unitNumber"
+            bind:value={$form.unitNumber}
+            {...$constraints.unitNumber}
+        />
+        {#if $errors.unitNumber}
+            <Helper class="mt-2 text-red-500">
+                <span class="font-medium">{$errors.unitNumber}</span>
+            </Helper>
+        {/if}
+    </div>
+
     <!-- Street address: full width on both layouts -->
     <div class="md:col-span-2">
         <Label for="street" class="mb-2">Street Address</Label>

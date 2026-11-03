@@ -75,6 +75,11 @@ let {
 			{#if $errors.phone}<Helper color="red">{$errors.phone}</Helper>{/if}
 		</div>
 
+		<div>
+			<Label for="unitNumber" class="mb-1">Unit number (optional)</Label>
+			<Input id="unitNumber" name="unitNumber" bind:value={$form.unitNumber} />
+		</div>
+
 		<div class="md:col-span-2">
 			<Label for="street" class="mb-1">Street</Label>
 			<Input id="street" name="street" bind:value={$form.street}

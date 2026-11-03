@@ -8,7 +8,8 @@ import { requirePermission } from '$lib/utils';
 import { volunteerSchema, readAvailability, readTrainingCourses } from '$lib/formschemas/volunteer';
 import { ALLOWED_EXTENSIONS, identifyDocument, cleanFileName, maxUploadBytes } from '$lib/server/documentTypes';
 import { EventStatus } from '$prisma/enums';
-import { linkExistingLogin, createVolunteerLogin, unlinkLogin } from '$lib/server/volunteerLogin';
+import { accountInfo, syncUserName, changeEmail, archiveVolunteer, unarchiveVolunteer, deleteVolunteer } from '$lib/server/volunteerAccounts';
+import { sendAccountLink } from '$lib/server/accountLinks';
 import { isMailConfigured } from '$lib/server/email/mailer';
 import {
 	createAssignment,
@@ -26,31 +27,13 @@ const uploadSettings = () => ({
 	maxMb: Math.round(maxUploadBytes() / 1024 / 1024)
 });
 
-/** The URL /volunteers/new adds a volunteer; any other value is a volunteer's id. */
-const NEW = 'new';
-
 export const load: PageServerLoad = async ({ params, locals, url }) => {
 	requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-
-	if (params.volunteerId === NEW) {
-		return {
-			isNew: true,
-			form: await superValidate(zod4(volunteerSchema)),
-			assignments: [],
-			events: [],
-			emailEnabled: isMailConfigured(),
-			assignmentCount: 0,
-			documents: [],
-			login: null,
-			...uploadSettings()
-		};
-	}
 
 	const volunteer = await prisma.volunteer.findUnique({
 		where: { id: params.volunteerId },
 		include: {
-			user: { select: { id: true, name: true, email: true } },
-			_count: { select: { assignments: true } },
+						_count: { select: { assignments: true } },
 			documents: {
 				orderBy: { createdAt: 'desc' },
 				select: { id: true, name: true, size: true, contentType: true, createdAt: true }
@@ -60,7 +43,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 	if (!volunteer) throw error(404, 'Volunteer not found');
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { availability, trainingCourses, attachments: _links, documents, user, userId: _userId, ...rest } = volunteer;
+	const { availability, trainingCourses, attachments: _links, documents, userId, ...rest } = volunteer;
 	const form = await superValidate(
 		{
 			...rest,
@@ -93,14 +76,14 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 	}));
 
 	return {
-		isNew: false,
 		form,
+		status: volunteer.status,
+		account: await accountInfo(userId),
 		assignments,
 		events: await eventsToChooseFrom(),
 		emailEnabled: isMailConfigured(),
 		assignmentCount: assignments.length,
 		documents,
-		login: user,
 		...uploadSettings()
 	};
 };
@@ -134,7 +117,7 @@ async function eventsToChooseFrom() {
 }
 
 export const actions: Actions = {
-	/** Creates a volunteer (/volunteers/new) or updates one. */
+	/** Saves the volunteer's profile. Volunteers are added at /volunteers/new. */
 	save: async ({ request, params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
 
@@ -148,19 +131,9 @@ export const actions: Actions = {
 			trainingCourses: trainingCourses as Prisma.InputJsonValue
 		};
 
-		if (params.volunteerId === NEW) {
-			let id: string;
-			try {
-				id = (await prisma.volunteer.create({ data: { ...data, createdBy: locals.user?.id ?? 'system' } })).id;
-			} catch (err) {
-				console.error(err);
-				return message(form, 'Could not save the volunteer. Please try again.', { status: 500 });
-			}
-			throw redirect(303, `/volunteers/${id}`);
-		}
-
 		try {
 			await prisma.volunteer.update({ where: { id: params.volunteerId }, data });
+			await syncUserName(params.volunteerId);
 		} catch (err) {
 			if ((err as { code?: string }).code === 'P2025') {
 				return message(form, 'This volunteer no longer exists.', { status: 404 });
@@ -171,61 +144,47 @@ export const actions: Actions = {
 		return message(form, 'Saved');
 	},
 
-	/** Removes a volunteer and their event assignments. */
+	/** Removes the volunteer profile, their assignments and documents. The login is kept (see deleteVolunteer). */
 	delete: async ({ params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-		if (params.volunteerId === NEW) return fail(400, { message: 'Nothing to delete.' });
-
-		try {
-			// The volunteer's documents go with them (cascade)
-			await prisma.$transaction([
-				prisma.volunteerAssignments.deleteMany({ where: { volunteerId: params.volunteerId } }),
-				prisma.volunteer.delete({ where: { id: params.volunteerId } })
-			]);
-		} catch (err) {
-			if ((err as { code?: string }).code !== 'P2025') {
-				console.error(err);
-				return fail(500, { message: 'Could not delete the volunteer. Please try again.' });
-			}
-			// already gone: fall through to the list
-		}
+		const r = await deleteVolunteer(params.volunteerId);
+		if (!r.ok) return fail(r.status, { message: r.message });
 		throw redirect(303, '/volunteers');
 	},
 
-	/** Links this volunteer to a user that already exists. */
-	linkLogin: async ({ request, params, locals, url }) => {
+	/** Hides the volunteer from lists and pickers; see archiveVolunteer. */
+	archive: async ({ params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-		if (params.volunteerId === NEW) return fail(400, { message: 'Save the volunteer first.' });
-		const email = String((await request.formData()).get('email') ?? '');
-		const r = await linkExistingLogin(params.volunteerId, email);
+		const r = await archiveVolunteer(params.volunteerId);
+		return r.ok ? { success: true, loginDisabled: r.loginDisabled } : fail(r.status, { message: r.message });
+	},
+
+	unarchive: async ({ params, locals, url }) => {
+		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
+		const r = await unarchiveVolunteer(params.volunteerId);
 		return r.ok ? { success: true } : fail(r.status, { message: r.message });
 	},
 
-	/** Creates a login for this volunteer. */
-	createLogin: async ({ request, params, locals, url }) => {
+	/** Emails the volunteer a link to choose a password (kind: invite, 7 days) or reset it (kind: reset, 1 hour). */
+	sendLink: async ({ request, params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-		if (params.volunteerId === NEW) return fail(400, { message: 'Save the volunteer first.' });
-		const data = await request.formData();
-		const r = await createVolunteerLogin(params.volunteerId, {
-			name: String(data.get('name') ?? ''),
-			email: String(data.get('email') ?? ''),
-			password: String(data.get('password') ?? '')
-		});
+		const kind = String((await request.formData()).get('kind') ?? '');
+		if (kind !== 'invite' && kind !== 'reset') return fail(400, { message: 'Unknown message type.' });
+		const v = await prisma.volunteer.findUnique({ where: { id: params.volunteerId }, select: { userId: true } });
+		if (!v) return fail(404, { message: 'This volunteer no longer exists.' });
+		const r = await sendAccountLink(v.userId, kind);
 		return r.ok ? { success: true } : fail(r.status, { message: r.message });
 	},
 
-	/** Disconnects this volunteer from their login. */
-	unlinkLogin: async ({ params, locals, url }) => {
+	changeEmail: async ({ request, params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-		if (params.volunteerId === NEW) return fail(400, { message: 'Nothing to unlink.' });
-		await unlinkLogin(params.volunteerId);
-		return { success: true };
+		const r = await changeEmail(params.volunteerId, String((await request.formData()).get('email') ?? ''));
+		return r.ok ? { success: true } : fail(r.status, { message: r.message });
 	},
 
 	/** Stores an uploaded file for this volunteer. */
 	uploadDocument: async ({ request, params, locals, url }) => {
 		requirePermission(locals?.user?.permissions, url, ['manage-volunteers']);
-		if (params.volunteerId === NEW) return fail(400, { message: 'Save the volunteer first.' });
 
 		const file = (await request.formData()).get('file');
 		if (!(file instanceof File) || file.size === 0) return fail(400, { message: 'Choose a file to upload.' });

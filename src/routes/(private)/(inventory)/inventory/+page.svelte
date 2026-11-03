@@ -31,8 +31,22 @@
 		timer = setTimeout(() => setParam('q', q.trim()), 300);
 	};
 	const siteItems = $derived([{ value: '', name: 'All sites' }, ...data.sites.map((s) => ({ value: s.id, name: s.name }))]);
-	const categoryItems = $derived(data.categories.map((c) => ({ value: c.id, name: c.name })));
+	const indent = (depth: number) => '\u00A0\u00A0\u00A0'.repeat(depth);
+	// A category is chosen by its full place in the tree, indented so the nesting shows
+	const categoryItems = $derived(data.categories.map((c) => ({ value: c.id, name: `${indent(c.depth)}${c.name}` })));
 	const activeCategory = $derived(data.categories.find((c) => c.id === data.categoryId));
+	// The chosen category's ancestors (for the trail) and its sub-categories (the pills to pick next)
+	const trail = $derived.by(() => {
+		const out: typeof data.categories = [];
+		let at = activeCategory;
+		while (at) {
+			out.unshift(at);
+			const parentId = at.parentId;
+			at = parentId ? data.categories.find((c) => c.id === parentId) : undefined;
+		}
+		return out;
+	});
+	const pills = $derived(data.categories.filter((c) => (c.parentId ?? '') === (data.categoryId || '')));
 
 	// ---- item dialog
 	let itemOpen = $state(false);
@@ -84,14 +98,25 @@
 	// ---- category dialog
 	let catOpen = $state(false);
 	let newCategory = $state('');
+	let newParent = $state('');
 	let catError = $state('');
-	let renames = $state<Record<string, string>>({});
+	let edits = $state<Record<string, { name: string; parentId: string }>>({});
 	let deleteCatTarget = $state<{ id: string; name: string } | null>(null);
 
+	function resetEdits() {
+		edits = Object.fromEntries(data.categories.map((c) => [c.id, { name: c.name, parentId: c.parentId ?? '' }]));
+	}
+	/** Parents a category can be moved under: anything except itself and what is inside it. */
+	function parentChoices(id: string) {
+		const blocked = new Set([id]);
+		for (const c of data.categories) if (c.parentId && blocked.has(c.parentId)) blocked.add(c.id);
+		return [{ value: '', name: '(top level)' }, ...data.categories.filter((c) => !blocked.has(c.id)).map((c) => ({ value: c.id, name: `${indent(c.depth)}${c.name}` }))];
+	}
 	function openCategories() {
 		catError = '';
 		newCategory = '';
-		renames = Object.fromEntries(data.categories.map((c) => [c.id, c.name]));
+		newParent = '';
+		resetEdits();
 		catOpen = true;
 	}
 	async function catCall(name: string, fields: Record<string, string>, done: string) {
@@ -105,14 +130,15 @@
 		}
 		toast.success(done);
 		await invalidateAll();
-		renames = Object.fromEntries(data.categories.map((c) => [c.id, renames[c.id] ?? c.name]));
+		resetEdits();
 		return true;
 	}
 	async function addCategory() {
-		if (await catCall('createCategory', { name: newCategory }, 'Category added')) newCategory = '';
+		if (await catCall('createCategory', { name: newCategory, parentId: newParent }, 'Category added')) newCategory = '';
 	}
-	async function renameCategory(id: string) {
-		await catCall('renameCategory', { id, name: renames[id] ?? '' }, 'Category renamed');
+	async function saveCategory(id: string) {
+		const e = edits[id];
+		if (e) await catCall('updateCategory', { id, name: e.name, parentId: e.parentId }, 'Category saved');
 	}
 	async function removeCategory() {
 		if (!deleteCatTarget) return;
@@ -123,7 +149,7 @@
 		}
 	}
 	async function addCommon() {
-		if (await catCall('addCommonCategories', {}, 'Categories added')) renames = Object.fromEntries(data.categories.map((c) => [c.id, c.name]));
+		await catCall('addCommonCategories', {}, 'Categories added');
 	}
 
 	const where = (i: Item) => [i.siteName, i.room, i.shelfNumber && `Shelf ${i.shelfNumber}`, i.boxNumber && `Box ${i.boxNumber}`].filter(Boolean).join(' · ');
@@ -168,26 +194,32 @@
 			</div>
 		</Alert>
 	{:else}
-		<!-- category filter -->
-		<div class="flex flex-wrap gap-2" role="group" aria-label="Category">
-			<button
-				type="button"
-				class="rounded-full border px-3 py-1 text-sm {data.categoryId === '' ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'}"
-				aria-pressed={data.categoryId === ''}
-				onclick={() => setParam('category', '')}
-			>
-				All ({data.allItemCount})
-			</button>
-			{#each data.categories as c (c.id)}
-				<button
-					type="button"
-					class="rounded-full border px-3 py-1 text-sm {data.categoryId === c.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'}"
-					aria-pressed={data.categoryId === c.id}
-					onclick={() => setParam('category', c.id)}
-				>
-					{c.name} ({c.itemCount})
+		<!-- category filter: the trail to the chosen category, then the categories inside it -->
+		<div class="space-y-2">
+			<div class="flex flex-wrap items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+				<button type="button" class="rounded px-1 font-medium hover:underline {data.categoryId === '' ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'}" onclick={() => setParam('category', '')}>
+					All categories ({data.allItemCount})
 				</button>
-			{/each}
+				{#each trail as c (c.id)}
+					<span aria-hidden="true">&rsaquo;</span>
+					<button type="button" class="rounded px-1 font-medium hover:underline {c.id === data.categoryId ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'}" onclick={() => setParam('category', c.id)}>
+						{c.name} ({c.totalCount})
+					</button>
+				{/each}
+			</div>
+			{#if pills.length > 0}
+				<div class="flex flex-wrap gap-2" role="group" aria-label="Categories">
+					{#each pills as c (c.id)}
+						<button
+							type="button"
+							class="rounded-full border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+							onclick={() => setParam('category', c.id)}
+						>
+							{c.name} ({c.totalCount}){#if c.childCount > 0}<span class="sr-only">, has sub-categories</span><span aria-hidden="true"> &rsaquo;</span>{/if}
+						</button>
+					{/each}
+				</div>
+			{/if}
 		</div>
 
 		<div class="grid gap-3 sm:grid-cols-2">
@@ -203,7 +235,7 @@
 
 		<p class="text-sm text-gray-500 dark:text-gray-400" aria-live="polite">
 			{data.total}
-			{data.total === 1 ? 'item' : 'items'}{activeCategory ? ` in ${activeCategory.name}` : ''}
+			{data.total === 1 ? 'item' : 'items'}{activeCategory ? ` in ${activeCategory.path}` : ''}
 			{#if data.total > data.limit}(showing the first {data.limit}. Narrow the search to see the rest.){/if}
 		</p>
 
@@ -343,38 +375,54 @@
 </Modal>
 
 <!-- categories -->
-<Modal title="Categories" bind:open={catOpen} size="md" autoclose={false}>
+<Modal title="Categories" bind:open={catOpen} size="lg" autoclose={false}>
 	{#if catError}<Alert color="red">{catError}</Alert>{/if}
 	<form
-		class="flex items-end gap-2"
+		class="grid items-end gap-2 sm:grid-cols-[1fr_1fr_auto]"
 		onsubmit={(e) => {
 			e.preventDefault();
 			addCategory();
 		}}
 	>
-		<div class="min-w-0 grow">
+		<div class="min-w-0">
 			<Label for="c-new" class="mb-1">New category</Label>
 			<Input id="c-new" bind:value={newCategory} maxlength={60} class={field} />
+		</div>
+		<div class="min-w-0">
+			<Label for="c-parent" class="mb-1">Inside</Label>
+			<Select id="c-parent" items={parentChoices('')} bind:value={newParent} class={field} />
 		</div>
 		<Button type="submit" color="blue" disabled={busy || !newCategory.trim()}>Add</Button>
 	</form>
 	<ul class="space-y-2">
 		{#each data.categories as c (c.id)}
-			<li class="rounded-lg border border-gray-200 p-2 dark:border-gray-700">
-				<form
-					class="flex items-center gap-2"
-					onsubmit={(e) => {
-						e.preventDefault();
-						renameCategory(c.id);
-					}}
-				>
-					<Input aria-label="Name of {c.name}" bind:value={renames[c.id]} maxlength={60} class="{field} grow" />
-					<Button type="submit" size="xs" outline color="dark" disabled={busy || !renames[c.id]?.trim() || renames[c.id] === c.name}>Rename</Button>
-					<Button type="button" size="xs" outline color="red" aria-label="Delete {c.name}" disabled={busy} onclick={() => (deleteCatTarget = { id: c.id, name: c.name })}>
-						<TrashBinOutline class="h-4 w-4" />
-					</Button>
-				</form>
-				<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{c.itemCount} {c.itemCount === 1 ? 'item' : 'items'}</p>
+			{@const e = edits[c.id]}
+			<li class="rounded-lg border border-gray-200 p-2 dark:border-gray-700" style="margin-left: {c.depth * 0.75}rem">
+				{#if e}
+					<form
+						class="grid items-center gap-2 sm:grid-cols-[1fr_1fr_auto]"
+						onsubmit={(ev) => {
+							ev.preventDefault();
+							saveCategory(c.id);
+						}}
+					>
+						<Input aria-label="Name of {c.path}" bind:value={e.name} maxlength={60} class={field} />
+						<Select aria-label="Where {c.name} sits" items={parentChoices(c.id)} bind:value={e.parentId} class={field} />
+						<div class="flex gap-1">
+							<Button type="submit" size="xs" color="blue" disabled={busy || !e.name.trim() || (e.name === c.name && e.parentId === (c.parentId ?? ''))}>Save</Button>
+							<Button type="button" size="xs" outline color="dark" disabled={busy} onclick={() => {
+								newParent = c.id;
+								document.getElementById('c-new')?.focus();
+							}}>Add inside</Button>
+							<Button type="button" size="xs" outline color="red" aria-label="Delete {c.path}" disabled={busy} onclick={() => (deleteCatTarget = { id: c.id, name: c.path })}>
+								<TrashBinOutline class="h-4 w-4" />
+							</Button>
+						</div>
+					</form>
+				{/if}
+				<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+					{c.itemCount} {c.itemCount === 1 ? 'item' : 'items'}{#if c.childCount > 0}, {c.childCount} {c.childCount === 1 ? 'category' : 'categories'} inside{/if}
+				</p>
 			</li>
 		{/each}
 	</ul>
@@ -384,7 +432,7 @@
 </Modal>
 
 <Modal title="Delete category" open={deleteCatTarget !== null} onclose={() => (deleteCatTarget = null)} size="xs" autoclose={false}>
-	<p class="text-gray-600 dark:text-gray-300">Delete the category {deleteCatTarget?.name}? A category that still has items can't be deleted.</p>
+	<p class="text-gray-600 dark:text-gray-300">Delete the category {deleteCatTarget?.name}? A category that still has items or categories inside it can't be deleted.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={busy} onclick={removeCategory}>Yes, delete</Button>
 		<Button outline color="dark" onclick={() => (deleteCatTarget = null)}>Cancel</Button>

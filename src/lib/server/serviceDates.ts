@@ -1,3 +1,4 @@
+import { streetWithUnit } from '$lib/address';
 import { z } from 'zod';
 import prisma from '$lib/prisma';
 
@@ -288,7 +289,7 @@ export async function searchEligibleClients(appointmentId: string, term: string)
 		.map((h) => ({
 			householdId: h.id,
 			name: primaryNames(h.members) || 'Unnamed household',
-			detail: [h.street, h.city].filter(Boolean).join(', ')
+			detail: [streetWithUnit(h.street, h.unitNumber), h.city].filter(Boolean).join(', ')
 		}))
 		.sort((a, b) => a.name.localeCompare(b.name))
 		.slice(0, 15);
@@ -332,6 +333,7 @@ export async function searchVolunteersForRole(eventId: string, role: string, ter
 	const q = term.trim();
 	const volunteers = await prisma.volunteer.findMany({
 		where: {
+			status: 'ACTIVE',
 			skills: { has: role },
 			assignments: { none: { eventId, status: { not: VolunteerAssignmentsStatus.CANCELLED } } },
 			...(q && {

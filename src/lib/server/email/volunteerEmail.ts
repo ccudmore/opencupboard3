@@ -1,3 +1,4 @@
+import { streetWithUnit } from '$lib/address';
 import { z } from 'zod';
 import prisma from '$lib/prisma';
 import type { Prisma } from '$prisma/client';
@@ -8,7 +9,7 @@ import { renderTemplate, type TemplateVars } from './templates';
 import type { EmailKind, Recipient } from './bookingEmail';
 
 export const assignmentEmailInclude = {
-	volunteer: true,
+	volunteer: { include: { user: { select: { email: true } } } },
 	event: { include: { location: true } }
 } satisfies Prisma.VolunteerAssignmentsInclude;
 
@@ -23,12 +24,12 @@ const KINDS: Record<EmailKind, { template: string; column: 'confirmations' | 're
 const MAX_SUBJECT = 200;
 const MAX_BODY = 10_000;
 
-/** The volunteer's email addresses that look valid (their first and second email). */
+/** The volunteer's email addresses that look valid: their login email, then their second email. */
 export function recipientsFor(a: EmailAssignment): Recipient[] {
 	const name = `${a.volunteer.firstName} ${a.volunteer.lastName}`.trim();
 	const seen = new Set<string>();
 	const out: Recipient[] = [];
-	for (const raw of [a.volunteer.email1, a.volunteer.email2]) {
+	for (const raw of [a.volunteer.user.email, a.volunteer.email2]) {
 		const email = (raw ?? '').trim();
 		if (!z.email().safeParse(email).success || seen.has(email.toLowerCase())) continue;
 		seen.add(email.toLowerCase());
@@ -46,7 +47,7 @@ export function buildVars(a: EmailAssignment, options: { organization: string; t
 	const dateFormat = new Intl.DateTimeFormat('en-CA', { dateStyle: 'full', timeZone: options.timeZone });
 	const timeFormat = new Intl.DateTimeFormat('en-CA', { timeStyle: 'short', timeZone: options.timeZone });
 	const loc = a.event.location;
-	const address = [loc.street, loc.city].filter(Boolean).join(', ');
+	const address = [streetWithUnit(loc.street, loc.unitNumber), loc.city].filter(Boolean).join(', ');
 	const note = a.event.note?.trim() ?? '';
 
 	return {

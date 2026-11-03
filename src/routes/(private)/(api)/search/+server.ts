@@ -1,3 +1,4 @@
+import { streetWithUnit } from '$lib/address';
 import { error, json } from '@sveltejs/kit';
 import { requirePermission } from '$lib/utils';
 import { searchHousehold, parseHouseholdSearchParams } from '$lib/server/queries/household';
@@ -18,7 +19,7 @@ export async function GET({ url, locals }) {
 				id: household.id,
     			URL: `${urlbase.origin}/households/${household.id}`, 
 				desc1:   household.members.map(m => `${m.firstName} ${m.lastName}`).join(', '),
-  				desc2: household.street,
+  				desc2: streetWithUnit(household.street, household.unitNumber),
 				desc3:   household.members.map(m => `${m.phone}`).join(', '),
 				category: 'Household'
   			};
@@ -43,7 +44,7 @@ export async function GET({ url, locals }) {
     			URL: `${urlbase.origin}/volunteers/${volunteer.id}`, 
 				desc1: `${volunteer.firstName} ${volunteer.lastName}`,
   				desc2: volunteer.phone1,
-				desc3: volunteer.email1,
+				desc3: volunteer.user.email,
 				category: 'Volunteer'
   			};
 		});

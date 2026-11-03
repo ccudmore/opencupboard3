@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// The volunteer record tied to this login (see Volunteer.userId)
 	const volunteer = await prisma.volunteer.findUnique({
 		where: { userId: locals.user!.id },
-		select: { id: true, firstName: true, lastName: true, skills: true }
+		select: { id: true, firstName: true, lastName: true, skills: true, status: true }
 	});
 
 	const timeZone = privateEnv.TIMEZONE || 'America/Toronto';
@@ -50,7 +50,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.sort((a, b) => +b.startTime - +a.startTime)
 		.slice(0, PAST_LIMIT);
 
-	const openShifts = await openShiftsFor(volunteer);
+	// An archived volunteer who still signs in (they have another role) sees their history but no open shifts
+	const openShifts = volunteer.status === 'ARCHIVED' ? [] : await openShiftsFor(volunteer);
 
 	return { volunteer, upcoming, past, openShifts, timeZone, userName: locals.user!.name };
 };

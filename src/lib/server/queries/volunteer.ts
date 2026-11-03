@@ -5,6 +5,8 @@ export const VOLUNTEER_PAGE_SIZE = 25;
 
 export type SearchVolunteerOptions = {
   q?: string;
+  /** 'active' (default), 'archived' or 'all' */
+  status?: 'active' | 'archived' | 'all';
   page?: number;
   pageSize?: number;
 };
@@ -15,6 +17,7 @@ export type SearchVolunteerOptions = {
  */
 export async function searchVolunteer({
   q = '',
+  status = 'active',
   page = 1,
   pageSize = VOLUNTEER_PAGE_SIZE
 }: SearchVolunteerOptions = {}) {
@@ -22,11 +25,12 @@ export async function searchVolunteer({
   const words = term.split(/\s+/).filter(Boolean);
 
   const where: Prisma.VolunteerWhereInput = {
+    ...(status === 'all' ? {} : { status: status === 'archived' ? 'ARCHIVED' : 'ACTIVE' }),
     AND: words.map((word) => ({
       OR: [
         { firstName: { contains: word, mode: 'insensitive' } },
         { lastName: { contains: word, mode: 'insensitive' } },
-        { email1: { contains: word, mode: 'insensitive' } },
+        { user: { email: { contains: word, mode: 'insensitive' } } },
         { email2: { contains: word, mode: 'insensitive' } },
         { phone1: { contains: word, mode: 'insensitive' } },
         { phone2: { contains: word, mode: 'insensitive' } },
@@ -39,19 +43,21 @@ export async function searchVolunteer({
     prisma.volunteer.count({ where }),
     prisma.volunteer.findMany({
       where,
+      include: { user: { select: { email: true } } },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       skip: (page - 1) * pageSize,
       take: pageSize
     })
   ]);
 
-  return { volunteers, total, page, pageSize, q: term };
+  return { volunteers, total, page, pageSize, q: term, status };
 }
 
 /** Turns URLSearchParams into SearchVolunteerOptions so every caller parses them the same way. */
 export function parseVolunteerSearchParams(params: URLSearchParams): SearchVolunteerOptions {
   return {
     q: params.get('q')?.trim() ?? '',
+    status: params.get('status') === 'archived' ? 'archived' : params.get('status') === 'all' ? 'all' : 'active',
     page: Math.max(1, Number(params.get('page')) || 1),
     pageSize: params.get('pageSize') ? Math.min(200, Math.max(1, Number(params.get('pageSize')))) : VOLUNTEER_PAGE_SIZE
   };

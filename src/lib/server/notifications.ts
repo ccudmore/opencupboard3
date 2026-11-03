@@ -85,11 +85,11 @@ export async function notifyPermission(
 	}
 }
 
-/** Sends a notification to the login linked to a volunteer. Nothing happens if they have no login. */
+/** Sends a notification to a volunteer's login. */
 export async function notifyVolunteer(volunteerId: string, input: NotificationInput): Promise<number> {
 	try {
 		const v = await prisma.volunteer.findUnique({ where: { id: volunteerId }, select: { userId: true } });
-		return v?.userId ? notify(v.userId, input) : 0;
+		return v ? notify(v.userId, input) : 0;
 	} catch (err) {
 		console.error('Could not send a notification:', err);
 		return 0;

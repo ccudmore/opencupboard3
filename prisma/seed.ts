@@ -105,12 +105,16 @@ async function main() {
 	await prisma.household.create({ data: household });
 	console.log(`Created household ${HOUSEHOLD_ID}`);
 
-	await prisma.volunteer.createMany({
-		data: [
-			{ firstName: 'Sample', lastName: 'Volunteer One' },
-			{ firstName: 'Sample', lastName: 'Volunteer Two' }
-		]
-	});
+	// Every volunteer is a user: a login with the Volunteer role, plus a volunteer profile
+	for (const [n, lastName] of [['one', 'Volunteer One'], ['two', 'Volunteer Two']]) {
+		const user = await createUserWithPassword({
+			email: `volunteer-${n}@example.com`,
+			name: `Sample ${lastName}`,
+			password: SAMPLE_PASSWORD,
+			roleNames: ['Volunteer']
+		});
+		await prisma.volunteer.create({ data: { userId: user.id, firstName: 'Sample', lastName } });
+	}
 
 	const location = { connect: { name: sites[0].name } };
 	const extraEvents = [

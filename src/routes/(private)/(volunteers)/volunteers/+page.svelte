@@ -2,8 +2,10 @@
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import {
+		Badge,
 		Button,
 		Search,
+		Select,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -23,9 +25,16 @@
 		searchTerm = data.q;
 	});
 
-	function pageUrl(q: string, page: number) {
+	const statusItems = [
+		{ value: 'active', name: 'Active' },
+		{ value: 'archived', name: 'Archived' },
+		{ value: 'all', name: 'All' }
+	];
+
+	function pageUrl(q: string, page: number, status: string = data.status) {
 		const params = new URLSearchParams();
 		if (q) params.set('q', q);
+		if (status !== 'active') params.set('status', status);
 		if (page > 1) params.set('page', String(page));
 		return `?${params.toString()}`;
 	}
@@ -69,6 +78,14 @@
 			<div class="w-full md:w-64">
 				<Search bind:value={searchTerm} placeholder="Search" size="md" />
 			</div>
+			<div class="w-full md:w-40">
+				<Select
+					aria-label="Show"
+					items={statusItems}
+					value={data.status}
+					onchange={(e) => goto(pageUrl(data.q, 1, (e.currentTarget as HTMLSelectElement).value), { keepFocus: true, noScroll: true })}
+				/>
+			</div>
 			<div class="flex flex-wrap gap-2 md:ml-auto">
 				<Button outline color="dark" class="shrink-0" onclick={() => goto('/volunteers/shifts')}>Shifts</Button>
 				<Button outline color="dark" class="shrink-0" onclick={() => goto('/volunteers/new')}>
@@ -78,7 +95,7 @@
 		</div>
 
 		{#if data.volunteers.length === 0}
-			<p class="px-4 pb-4 text-gray-500 dark:text-gray-400">No volunteers found.</p>
+			<p class="px-4 pb-4 text-gray-500 dark:text-gray-400">No {data.status === 'all' ? '' : data.status} volunteers found.</p>
 		{:else}
 			<!-- Tablet and desktop: table -->
 			<div class="hidden md:block">
@@ -92,9 +109,9 @@
 					<TableBody class="divide-y">
 						{#each data.volunteers as v (v.id)}
 							<TableBodyRow class="cursor-pointer" onclick={() => goto(`/volunteers/${v.id}`)}>
-								<TableBodyCell class="px-4 py-3">{v.lastName}, {v.firstName}</TableBodyCell>
+								<TableBodyCell class="px-4 py-3">{v.lastName}, {v.firstName}{#if v.status === 'ARCHIVED'} <Badge color="yellow" class="ms-1">Archived</Badge>{/if}</TableBodyCell>
 								<TableBodyCell class="px-4 py-3">{v.phone1 ?? ''}</TableBodyCell>
-								<TableBodyCell class="px-4 py-3">{v.email1 ?? ''}</TableBodyCell>
+								<TableBodyCell class="px-4 py-3">{v.user.email}</TableBodyCell>
 								<TableBodyCell class="px-4 py-3">{v.city ?? ''}</TableBodyCell>
 							</TableBodyRow>
 						{/each}
@@ -107,10 +124,10 @@
 				{#each data.volunteers as v (v.id)}
 					<li>
 						<a href={`/volunteers/${v.id}`} class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
-							<div class="truncate font-semibold text-gray-900 dark:text-white">{v.firstName} {v.lastName}</div>
-							{#if v.phone1 || v.email1}
+							<div class="truncate font-semibold text-gray-900 dark:text-white">{v.firstName} {v.lastName}{#if v.status === 'ARCHIVED'} (archived){/if}</div>
+							{#if v.phone1 || v.user.email}
 								<div class="mt-0.5 truncate text-sm text-gray-600 dark:text-gray-300">
-									{[v.phone1, v.email1].filter(Boolean).join(' · ')}
+									{[v.phone1, v.user.email].filter(Boolean).join(' · ')}
 								</div>
 							{/if}
 							{#if v.city}

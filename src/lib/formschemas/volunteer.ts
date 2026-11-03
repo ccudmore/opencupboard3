@@ -61,12 +61,12 @@ export const trainingCourseSchema = z.object({
 export const volunteerSchema = z.object({
 	firstName: z.string().trim().min(1, 'Enter a first name').max(100),
 	lastName: z.string().trim().min(1, 'Enter a last name').max(100),
+	unitNumber: optionalText(30),
 	street: optionalText(200),
 	city: optionalText(100),
 	postalCode: optionalPostal,
 	province: z.string().trim().min(1).max(100).default('Ontario'),
 	country: z.string().trim().min(1).max(100).default('Canada'),
-	email1: optionalEmail,
 	email2: optionalEmail,
 	phone1: optionalPhone,
 	phone2: optionalPhone,

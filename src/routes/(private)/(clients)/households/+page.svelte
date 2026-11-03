@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { streetWithUnit } from '$lib/address';
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import { householdStatusLabels } from '$lib/labels'
@@ -124,7 +125,7 @@
                   {/each}
                 </TableBodyCell>
                 <TableBodyCell class="px-4 py-3">
-                  {household.street}
+                  {streetWithUnit(household.street, household.unitNumber)}
                 </TableBodyCell>
                 <TableBodyCell class="px-4 py-3">
                   {#each household.members as member (member.id)}
@@ -172,7 +173,7 @@
               </div>
 
               {#if household.street}
-                <div class="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{household.street}</div>
+                <div class="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{streetWithUnit(household.street, household.unitNumber)}</div>
               {/if}
 
               {#if household.members.some((m) => m.phone)}

@@ -1,0 +1,12 @@
+Subject: You have been invited to {{organization}}
+
+Hello {{firstName}},
+
+{{organization}} has set up an account for you. Use the link below to choose a password and sign in. With your account you can see your volunteer schedule and sign up for shifts.
+
+{{link}}
+
+This link works once and expires in {{days}} days. If it has expired, ask the person who invited you to send a new one.
+
+Thank you,
+{{organization}}

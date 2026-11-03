@@ -43,6 +43,7 @@ const NO_ROLE = '';
 
 async function getVolunteers(): Promise<Volunteer[]> {
 	return prisma.volunteer.findMany({
+		where: { status: 'ACTIVE' }, // archived volunteers can't be assigned
 		select: { id: true, firstName: true, lastName: true },
 		orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
 	});

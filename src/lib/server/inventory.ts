@@ -31,49 +31,148 @@ export const COMMON_CATEGORIES = [
 
 // ---------------------------------------------------------------- categories
 
+/** Categories can be nested this many levels deep (Meat > Beef > Ground). */
+export const MAX_DEPTH = 4;
+
 const categoryName = z.string().trim().min(1, 'Enter a category name').max(60, 'Use at most 60 characters');
 
-export async function listCategories() {
-	const rows = await prisma.inventoryCategory.findMany({ orderBy: { name: 'asc' }, include: { _count: { select: { items: true } } } });
-	return rows.map((c) => ({ id: c.id, name: c.name, itemCount: c._count.items }));
+export type CategoryNode = {
+	id: string;
+	name: string;
+	parentId: string | null;
+	depth: number; // 0 for a top-level category
+	path: string; // "Meat > Beef"
+	itemCount: number; // items directly in this category
+	totalCount: number; // items in this category and everything inside it
+	childCount: number;
+};
+
+type Flat = { id: string; name: string; parentId: string | null; _count: { items: number } };
+
+/** Every category as a tree flattened in display order: each one followed by what is inside it. */
+export async function listCategories(): Promise<CategoryNode[]> {
+	const rows: Flat[] = await prisma.inventoryCategory.findMany({
+		select: { id: true, name: true, parentId: true, _count: { select: { items: true } } }
+	});
+	return buildTree(rows);
 }
 
-/** Names are unique ignoring upper and lower case, so "Dairy" and "dairy" can't both exist. */
-async function nameTaken(name: string, exceptId?: string) {
+function buildTree(rows: Flat[]): CategoryNode[] {
+	const byParent = new Map<string | null, Flat[]>();
+	const ids = new Set(rows.map((r) => r.id));
+	for (const r of rows) {
+		// A parent that somehow isn't there is treated as top level, so nothing is ever hidden
+		const key = r.parentId && ids.has(r.parentId) ? r.parentId : null;
+		byParent.set(key, [...(byParent.get(key) ?? []), r]);
+	}
+	for (const list of byParent.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+
+	const out: CategoryNode[] = [];
+	const visit = (parent: string | null, depth: number, trail: string[], seen: Set<string>): number => {
+		let sum = 0;
+		for (const r of byParent.get(parent) ?? []) {
+			if (seen.has(r.id)) continue; // a loop in bad data can't hang the page
+			const node: CategoryNode = {
+				id: r.id,
+				name: r.name,
+				parentId: parent,
+				depth,
+				path: [...trail, r.name].join(' > '),
+				itemCount: r._count.items,
+				totalCount: 0,
+				childCount: byParent.get(r.id)?.length ?? 0
+			};
+			out.push(node);
+			const inside = visit(r.id, depth + 1, [...trail, r.name], new Set([...seen, r.id]));
+			node.totalCount = r._count.items + inside;
+			sum += node.totalCount;
+		}
+		return sum;
+	};
+	visit(null, 0, [], new Set());
+	return out;
+}
+
+/** The id of a category and of every category inside it. */
+export function withDescendants(categories: CategoryNode[], id: string): string[] {
+	const out = [id];
+	for (const c of categories) if (c.parentId && out.includes(c.parentId) && !out.includes(c.id)) out.push(c.id);
+	// categories come in tree order (parents first), so one pass finds all levels
+	return out;
+}
+
+function depthOf(categories: CategoryNode[], parentId: string | null) {
+	if (!parentId) return 0;
+	const parent = categories.find((c) => c.id === parentId);
+	return parent ? parent.depth + 1 : 0;
+}
+
+/** How many levels the category at `id` has inside it, counting itself (1 when it has no children). */
+function heightOf(categories: CategoryNode[], id: string) {
+	const mine = categories.find((c) => c.id === id);
+	if (!mine) return 1;
+	const inside = withDescendants(categories, id).map((i) => categories.find((c) => c.id === i)?.depth ?? 0);
+	return Math.max(...inside) - mine.depth + 1;
+}
+
+/** Names are unique among categories with the same parent, ignoring upper and lower case. */
+async function nameTaken(name: string, parentId: string | null, exceptId?: string) {
 	const found = await prisma.inventoryCategory.findFirst({
-		where: { name: { equals: name, mode: 'insensitive' }, ...(exceptId ? { id: { not: exceptId } } : {}) },
+		where: { parentId, name: { equals: name, mode: 'insensitive' }, ...(exceptId ? { id: { not: exceptId } } : {}) },
 		select: { id: true }
 	});
 	return found !== null;
 }
 
-export async function createCategory(rawName: string, userId?: string): Promise<Result<{ id: string }>> {
+const cleanParent = (v: string | null | undefined) => (v ? v : null);
+
+export async function createCategory(rawName: string, rawParentId?: string | null, userId?: string): Promise<Result<{ id: string }>> {
 	const parsed = categoryName.safeParse(rawName);
 	if (!parsed.success) return fail(400, parsed.error.issues[0].message);
-	if (await nameTaken(parsed.data)) return fail(409, 'There is already a category with that name.');
-	const c = await prisma.inventoryCategory.create({ data: { name: parsed.data, createdBy: userId } });
+	const parentId = cleanParent(rawParentId);
+	if (parentId) {
+		const all = await listCategories();
+		if (!all.some((c) => c.id === parentId)) return fail(400, 'That parent category does not exist.');
+		if (depthOf(all, parentId) >= MAX_DEPTH) return fail(400, `Categories can only be nested ${MAX_DEPTH} levels deep.`);
+	}
+	if (await nameTaken(parsed.data, parentId)) return fail(409, 'There is already a category with that name in the same place.');
+	const c = await prisma.inventoryCategory.create({ data: { name: parsed.data, parentId, createdBy: userId } });
 	return { ok: true, id: c.id };
 }
 
-export async function renameCategory(id: string, rawName: string): Promise<Result> {
+/** Renames a category and/or moves it under another one (or to the top level). */
+export async function updateCategory(id: string, rawName: string, rawParentId?: string | null): Promise<Result> {
 	const parsed = categoryName.safeParse(rawName);
 	if (!parsed.success) return fail(400, parsed.error.issues[0].message);
-	if (await nameTaken(parsed.data, id)) return fail(409, 'There is already a category with that name.');
-	const { count } = await prisma.inventoryCategory.updateMany({ where: { id }, data: { name: parsed.data } });
+	const parentId = cleanParent(rawParentId);
+
+	const all = await listCategories();
+	if (!all.some((c) => c.id === id)) return fail(404, 'That category no longer exists.');
+	if (parentId) {
+		if (!all.some((c) => c.id === parentId)) return fail(400, 'That parent category does not exist.');
+		if (withDescendants(all, id).includes(parentId)) return fail(400, 'A category cannot be moved inside itself.');
+		if (depthOf(all, parentId) + heightOf(all, id) > MAX_DEPTH) return fail(400, `Categories can only be nested ${MAX_DEPTH} levels deep.`);
+	}
+	if (await nameTaken(parsed.data, parentId, id)) return fail(409, 'There is already a category with that name in the same place.');
+	const { count } = await prisma.inventoryCategory.updateMany({ where: { id }, data: { name: parsed.data, parentId } });
 	return count === 0 ? fail(404, 'That category no longer exists.') : { ok: true };
 }
 
-/** A category with items in it can't be deleted: move or delete the items first. */
+/** A category with items or sub-categories in it can't be deleted. */
 export async function deleteCategory(id: string): Promise<Result> {
-	const items = await prisma.inventoryItem.count({ where: { categoryId: id } });
+	const [items, children] = await Promise.all([
+		prisma.inventoryItem.count({ where: { categoryId: id } }),
+		prisma.inventoryCategory.count({ where: { parentId: id } })
+	]);
+	if (children > 0) return fail(409, `This category has ${children} ${children === 1 ? 'category' : 'categories'} inside it. Move or delete ${children === 1 ? 'it' : 'them'} first.`);
 	if (items > 0) {
 		return fail(409, `${items} ${items === 1 ? 'item is' : 'items are'} in this category. Move or delete ${items === 1 ? 'it' : 'them'} first.`);
 	}
 	try {
 		await prisma.inventoryCategory.deleteMany({ where: { id } });
 	} catch (err) {
-		// P2003: an item was added a moment ago
-		if ((err as { code?: string })?.code === 'P2003') return fail(409, 'Items were just added to this category.');
+		// P2003: an item or category was added a moment ago
+		if ((err as { code?: string })?.code === 'P2003') return fail(409, 'Something was just added to this category.');
 		throw err;
 	}
 	return { ok: true };
@@ -114,12 +213,12 @@ export const itemSchema = z.object({
 		.transform((v) => v || null)
 });
 
-export type ItemFilters = { categoryId?: string; siteId?: string; q?: string };
+export type ItemFilters = { categoryIds?: string[]; siteId?: string; q?: string };
 
-export async function listItems({ categoryId, siteId, q }: ItemFilters) {
+export async function listItems({ categoryIds, siteId, q }: ItemFilters, categories: CategoryNode[] = []) {
 	const term = (q ?? '').trim();
 	const where: Prisma.InventoryItemWhereInput = {
-		...(categoryId ? { categoryId } : {}),
+		...(categoryIds?.length ? { categoryId: { in: categoryIds } } : {}),
 		...(siteId ? { siteId } : {}),
 		...(term
 			? {
@@ -136,19 +235,20 @@ export async function listItems({ categoryId, siteId, q }: ItemFilters) {
 	const [items, total] = await Promise.all([
 		prisma.inventoryItem.findMany({
 			where,
-			orderBy: [{ category: { name: 'asc' } }, { name: 'asc' }],
+			orderBy: [{ name: 'asc' }],
 			take: MAX_ITEMS_SHOWN,
-			include: { category: { select: { name: true } }, site: { select: { name: true } } }
+			include: { site: { select: { name: true } } }
 		}),
 		prisma.inventoryItem.count({ where })
 	]);
 	return {
 		total,
-		items: items.map((i) => ({
+		items: items
+			.map((i) => ({
 			id: i.id,
 			name: i.name,
 			categoryId: i.categoryId,
-			categoryName: i.category.name,
+			categoryName: categories.find((c) => c.id === i.categoryId)?.path ?? '',
 			siteId: i.siteId,
 			siteName: i.site.name,
 			room: i.room,
@@ -157,6 +257,7 @@ export async function listItems({ categoryId, siteId, q }: ItemFilters) {
 			quantity: i.quantity,
 			notes: i.notes ?? ''
 		}))
+			.sort((a, b) => a.categoryName.localeCompare(b.categoryName) || a.name.localeCompare(b.name))
 	};
 }
 

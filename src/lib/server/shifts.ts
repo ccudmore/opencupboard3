@@ -110,8 +110,9 @@ export async function signUp(volunteerId: string, eventId: string, role: string,
 	try {
 		const result = await prisma.$transaction(
 			async (tx): Promise<Result<{ assignmentId: string }>> => {
-				const volunteer = await tx.volunteer.findUnique({ where: { id: volunteerId }, select: { skills: true } });
+				const volunteer = await tx.volunteer.findUnique({ where: { id: volunteerId }, select: { skills: true, status: true } });
 				if (!volunteer) return fail(404, 'Volunteer not found.');
+				if (volunteer.status === 'ARCHIVED') return fail(403, 'Your volunteer profile is archived. Ask a volunteer coordinator.');
 				if (!volunteer.skills.includes(role)) return fail(403, `You don't have the ${role} skill. Ask a volunteer coordinator.`);
 
 				const event = await tx.event.findUnique({
