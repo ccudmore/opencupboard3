@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Badge, Breadcrumb, BreadcrumbItem, Button, Input, Label, Modal, Select, Textarea, Toggle } from 'flowbite-svelte';
-	import { HomeOutline, ChevronDoubleRightOutline, PlusOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import { Badge, Button, Input, Label, Modal, Select, Textarea, Toggle } from 'flowbite-svelte';
+	import { PlusOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { tick } from 'svelte';
@@ -86,24 +87,12 @@
 	<title>Service dates</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/servicedates">
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		Service dates
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Service dates', href: '/servicedates' }]} bar />
 
-<div class="bg-gray-50 p-3 sm:p-5 dark:bg-gray-900">
+<div class="page-content">
 	<div class="mx-auto w-full max-w-6xl min-w-0">
 		<div class="mb-4 flex flex-wrap items-center gap-3">
-			<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Service dates</h1>
+			<h1>Service dates</h1>
 			<div class="ms-auto flex flex-wrap items-center gap-4">
 				<Toggle checked={data.showPast} onchange={(e: Event) => setShowPast((e.currentTarget as HTMLInputElement).checked)}>Show previous service dates</Toggle>
 				<Button color="dark" onclick={() => openNew()}><PlusOutline class="me-2 h-3.5 w-3.5" />New service date</Button>
@@ -117,7 +106,7 @@
 
 			<div class="min-w-0 space-y-3">
 				{#if data.services.length === 0}
-					<div class="rounded-lg bg-white p-4 text-gray-600 shadow-md dark:bg-gray-800 dark:text-gray-300">
+					<div class="rounded-lg bg-white p-4 shadow-md dark:bg-gray-800 muted">
 						{data.showPast ? 'There are no service dates yet.' : 'There are no upcoming service dates.'} Use New service date to add one.
 					</div>
 				{/if}
@@ -132,7 +121,7 @@
 						>
 							<div class="min-w-0">
 								<div class="font-semibold text-gray-900 dark:text-white">{dateFmt.format(new Date(s.startTime))}</div>
-								<div class="text-sm wrap-break-words text-gray-600 dark:text-gray-300">
+								<div class="wrap-break-words hint">
 									{s.title} · {timeFmt.format(new Date(s.startTime))} to {timeFmt.format(new Date(s.endTime))} · {s.siteName}
 								</div>
 								<div class="mt-2 flex flex-wrap gap-2">
@@ -168,31 +157,31 @@
 <Modal title="New service date" bind:open={newOpen} size="sm">
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<div class="min-w-0 sm:col-span-2">
-			<Label for="new-title" class="mb-1">Title</Label>
+			<Label for="new-title">Title</Label>
 			<Input id="new-title" bind:value={form.title} />
 		</div>
 		<div class="min-w-0">
-			<Label for="new-date" class="mb-1">Date</Label>
+			<Label for="new-date">Date</Label>
 			<Input id="new-date" type="date" bind:value={form.date} />
 		</div>
 		<div class="min-w-0">
-			<Label for="new-site" class="mb-1">Site</Label>
+			<Label for="new-site">Site</Label>
 			<Select id="new-site" items={siteItems} bind:value={form.siteId} />
 		</div>
 		<div class="min-w-0">
-			<Label for="new-start" class="mb-1">Starts</Label>
+			<Label for="new-start">Starts</Label>
 			<Input id="new-start" type="time" bind:value={form.startClock} />
 		</div>
 		<div class="min-w-0">
-			<Label for="new-end" class="mb-1">Ends</Label>
+			<Label for="new-end">Ends</Label>
 			<Input id="new-end" type="time" bind:value={form.endClock} />
 		</div>
 		<div class="min-w-0 sm:col-span-2">
-			<Label for="new-note" class="mb-1">Note</Label>
-			<Textarea id="new-note" rows={2} class="block w-full max-w-full min-w-0" bind:value={form.note} />
+			<Label for="new-note">Note</Label>
+			<Textarea id="new-note" rows={2} bind:value={form.note} />
 		</div>
 	</div>
-	{#if newError}<p class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">{newError}</p>{/if}
+	{#if newError}<p class="mt-3 error-text" role="alert">{newError}</p>{/if}
 	{#snippet footer()}
 		<Button color="dark" disabled={newBusy} onclick={createNew}>{newBusy ? 'Adding…' : 'Add service date'}</Button>
 		<Button outline color="dark" onclick={() => (newOpen = false)}>Cancel</Button>

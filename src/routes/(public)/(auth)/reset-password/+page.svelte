@@ -53,13 +53,13 @@
 			{#if errorMessage}<Alert color="red">{errorMessage}</Alert>{/if}
 			<form class="space-y-4" onsubmit={submit}>
 				<div>
-					<Label for="pw" class="mb-2">New password</Label>
+					<Label for="pw">New password</Label>
 					<Input id="pw" type="password" required autocomplete="new-password" minlength={8} maxlength={128} class="ps-10" bind:value={password}>
 						{#snippet left()}<LockSolid class="h-4 w-4 text-gray-500 dark:text-gray-400" />{/snippet}
 					</Input>
 				</div>
 				<div>
-					<Label for="pw2" class="mb-2">Type it again</Label>
+					<Label for="pw2">Type it again</Label>
 					<Input id="pw2" type="password" required autocomplete="new-password" maxlength={128} class="ps-10" bind:value={confirm}>
 						{#snippet left()}<LockSolid class="h-4 w-4 text-gray-500 dark:text-gray-400" />{/snippet}
 					</Input>

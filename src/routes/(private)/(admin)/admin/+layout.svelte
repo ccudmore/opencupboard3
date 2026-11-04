@@ -1,7 +1,8 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import { page } from '$app/state';
-	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
-	import { HomeOutline, ChevronDoubleRightOutline, UsersGroupSolid, AwardOutline } from 'flowbite-svelte-icons';
+	
+	import { UsersGroupSolid, AwardOutline } from 'flowbite-svelte-icons';
 
 	let { children } = $props();
 
@@ -18,21 +19,9 @@
 	<title>Admin</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/admin">
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		Admin
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Admin', href: '/admin' }]} bar />
 
-<div class="bg-gray-50 p-3 sm:p-5 dark:bg-gray-900">
+<div class="page-content">
 	<div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
 		<!-- Tabs: scroll sideways on narrow screens instead of wrapping -->
 		<nav aria-label="Admin sections" class="flex flex-nowrap overflow-x-auto border-b border-gray-200 px-1 dark:border-gray-700">

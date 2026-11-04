@@ -28,8 +28,6 @@
 		{ value: 'ACTIVE', name: 'Active' },
 		{ value: 'INACTIVE', name: 'Inactive' }
 	];
-
-	const checkClass = 'mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded accent-primary-600 dark:accent-primary-400';
 	const drawerClass =
 		'max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white';
 
@@ -178,19 +176,19 @@
 	<div class="hidden md:block">
 		<Table hoverable={true}>
 			<TableHead>
-				<TableHeadCell class="px-4 py-3" scope="col">Role</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Permissions</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Users</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Status</TableHeadCell>
+				<TableHeadCell scope="col">Role</TableHeadCell>
+				<TableHeadCell scope="col">Permissions</TableHeadCell>
+				<TableHeadCell scope="col">Users</TableHeadCell>
+				<TableHeadCell scope="col">Status</TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
 				{#each data.roles as role (role.id)}
 					<TableBodyRow class="cursor-pointer" onclick={() => openEdit(role)}>
-						<TableBodyCell class="px-4 py-3">
+						<TableBodyCell>
 							<div class="font-medium text-gray-900 dark:text-white">{role.name}</div>
 							{#if role.description}<div class="text-xs">{role.description}</div>{/if}
 						</TableBodyCell>
-						<TableBodyCell class="px-4 py-3 whitespace-normal">
+						<TableBodyCell class="whitespace-normal">
 							<div class="flex flex-wrap gap-1">
 								{#each role.permissions as p (p.permissionId)}
 									<Badge color="blue">{permissionName(p.permissionId)}</Badge>
@@ -199,8 +197,8 @@
 								{/each}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell class="px-4 py-3">{role._count.users}</TableBodyCell>
-						<TableBodyCell class="px-4 py-3">
+						<TableBodyCell>{role._count.users}</TableBodyCell>
+						<TableBodyCell>
 							<Badge color={role.status === 'ACTIVE' ? 'green' : 'gray'}>{statusName(role.status)}</Badge>
 						</TableBodyCell>
 					</TableBodyRow>
@@ -217,11 +215,11 @@
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
 							<div class="truncate font-semibold text-gray-900 dark:text-white">{role.name}</div>
-							{#if role.description}<div class="text-sm text-gray-600 dark:text-gray-300">{role.description}</div>{/if}
+							{#if role.description}<div class="hint">{role.description}</div>{/if}
 						</div>
 						<Badge color={role.status === 'ACTIVE' ? 'green' : 'gray'}>{statusName(role.status)}</Badge>
 					</div>
-					<div class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+					<div class="mt-1 hint">
 						{role.permissions.length} {role.permissions.length === 1 ? 'permission' : 'permissions'} · {role._count.users}
 						{role._count.users === 1 ? 'user' : 'users'}
 					</div>
@@ -239,11 +237,11 @@
 {#snippet permissionChecklist(selected: string[], onchange: (id: string, on: boolean) => void)}
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		{#each data.permissions as p (p.id)}
-			<label class="flex cursor-pointer items-start gap-2 text-gray-900 dark:text-gray-100">
-				<input type="checkbox" class={checkClass} checked={selected.includes(p.id)} onchange={(e) => onchange(p.id, e.currentTarget.checked)} />
+			<label class="check-label items-start">
+				<input type="checkbox" checked={selected.includes(p.id)} onchange={(e) => onchange(p.id, e.currentTarget.checked)} />
 				<span>
 					<span class="block font-medium">{p.name}</span>
-					{#if p.description}<span class="block text-sm text-gray-600 dark:text-gray-300">{p.description}</span>{/if}
+					{#if p.description}<span class="block hint">{p.description}</span>{/if}
 				</span>
 			</label>
 		{/each}
@@ -253,27 +251,27 @@
 <!-- ============================ New role ============================ -->
 <Drawer placement="bottom" bind:open={newOpen} class={drawerClass}>
 	<div class="mx-auto w-full max-w-3xl min-w-0 space-y-5 px-4 pt-2 pb-8">
-		<h3 class="text-lg font-semibold">New role</h3>
+		<h3>New role</h3>
 
 		<div class="grid grid-cols-1 gap-4">
 			<div class="min-w-0">
-				<Label for="role-name" class="mb-2">Name</Label>
+				<Label for="role-name">Name</Label>
 				<Input id="role-name" autocomplete="off" maxlength={60} bind:value={newName} onkeydown={ignoreEnter} />
-				<Helper class="mt-1">The name can't be changed later.</Helper>
+				<Helper class="field-help">The name can't be changed later.</Helper>
 			</div>
 			<div class="min-w-0">
-				<Label for="role-description" class="mb-2">Description (optional)</Label>
-				<Textarea id="role-description" rows={2} class="block w-full max-w-full min-w-0" maxlength={200} bind:value={newDescription} />
+				<Label for="role-description">Description (optional)</Label>
+				<Textarea id="role-description" rows={2} maxlength={200} bind:value={newDescription} />
 			</div>
 		</div>
 
 		<fieldset>
-			<legend class="mb-2 text-sm font-medium">Permissions</legend>
+			<legend>Permissions</legend>
 			{@render permissionChecklist(newPermissionIds, (id, on) => (newPermissionIds = toggle(newPermissionIds, id, on)))}
 		</fieldset>
 
 		{#if newError}
-			<p class="text-sm text-red-600 dark:text-red-400" role="alert">{newError}</p>
+			<p class="error-text" role="alert">{newError}</p>
 		{/if}
 
 		<div class="flex gap-2">
@@ -290,31 +288,31 @@
 	{#if editing}
 		<div class="mx-auto w-full max-w-3xl min-w-0 space-y-5 px-4 pt-2 pb-8">
 			<div>
-				<h3 class="text-lg font-semibold">{editing.name}</h3>
-				<p class="text-sm text-gray-600 dark:text-gray-300">
+				<h3>{editing.name}</h3>
+				<p class="hint">
 					{editing._count.users} {editing._count.users === 1 ? 'user has' : 'users have'} this role.
 				</p>
 			</div>
 
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-[12rem_1fr]">
 				<div class="min-w-0">
-					<Label for="edit-status" class="mb-2">Status</Label>
+					<Label for="edit-status">Status</Label>
 					<Select id="edit-status" items={STATUS_ITEMS} bind:value={editStatus} />
 				</div>
 				<div class="min-w-0">
-					<Label for="edit-description" class="mb-2">Description</Label>
-					<Textarea id="edit-description" rows={2} class="block w-full max-w-full min-w-0" maxlength={200} bind:value={editDescription} />
+					<Label for="edit-description">Description</Label>
+					<Textarea id="edit-description" rows={2} maxlength={200} bind:value={editDescription} />
 				</div>
 			</div>
 			<Helper>An inactive role gives its users none of its permissions.</Helper>
 
 			<fieldset>
-				<legend class="mb-2 text-sm font-medium">Permissions</legend>
+				<legend>Permissions</legend>
 				{@render permissionChecklist(editPermissionIds, (id, on) => (editPermissionIds = toggle(editPermissionIds, id, on)))}
 			</fieldset>
 
 			{#if editError}
-				<p class="text-sm text-red-600 dark:text-red-400" role="alert">{editError}</p>
+				<p class="error-text" role="alert">{editError}</p>
 			{/if}
 
 			<div class="flex gap-2">

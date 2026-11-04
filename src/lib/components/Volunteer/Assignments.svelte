@@ -276,11 +276,11 @@
 	</div>
 {/snippet}
 
-<section class="rounded-lg bg-white shadow-md dark:bg-gray-800">
+<section>
 	<div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-3 sm:px-5">
 		<div>
-			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Events</h2>
-			<p class="text-sm text-gray-600 dark:text-gray-300">Most recent first. Click a row to change it.</p>
+			<h2 class="section-title mb-0">Events</h2>
+			<p class="hint">Most recent first. Click a row to change it.</p>
 		</div>
 		{#if volunteerId !== null}
 			<Button type="button" outline color="dark" onclick={openNew}>Add to event</Button>
@@ -288,9 +288,9 @@
 	</div>
 
 	{#if volunteerId === null}
-		<p class="px-4 pb-4 text-sm text-gray-600 sm:px-5 dark:text-gray-300">Save the volunteer first, then add them to events.</p>
+		<p class="px-4 pb-4 sm:px-5 hint">Save the volunteer first, then add them to events.</p>
 	{:else if assignments.length === 0}
-		<p class="px-4 pb-4 text-sm text-gray-600 sm:px-5 dark:text-gray-300">Not assigned to any events yet.</p>
+		<p class="px-4 pb-4 sm:px-5 hint">Not assigned to any events yet.</p>
 	{:else}
 		<!-- Tablet and desktop: table -->
 		<div class="hidden md:block">
@@ -331,7 +331,7 @@
 							<Badge color={statusColor(a.status)}>{statusName(a.status)}</Badge>
 						</div>
 						<div class="text-sm text-gray-700 dark:text-gray-200">{a.title}{a.role ? ` · ${a.role}` : ''}</div>
-						<div class="text-sm text-gray-600 dark:text-gray-300">{a.location}</div>
+						<div class="hint">{a.location}</div>
 						<div class="mt-2">{@render sentBadges(a)}</div>
 					</button>
 					<div class="mt-3">{@render sendButtons(a)}</div>
@@ -348,10 +348,10 @@
 	class="max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white"
 >
 	<div class="mx-auto w-full max-w-5xl min-w-0 space-y-5 px-4 pt-2 pb-8">
-		<h3 class="text-lg font-semibold">Add to an event</h3>
+		<h3>Add to an event</h3>
 
 		<fieldset>
-			<legend class="mb-2 text-sm font-medium">Event</legend>
+			<legend>Event</legend>
 			<Input
 				type="search"
 				placeholder="Filter by name, type, place or date"
@@ -390,15 +390,15 @@
 				{/each}
 			</div>
 			{#if matching.length === 0}
-				<Helper class="mt-2">No events match.</Helper>
+				<Helper class="field-help">No events match.</Helper>
 			{:else if matching.length > MAX_SHOWN}
-				<Helper class="mt-2">Showing the first {MAX_SHOWN} of {matching.length}. Type to narrow the list.</Helper>
+				<Helper class="field-help">Showing the first {MAX_SHOWN} of {matching.length}. Type to narrow the list.</Helper>
 			{/if}
 		</fieldset>
 
 		{#if chosen && chosenRoles.length > 0}
 			<div class="max-w-xs">
-				<Label for="new-role" class="mb-2">Role</Label>
+				<Label for="new-role">Role</Label>
 				<Select
 					id="new-role"
 					items={[{ value: '', name: 'Choose a role' }, ...chosenRoles.map((r) => ({ value: r, name: r }))]}
@@ -406,11 +406,11 @@
 				/>
 			</div>
 		{:else if chosen}
-			<p class="text-sm text-gray-600 dark:text-gray-300">{chosen.type} events have no roles to choose from.</p>
+			<p class="hint">{chosen.type} events have no roles to choose from.</p>
 		{/if}
 
 		{#if newError}
-			<p class="text-sm text-red-600 dark:text-red-400" role="alert">{newError}</p>
+			<p class="error-text" role="alert">{newError}</p>
 		{/if}
 
 		<div class="flex gap-2">
@@ -431,20 +431,20 @@
 	{#if editing}
 		<div class="mx-auto w-full max-w-5xl min-w-0 space-y-5 px-4 pt-2 pb-8">
 			<div>
-				<h3 class="text-lg font-semibold">{editing.title}</h3>
-				<p class="text-sm text-gray-600 dark:text-gray-300">
+				<h3>{editing.title}</h3>
+				<p class="hint">
 					{fmtDate(editing.startTime)}, {fmtTime(editing.startTime)} &ndash; {fmtTime(editing.endTime)} · {editing.location}
 				</p>
 			</div>
 
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<div class="min-w-0">
-					<Label for="edit-status" class="mb-2">Status</Label>
+					<Label for="edit-status">Status</Label>
 					<Select id="edit-status" items={volunteerAssignmentStatusOptions} bind:value={editStatus} />
 				</div>
 				{#if editRoleItems.length > 0}
 					<div class="min-w-0">
-						<Label for="edit-role" class="mb-2">Role</Label>
+						<Label for="edit-role">Role</Label>
 						<Select id="edit-role" items={editRoleItems} bind:value={editRole} />
 					</div>
 				{/if}
@@ -457,7 +457,7 @@
 					<div class="min-w-0">
 						<h4 class="mb-1 text-sm font-medium">{k.label} emails</h4>
 						{#if sends.length === 0}
-							<p class="text-sm text-gray-600 dark:text-gray-300">Not sent yet.</p>
+							<p class="hint">Not sent yet.</p>
 						{:else}
 							<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-200">
 								{#each sends.toReversed() as e, i (i)}
@@ -470,7 +470,7 @@
 			</div>
 
 			{#if editError}
-				<p class="text-sm text-red-600 dark:text-red-400" role="alert">{editError}</p>
+				<p class="error-text" role="alert">{editError}</p>
 			{/if}
 
 			<div class="flex flex-wrap gap-2">
@@ -499,7 +499,7 @@
 </Drawer>
 
 <Modal title="Remove from event" bind:open={confirmDeleteOpen} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		Remove this volunteer from the event? To keep a record that they were scheduled, set the status to Cancelled instead.
 	</p>
 	{#snippet footer()}

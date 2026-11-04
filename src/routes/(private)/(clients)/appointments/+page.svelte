@@ -69,7 +69,7 @@
 													{appointment.bookings.length === 1 ? 'booking' : 'bookings'}
 												</Badge>
 												{#if active && !openAppts[key]}
-													<span class="text-sm text-gray-600 dark:text-gray-300">
+													<span class="hint">
 														{active.firstName} {active.lastName}
 													</span>
 												{/if}

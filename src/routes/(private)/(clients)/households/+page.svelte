@@ -1,23 +1,12 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import { streetWithUnit } from '$lib/address';
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import { householdStatusLabels } from '$lib/labels'
 	import { HouseholdStatus } from '$prisma/browser';
-	import {
-		Button,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell,
-		Table,
-		Search,
-		Toggle,
-    Breadcrumb,
-    BreadcrumbItem
-	} from 'flowbite-svelte';
-	import { PlusOutline, HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
+	import { Button, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Table, Search, Toggle } from 'flowbite-svelte';
+	import { PlusOutline } from 'flowbite-svelte-icons';
 	import SearchPagination from '$lib/components/SearchPagination.svelte';
 	import NewHousehold from '$lib/components/Household/NewHousehold.svelte';
 
@@ -66,19 +55,7 @@
 	<title>Households</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-  <BreadcrumbItem href="/" home>
-    {#snippet icon()}
-      <HomeOutline class="me-2 h-4 w-4" />
-    {/snippet}Home
-  </BreadcrumbItem>
-  <BreadcrumbItem href="/households">
-    {#snippet icon()}
-      <ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-    {/snippet}
-    Households
-  </BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Households', href: '/households' }]} bar />
 
 <Section name="advancedTable" sectionClass="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
   <div class="overflow-hidden bg-white shadow-md sm:rounded-lg dark:bg-gray-800">
@@ -110,34 +87,34 @@
       <div class="hidden md:block">
         <Table hoverable={true}>
           <TableHead>
-            <TableHeadCell class="px-4 py-3" scope="col">Name</TableHeadCell>
-            <TableHeadCell class="px-4 py-3" scope="col">Address</TableHeadCell>
-            <TableHeadCell class="px-4 py-3" scope="col">Phone</TableHeadCell>
-            <TableHeadCell class="px-4 py-3" scope="col">Email</TableHeadCell>
-            <TableHeadCell class="px-4 py-3" scope="col">Status</TableHeadCell>
+            <TableHeadCell scope="col">Name</TableHeadCell>
+            <TableHeadCell scope="col">Address</TableHeadCell>
+            <TableHeadCell scope="col">Phone</TableHeadCell>
+            <TableHeadCell scope="col">Email</TableHeadCell>
+            <TableHeadCell scope="col">Status</TableHeadCell>
           </TableHead>
           <TableBody class="divide-y">
             {#each data.households as household (household.id)}
               <TableBodyRow class="cursor-pointer" onclick={() => goto(`/households/${household.id}`)}>
-                <TableBodyCell class="px-4 py-3">
+                <TableBodyCell>
                   {#each household.members as member (member.id)}
                     {member.firstName} {member.lastName}<br>
                   {/each}
                 </TableBodyCell>
-                <TableBodyCell class="px-4 py-3">
+                <TableBodyCell>
                   {streetWithUnit(household.street, household.unitNumber)}
                 </TableBodyCell>
-                <TableBodyCell class="px-4 py-3">
+                <TableBodyCell>
                   {#each household.members as member (member.id)}
                     {member.phone}<br>
                   {/each}
                 </TableBodyCell>
-                <TableBodyCell class="px-4 py-3">
+                <TableBodyCell>
                   {#each household.members as member (member.id)}
                     {member.email}<br>
                   {/each}
                 </TableBodyCell>
-                <TableBodyCell class="px-4 py-3">
+                <TableBodyCell>
                   {householdStatusLabels[household.status]}
                 </TableBodyCell>
               </TableBodyRow>

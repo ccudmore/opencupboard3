@@ -1,10 +1,13 @@
 // What the service dates page sends to its components (see loadServiceDates in $lib/server/serviceDates.ts)
+/** One time an email was sent for a booking */
+export type SentEmail = { sentAt: string; to: string[] };
+
 export type Appointment = {
 	id: string;
 	startTime: Date;
 	endTime: Date;
 	past: boolean;
-	booking: { id: string; householdId: string; name: string } | null;
+	booking: { id: string; householdId: string; name: string; confirmations: SentEmail[]; reminders: SentEmail[] } | null;
 };
 
 export type Service = {

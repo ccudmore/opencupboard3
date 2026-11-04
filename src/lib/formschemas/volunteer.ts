@@ -12,7 +12,13 @@ const normalizePhone = (value: string): string => {
 	return digits;
 };
 
-export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
+/** The days of the availability grid, Sunday first. */
+export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export const PERIODS = ['Morning', 'Afternoon', 'Evening'] as const;
+
+/** One square of the grid, for example "Sunday|Morning". */
+export const slotKey = (day: (typeof WEEKDAYS)[number], period: (typeof PERIODS)[number]) => `${day}|${period}`;
+const SLOT_KEYS = WEEKDAYS.flatMap((d) => PERIODS.map((p) => slotKey(d, p))) as [string, ...string[]];
 
 /** Optional text: trimmed, and empty becomes null. */
 const optionalText = (max: number) =>
@@ -48,7 +54,8 @@ const optionalPostal = z
 
 /** Stored in volunteer.availability (a JSON column). */
 export const availabilitySchema = z.object({
-	days: z.array(z.enum(WEEKDAYS)),
+	// the squares of the grid that are ticked
+	slots: z.array(z.enum(SLOT_KEYS)),
 	notes: z.string().trim().max(1000)
 });
 
@@ -70,7 +77,7 @@ export const volunteerSchema = z.object({
 	email2: optionalEmail,
 	phone1: optionalPhone,
 	phone2: optionalPhone,
-	availability: availabilitySchema.default({ days: [], notes: '' }),
+	availability: availabilitySchema.default({ slots: [], notes: '' }),
 	trainingCourses: z.array(trainingCourseSchema).default([]),
 	// The roles this volunteer may sign up for (see ALL_ROLES)
 	skills: z.array(z.string().refine((r) => ALL_ROLES.includes(r), 'Unknown skill')).default([])
@@ -84,7 +91,7 @@ export type VolunteerSchema = typeof volunteerSchema;
  */
 export function readAvailability(json: unknown): z.infer<typeof availabilitySchema> {
 	const parsed = availabilitySchema.safeParse(json);
-	return parsed.success ? parsed.data : { days: [], notes: '' };
+	return parsed.success ? parsed.data : { slots: [], notes: '' };
 }
 
 export function readTrainingCourses(json: unknown): z.infer<typeof trainingCourseSchema>[] {

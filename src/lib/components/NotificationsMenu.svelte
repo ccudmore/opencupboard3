@@ -150,12 +150,12 @@
 
 	<div class="max-h-96 overflow-y-auto">
 		{#if error}
-			<p class="px-3 py-3 text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>
+			<p class="px-3 py-3 error-text" role="alert">{error}</p>
 		{/if}
 		{#if loading && !loaded}
-			<p class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">Loading…</p>
+			<p class="px-3 py-4 hint">Loading…</p>
 		{:else if loaded && items.length === 0}
-			<p class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">You have no notifications.</p>
+			<p class="px-3 py-4 hint">You have no notifications.</p>
 		{/if}
 
 		<ul class="divide-y divide-gray-200 dark:divide-gray-600">
@@ -163,7 +163,7 @@
 				<li class="px-3 py-2 {item.readAt ? '' : 'bg-blue-50 dark:bg-gray-700'}">
 					<button type="button" class="block w-full min-w-0 text-left" onclick={() => view(item)}>
 						<span class="block wrap-break-word text-sm {item.readAt ? 'text-gray-800 dark:text-gray-200' : 'font-semibold text-gray-900 dark:text-white'}">{item.subject}</span>
-						<span class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+						<span class="mt-1 flex flex-wrap items-center gap-2 text-xs muted">
 							<span>{day(item.createdAt)}, {clock(item.createdAt)}</span>
 							<Badge color={item.readAt ? 'gray' : 'blue'}>{item.readAt ? 'Read' : 'Unread'}</Badge>
 						</span>
@@ -182,14 +182,14 @@
 
 <Modal title={current?.subject ?? ''} bind:open={detailsOpen} size="sm">
 	{#if current}
-		<p class="text-sm text-gray-600 dark:text-gray-300">
+		<p class="hint">
 			{day(current.createdAt)}, {clock(current.createdAt)} ·
 			<Badge color={current.readAt ? 'gray' : 'blue'}>{current.readAt ? 'Read' : 'Unread'}</Badge>
 		</p>
 		{#if current.body}
 			<p class="mt-3 wrap-break-word whitespace-pre-line text-gray-800 dark:text-gray-100">{current.body}</p>
 		{:else}
-			<p class="mt-3 text-gray-600 dark:text-gray-300">There are no more details.</p>
+			<p class="mt-3 muted">There are no more details.</p>
 		{/if}
 	{/if}
 	{#snippet footer()}

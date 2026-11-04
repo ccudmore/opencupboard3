@@ -113,24 +113,24 @@
 	}
 </script>
 
-<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
-	<h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Documents</h2>
-	<p class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+<section class="tab-section">
+	<h2 class="section-title mb-1">Documents</h2>
+	<p class="mb-4 hint">
 		For example a police check or a signed agreement. Allowed: {accept.replaceAll('.', '').replaceAll(',', ', ')}, up to {maxMb} MB each.
 	</p>
 
 	{#if volunteerId === null}
-		<p class="text-sm text-gray-600 dark:text-gray-300">Save the volunteer first, then add documents.</p>
+		<p class="hint">Save the volunteer first, then add documents.</p>
 	{:else}
 		{#if documents.length === 0}
-			<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">No documents yet.</p>
+			<p class="mb-3 hint">No documents yet.</p>
 		{:else}
 			<ul class="mb-4 divide-y divide-gray-200 dark:divide-gray-700">
 				{#each documents as doc (doc.id)}
 					<li class="flex flex-wrap items-center gap-x-4 gap-y-1 py-2">
 						<div class="min-w-0 flex-1">
 							<div class="truncate font-medium text-gray-900 dark:text-gray-100">{doc.name}</div>
-							<div class="text-sm text-gray-600 dark:text-gray-300">
+							<div class="hint">
 								{fmtSize(doc.size)} · added {fmtDate(doc.createdAt)}
 							</div>
 						</div>
@@ -179,13 +179,13 @@
 			</Button>
 		</div>
 		{#if error}
-			<Helper color="red" class="mt-2" role="alert">{error}</Helper>
+			<Helper color="red" class="field-help" role="alert">{error}</Helper>
 		{/if}
 	{/if}
 </section>
 
 <Modal title="Delete document" bind:open={deleteOpen} size="xs">
-	<p class="wrap-break-word text-gray-600 dark:text-gray-300">
+	<p class="wrap-break-word muted">
 		Delete "{toDelete?.name}"? The file is removed and can't be recovered.
 	</p>
 	{#snippet footer()}

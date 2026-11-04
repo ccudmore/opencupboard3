@@ -1,10 +1,11 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { Alert, Breadcrumb, BreadcrumbItem, Button, Card, Helper, Input, Label, Spinner } from 'flowbite-svelte';
-	import { HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
+	import { Alert, Button, Card, Helper, Input, Label, Spinner } from 'flowbite-svelte';
+	
 	import { page } from '$app/state';
 	import { AVATARS } from '$lib/avatars';
 	import { emailSchema, iconSchema } from '$lib/formschemas/usersettings';
@@ -48,21 +49,9 @@
 	<title>My settings</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/usersettings">
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		My settings
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'My settings', href: '/usersettings' }]} bar />
 
-<div class="bg-gray-50 p-3 sm:p-5 dark:bg-gray-900">
+<div class="page-content">
 	<div class="mx-auto w-full max-w-2xl min-w-0 space-y-6">
 		<!-- Icon -->
 		<Card class="max-w-none p-4 sm:p-6">
@@ -70,7 +59,7 @@
 				<UserAvatar image={currentImage} size="lg" />
 				<div class="min-w-0">
 					<h1 class="text-xl font-semibold text-gray-900 dark:text-white">My icon</h1>
-					<p class="text-sm text-gray-600 dark:text-gray-300">Pick the icon shown beside your name.</p>
+					<p class="hint">Pick the icon shown beside your name.</p>
 				</div>
 			</div>
 
@@ -94,7 +83,7 @@
 						{/each}
 					</div>
 				</fieldset>
-				{#if $iconErrors.icon}<Helper color="red" class="mt-2">{$iconErrors.icon.join(', ')}</Helper>{/if}
+				{#if $iconErrors.icon}<Helper color="red" class="field-help">{$iconErrors.icon.join(', ')}</Helper>{/if}
 				<div class="mt-4">
 					<Button type="submit" color="dark" disabled={$iconSubmitting || !$iconForm.icon}>
 						{#if $iconSubmitting}<Spinner class="me-2" size="4" />Saving…{:else}Save icon{/if}
@@ -106,7 +95,7 @@
 		<!-- Email -->
 		<Card class="max-w-none p-4 sm:p-6">
 			<h2 class="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Email address</h2>
-			<p class="mb-4 text-sm wrap-break-word text-gray-600 dark:text-gray-300">
+			<p class="mb-4 wrap-break-word hint">
 				You sign in with this address. Currently {page.data.user?.email}.
 			</p>
 
@@ -118,17 +107,17 @@
 						<Alert color={emailFailed ? 'red' : 'green'} role={emailFailed ? 'alert' : 'status'}>{$emailMessage}</Alert>
 					{/if}
 					<div>
-						<Label for="email" class="mb-2">New email address</Label>
+						<Label for="email">New email address</Label>
 						<Input id="email" name="email" type="email" autocomplete="email" bind:value={$emailForm.email} color={$emailErrors.email ? 'red' : undefined} />
-						{#if $emailErrors.email}<Helper color="red" class="mt-1">{$emailErrors.email.join(', ')}</Helper>{/if}
+						{#if $emailErrors.email}<Helper color="red" class="field-help">{$emailErrors.email.join(', ')}</Helper>{/if}
 					</div>
 					<div>
-						<Label for="password" class="mb-2">Your password</Label>
+						<Label for="password">Your password</Label>
 						<Input id="password" name="password" type="password" autocomplete="current-password" bind:value={$emailForm.password} color={$emailErrors.password ? 'red' : undefined} />
 						{#if $emailErrors.password}
-							<Helper color="red" class="mt-1">{$emailErrors.password.join(', ')}</Helper>
+							<Helper color="red" class="field-help">{$emailErrors.password.join(', ')}</Helper>
 						{:else}
-							<Helper class="mt-1">Enter your password to confirm the change.</Helper>
+							<Helper class="field-help">Enter your password to confirm the change.</Helper>
 						{/if}
 					</div>
 					<Button type="submit" color="dark" disabled={$emailSubmitting}>

@@ -77,7 +77,7 @@
 
 			<form class="space-y-4" onsubmit={handleEmailLogin}>
 				<div>
-					<Label for="email" class="mb-2">Email</Label>
+					<Label for="email">Email</Label>
 					<Input
 						id="email"
 						type="email"
@@ -93,7 +93,7 @@
 				</div>
 
 				<div>
-					<Label for="password" class="mb-2">Password</Label>
+					<Label for="password">Password</Label>
 					<Input
 						id="password"
 						type="password"

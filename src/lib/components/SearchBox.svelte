@@ -154,7 +154,7 @@
 	class="z-50 border border-gray-200 dark:border-gray-600"
 >
 	{#if errorMessage}
-		<p class="px-4 py-3 text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+		<p class="px-4 py-3 error-text">{errorMessage}</p>
 	{:else if loading && results.length === 0}
 		<p class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Searching…</p>
 	{:else if results.length === 0}

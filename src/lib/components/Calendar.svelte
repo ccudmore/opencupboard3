@@ -1051,7 +1051,7 @@
 			<form id="cal-event-form" class="space-y-3" onsubmit={submit}>
 				{#if editing?.event.repeating}
 					<fieldset class="space-y-1 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-						<legend class="px-1 text-sm font-medium text-gray-900 dark:text-white">Apply changes to</legend>
+						<legend class="px-1">Apply changes to</legend>
 						{#each scopeItems as s}
 							<Radio color="blue" class={checkedStyle} name="edit-scope" value={s.value} bind:group={draft.scope}>{s.label}</Radio>
 						{/each}
@@ -1193,7 +1193,7 @@
 				{#if confirming}
 					{#if ev.repeating}
 						<fieldset class="space-y-1 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-							<legend class="px-1 text-sm font-medium text-gray-900 dark:text-white">Delete which events?</legend>
+							<legend class="px-1">Delete which events?</legend>
 							{#each scopeItems as s}
 								<Radio color="blue" class={checkedStyle} name="delete-scope" value={s.value} bind:group={deleteScope}>{s.label}</Radio>
 							{/each}

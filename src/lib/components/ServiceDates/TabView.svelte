@@ -27,11 +27,11 @@
 	setActionRunner();
 </script>
 
-<div class="p-1 tabs-scroll space-y-4"> <!-- space-y-4 is from the servicedatecard -->
+<div class="tabs-scroll space-y-4 p-1">
 	<Tabs
 		tabStyle="underline"
 		divider={false}
-		class="mt-3 p-1 rounded-xl bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+		class="tabs-panel"
 	>
 		<TabItem open>
 			{#snippet titleSlot()}
@@ -62,14 +62,3 @@
 	</Tabs>
 </div>
 
-<style>
-	.tabs-scroll :global([role='tablist']) {
-		flex-wrap: nowrap;
-		overflow-x: auto;
-		scrollbar-width: none;
-	}
-	.tabs-scroll :global([role='tab']) {
-		flex-shrink: 0;
-		white-space: nowrap;
-	}
-</style>

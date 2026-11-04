@@ -40,7 +40,7 @@
 			{#if errorMessage}<Alert color="red">{errorMessage}</Alert>{/if}
 			<form class="space-y-4" onsubmit={submit}>
 				<div>
-					<Label for="email" class="mb-2">Email</Label>
+					<Label for="email">Email</Label>
 					<Input id="email" type="email" required autocomplete="email" placeholder="you@example.com" class="ps-10" bind:value={email}>
 						{#snippet left()}<EnvelopeSolid class="h-4 w-4 text-gray-500 dark:text-gray-400" />{/snippet}
 					</Input>

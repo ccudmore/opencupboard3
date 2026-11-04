@@ -16,6 +16,8 @@ export const permissions: PermissionSeed[] = [
 	{ id: 'admin', name: 'Administration', description: 'Manage users, roles and their permissions' },
 	{ id: 'manage-volunteers', name: 'Manage volunteers', description: 'Manage volunteers' },
 	{ id: 'manage-inventory', name: 'Manage inventory', description: 'Manage inventory' },
+	{ id: 'submit-expenses', name: 'Submit expenses', description: 'Submit expenses and see your own' },
+	{ id: 'manage-expenses', name: 'Manage expenses', description: 'Review expenses: approve, reject and reimburse' },
 	{ id: 'manage-donors', name: 'Manage donors', description: 'Manage donors' },
 	{ id: 'view-dashboard', name: 'View dashboard', description: 'View dashboard' },
 	{ id: 'access-volunteer', name: 'Volunteer', description: 'Volunteer' }
@@ -31,7 +33,9 @@ export const roles: RoleSeed[] = [
 	{ name: 'Volunteer Manager', permissionIds: ['login', 'manage-volunteers'] },
 	{ name: 'Volunteer', permissionIds: ['login', 'access-volunteer'] },
 	{ name: 'Donor Manager', permissionIds: ['login', 'manage-donors'] },
-	{ name: 'Inventory Manager', permissionIds: ['login', 'manage-inventory'] }
+	{ name: 'Inventory Manager', permissionIds: ['login', 'manage-inventory'] },
+	{ name: 'Expense Submitter', permissionIds: ['login', 'submit-expenses'] },
+	{ name: 'Expense Manager', permissionIds: ['login', 'submit-expenses', 'manage-expenses'] }
 ];
 
 /** Makes the database match the lists above. The lists are the source of truth. */

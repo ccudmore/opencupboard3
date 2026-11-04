@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Alert, Badge, Breadcrumb, BreadcrumbItem, Button, Card, Input } from 'flowbite-svelte';
-	import { HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import { Alert, Badge, Button, Card, Input } from 'flowbite-svelte';
+	
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
 	import { callAction } from '$lib/client/callAction';
@@ -68,43 +69,25 @@
 	<title>Volunteer shifts</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/volunteers">
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		Volunteers
-	</BreadcrumbItem>
-	<BreadcrumbItem>
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		Shifts
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Volunteers', href: '/volunteers' }, { label: 'Shifts' }]} bar />
 
-<div class="bg-gray-50 p-3 sm:p-5 dark:bg-gray-900">
+<div class="page-content">
 	<div class="mx-auto w-full max-w-4xl min-w-0 space-y-6">
-		<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Volunteer shifts</h1>
+		<h1>Volunteer shifts</h1>
 
 		<!-- Waiting for approval -->
 		<section class="space-y-3">
-			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+			<h2>
 				Waiting for approval
 				{#if pendingTotal > 0}<Badge color="yellow" class="ms-2">{pendingTotal}</Badge>{/if}
 			</h2>
 			{#if pendingTotal === 0}
-				<p class="text-gray-600 dark:text-gray-300">No signups are waiting.</p>
+				<p class="muted">No signups are waiting.</p>
 			{:else}
 				{#each pendingEvents as e (e.id)}
 					<Card class="max-w-none p-4">
 						<h3 class="font-semibold wrap-break-word text-gray-900 dark:text-white">{e.title}</h3>
-						<p class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+						<p class="mb-2 hint">
 							{dateFmt.format(new Date(e.startTime))}, {timeFmt.format(new Date(e.startTime))} to {timeFmt.format(new Date(e.endTime))} · {e.location}
 						</p>
 						<ul class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -129,8 +112,8 @@
 
 		<!-- Staffing for upcoming events -->
 		<section class="space-y-3">
-			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Staffing for upcoming events</h2>
-			<p class="text-sm text-gray-600 dark:text-gray-300">
+			<h2>Staffing for upcoming events</h2>
+			<p class="hint">
 				Set how many volunteers each event needs in each role. Volunteers with that skill can sign up for the spots; leave a role at 0 to keep it closed.
 			</p>
 			{#if data.board.length === 0}
@@ -139,13 +122,13 @@
 			{#each data.board as e (e.id)}
 				<Card class="max-w-none p-4">
 					<h3 class="font-semibold wrap-break-word text-gray-900 dark:text-white">{e.title}</h3>
-					<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+					<p class="mb-3 hint">
 						{dateFmt.format(new Date(e.startTime))}, {timeFmt.format(new Date(e.startTime))} to {timeFmt.format(new Date(e.endTime))} · {e.location} · {e.type}
 					</p>
 					<div class="space-y-2">
 						{#each e.roles as r (r.role)}
 							<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-								<label for={`need-${e.id}-${r.role}`} class="w-40 text-sm font-medium text-gray-900 dark:text-white">{r.role}</label>
+								<label for={`need-${e.id}-${r.role}`} class="mb-0 w-40">{r.role}</label>
 								<Input
 									id={`need-${e.id}-${r.role}`}
 									type="number"
@@ -155,7 +138,7 @@
 									value={value(e, r.role, r.required)}
 									oninput={(ev) => setValue(e, r.role, (ev.currentTarget as HTMLInputElement).value)}
 								/>
-								<span class="text-sm text-gray-600 dark:text-gray-300">
+								<span class="hint">
 									{r.filled} filled{r.pending ? `, ${r.pending} pending` : ''}
 								</span>
 							</div>

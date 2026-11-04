@@ -98,11 +98,11 @@ class="bg-gray-100 border-gray-300 text-grey-600
     {#if openSpecialRequestRow != null}
   		<div class="mt-0.5 gap-4 px-4 pt-5 mb-0.5">
 			<div>
-   				<Label for="text" class="mb-2">Text</Label>
-				<Textarea id="text" class="w-full" bind:value={$form.datedRequests[openSpecialRequestRow].requestText} {...$constraints.datedRequests?.requestText} />
+   				<Label for="text">Text</Label>
+				<Textarea id="text" bind:value={$form.datedRequests[openSpecialRequestRow].requestText} {...$constraints.datedRequests?.requestText} />
 			</div>
 			<div>
-   				<Label for="status" class="mb-2">Status</Label>
+   				<Label for="status">Status</Label>
 				<Select class="mb-2 w-full sm:w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
 			<div>

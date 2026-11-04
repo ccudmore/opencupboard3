@@ -18,15 +18,15 @@
 		span: "dark:text-gray-200",                 // text inside the chips
 	}}
  bind:value={$form.dietaryRestrictions} showAvailableTags={true} showHelper availableTags={dietaryOptions} unique placeholder="Add restriction(s)"/>
-<Label for="preferredServiceTypes" class="mb-2">Service Type</Label>
+<Label for="preferredServiceTypes">Service Type</Label>
 <MultiSelect class="mb-2" items={deliveryTypeOptions} bind:value={$form.preferredServiceTypes} />
-<Label for="preferredTimeOfDay" class="mb-2">Prefered Service Time</Label>
+<Label for="preferredTimeOfDay">Prefered Service Time</Label>
 <MultiSelect id="preferredTimeOfDay" placeholder="Preferred times" class="mt-5 mb-3" bind:value={$form.preferredTimeOfDay}   items={serviceTimeOptions}  />
-<Label for="languagesSpoken" class="mb-2">Languages Spoken</Label>
+<Label for="languagesSpoken">Languages Spoken</Label>
 <Tags placeholder="Languages spoken" class="mt-5 mb-3" bind:value={$form.languagesSpoken} showHelper showAvailableTags={true} availableTags={languagesSpoken} unique/>
-<Label for="pets" class="mb-2">Pets</Label>
-<Textarea id="pets" class="w-full" name="pets" bind:value={$form.pets} {...$constraints.pets}/>
-<Label for="notes" class="mb-2">Notes</Label>
-<Textarea id="notes" class="w-full" name="notes" bind:value={$form.notes} {...$constraints.notes}/>
-<Label for="howHeard" class="mb-2">How did you hear about us?</Label>
-<Textarea id="howHeard" class="w-full" name="howHeard" bind:value={$form.howHeard} {...$constraints.howHeard}/>
+<Label for="pets">Pets</Label>
+<Textarea id="pets" name="pets" bind:value={$form.pets} {...$constraints.pets}/>
+<Label for="notes">Notes</Label>
+<Textarea id="notes" name="notes" bind:value={$form.notes} {...$constraints.notes}/>
+<Label for="howHeard">How did you hear about us?</Label>
+<Textarea id="howHeard" name="howHeard" bind:value={$form.howHeard} {...$constraints.howHeard}/>

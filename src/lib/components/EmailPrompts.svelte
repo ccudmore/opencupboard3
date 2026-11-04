@@ -123,8 +123,8 @@
 </script>
 
 <Modal title={`Send ${word} email`} bind:open={askSendOpen} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">Send a {word} email to {toWhom}?</p>
-	<p class="mt-2 text-sm wrap-break-word text-gray-600 dark:text-gray-300">{recipientText}</p>
+	<p class="muted">Send a {word} email to {toWhom}?</p>
+	<p class="mt-2 wrap-break-word hint">{recipientText}</p>
 	{#snippet footer()}
 		<Button type="button" color="dark" onclick={() => answerSend(true)}>Yes</Button>
 		<Button type="button" outline color="dark" onclick={() => answerSend(false)}>No</Button>
@@ -139,8 +139,8 @@
 		if (!editorOpen && !busy) draft = null;
 	}}
 >
-	<p class="text-gray-600 dark:text-gray-300">Would you like to review and change the {word} email before it is sent?</p>
-	<p class="mt-2 text-sm wrap-break-word text-gray-600 dark:text-gray-300">{recipientText}</p>
+	<p class="muted">Would you like to review and change the {word} email before it is sent?</p>
+	<p class="mt-2 wrap-break-word hint">{recipientText}</p>
 	{#snippet footer()}
 		<Button type="button" color="dark" disabled={busy} onclick={() => answerCustomize(true)}>Yes, let me edit it</Button>
 		<Button type="button" outline color="dark" disabled={busy} onclick={() => answerCustomize(false)}>
@@ -152,14 +152,14 @@
 <Modal title={`Edit the ${word} email`} bind:open={editorOpen} size="lg" onclose={() => (draft = null)}>
 	{#if draft}
 		<div class="min-w-0 space-y-4">
-			<p class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">To: {recipientText}</p>
+			<p class="wrap-break-word hint">To: {recipientText}</p>
 			<div>
-				<Label for="email-subject" class="mb-2">Subject</Label>
+				<Label for="email-subject">Subject</Label>
 				<Input id="email-subject" type="text" maxlength={200} bind:value={draft.subject} onkeydown={ignoreEnter} />
 			</div>
 			<div>
-				<Label for="email-body" class="mb-2">Message</Label>
-				<Textarea id="email-body" rows={12} class="block w-full max-w-full min-w-0" maxlength={10000} bind:value={draft.body} />
+				<Label for="email-body">Message</Label>
+				<Textarea id="email-body" rows={12} maxlength={10000} bind:value={draft.body} />
 			</div>
 		</div>
 	{/if}

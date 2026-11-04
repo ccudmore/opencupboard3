@@ -105,7 +105,7 @@
 
 <!-- Heading and action, shared by both layouts -->
 <div class="flex flex-wrap items-center justify-between gap-2 bg-white px-5 pb-3 pt-3 dark:bg-gray-800">
-	<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Household Members</h2>
+	<h2>Household Members</h2>
 	<Button outline color="dark" onclick={addHouseholdMember}>
 		New  Member
 	</Button>
@@ -177,50 +177,50 @@
 		{#if openMemberRow != null}
 	  		<div class="mt-0.5 mb-0.5 grid grid-cols-1 gap-4 px-4 pt-5 sm:grid-cols-2 sm:pl-10 lg:grid-cols-3">
 			<div>
-				<Label for="firstName" class="mb-2">First Name</Label>
+				<Label for="firstName">First Name</Label>
 				<Input type="text" id="firstName" name="firstName" autocomplete="off" bind:value={$form.members[openMemberRow].firstName} {...$constraints.members?.firstName} />
 				{#if $errors.members?.[openMemberRow]?.firstName}
-					<Helper class="mt-2 text-red-500">
+					<Helper class="field-error">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.firstName}</span>
 					</Helper>
 				{/if}
 			</div>
 			<div>
-   				<Label for="lastName" class="mb-2">Last Name</Label>
+   				<Label for="lastName">Last Name</Label>
 				<Input type="text" id="lastName" name="lastName" autocomplete="off" bind:value={$form.members[openMemberRow].lastName} {...$constraints.members?.lastName} />
 				{#if $errors.members?.[openMemberRow]?.lastName}
-					<Helper class="mt-2 text-red-500">
+					<Helper class="field-error">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.lastName}</span>
 					</Helper>
 				{/if}
 			</div>
 			<div>
-   				<Label for="relationship" class="mb-2">Relationship</Label>
+   				<Label for="relationship">Relationship</Label>
 				<Select class="mb-2" items={relationshipOptions} bind:value={$form.members[openMemberRow].relationship} {...$constraints.members?.relationship} required/>
 			</div>
 			<div>
-   				<Label for="phone" class="mb-2">Phone Number</Label>
+   				<Label for="phone">Phone Number</Label>
 				<Input type="tel" inputmode="tel" autocomplete="off" id="phone" name="phone" bind:value={$form.members[openMemberRow].phone} {...$constraints.members?.phone} />
 				{#if $errors.members?.[openMemberRow]?.phone}
-					<Helper class="mt-2 text-red-500">
+					<Helper class="field-error">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.phone}</span>
 					</Helper>
 				{/if}
 			</div>
 			<div>
-   				<Label for="email" class="mb-2">Email Address</Label>
+   				<Label for="email">Email Address</Label>
 				<Input type="text" inputmode="email" autocomplete="off" id="email" name="email" bind:value={$form.members[openMemberRow].email} {...$constraints.members?.email} />
 				{#if $errors.members?.[openMemberRow]?.email}
-					<Helper class="mt-2 text-red-500">
+					<Helper class="field-error">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.email}</span>
 					</Helper>
 				{/if}
 			</div>
 			<div>
-   				<Label for="birthYear" class="mb-2">Birth Year</Label>
+   				<Label for="birthYear">Birth Year</Label>
 				<Input type="number" inputmode="numeric" id="birthYear" name="birthYear" bind:value={$form.members[openMemberRow].birthYear} {...$constraints.members?.birthYear} />
 				{#if $errors.members?.[openMemberRow]?.birthYear}
-					<Helper class="mt-2 text-red-500">
+					<Helper class="field-error">
 						<span class="font-medium">{$errors.members?.[openMemberRow]?.birthYear}</span>
 					</Helper>
 				{/if}

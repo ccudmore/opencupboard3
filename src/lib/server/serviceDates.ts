@@ -37,6 +37,14 @@ const primaryNames = (members: { firstName: string; lastName: string }[]) =>
 // ---------------------------------------------------------------- reading
 
 /** Service dates for the page: upcoming ones, plus earlier ones when showPast is set. */
+/** The emails already sent, from the JSON column: { sentAt, to } for each. Anything malformed is skipped. */
+function sentEntries(json: unknown): { sentAt: string; to: string[] }[] {
+	if (!Array.isArray(json)) return [];
+	return json
+		.filter((e): e is { sentAt: string; to?: unknown } => !!e && typeof e === 'object' && typeof (e as { sentAt?: unknown }).sentAt === 'string')
+		.map((e) => ({ sentAt: e.sentAt, to: Array.isArray(e.to) ? e.to.filter((x): x is string => typeof x === 'string') : [] }));
+}
+
 export async function loadServiceDates(showPast: boolean, timeZone: string) {
 	const startOfToday = zonedToDate(zonedParts(new Date(), timeZone).date, '00:00', timeZone) ?? new Date();
 
@@ -86,7 +94,15 @@ export async function loadServiceDates(showPast: boolean, timeZone: string) {
 				startTime: a.startTime,
 				endTime: a.endTime,
 				past: a.startTime <= now,
-				booking: b ? { id: b.id, householdId: b.householdId, name: primaryNames(b.household.members) || 'Unnamed household' } : null
+				booking: b
+					? {
+							id: b.id,
+							householdId: b.householdId,
+							name: primaryNames(b.household.members) || 'Unnamed household',
+							confirmations: sentEntries(b.confirmations),
+							reminders: sentEntries(b.reminders)
+						}
+					: null
 			};
 		});
 		const booked = appointments.filter((a) => a.booking).length;

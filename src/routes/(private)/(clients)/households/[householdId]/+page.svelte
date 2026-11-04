@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import {superForm, type SuperFormErrors} from "sveltekit-superforms/client"
 	import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte"
  	import { goto } from '$app/navigation';
@@ -96,7 +97,7 @@ function toastFormErrors(errors: FormErrors) {
 	<!--SuperDebug data={$form}/-->
 
 	<!-- Navigation and actions: stacked on phones, one row from sm up -->
-	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-gray-50 px-3 py-2 sm:px-5 dark:bg-gray-900">
+	<div class="page-bar">
 		<!-- Phones: short back link -->
 		<a
 			href="/households"
@@ -107,34 +108,14 @@ function toastFormErrors(errors: FormErrors) {
 
 		<!-- sm and up: full breadcrumb -->
 		<div class="hidden sm:block">
-			<Breadcrumb>
-				<BreadcrumbItem href="/" home>
-					{#snippet icon()}
-						<HomeOutline class="me-2 h-4 w-4" />
-					{/snippet}
-					Home
-				</BreadcrumbItem>
-				<BreadcrumbItem href="/households">
-					{#snippet icon()}
-						<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-					{/snippet}
-					Household
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					{#snippet icon()}
-						<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-					{/snippet}
-					Edit
-				</BreadcrumbItem>
-			</Breadcrumb>
+			<PageBreadcrumb items={[{ label: 'Household', href: '/households' }, { label: 'Edit' }]} />
 		</div>
 
 		<div class="flex flex-wrap items-center gap-3">
 			{#if isTainted($tainted)}
 				<span
 					role="status"
-					class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900
-					       dark:bg-amber-900/50 dark:text-amber-100"
+					class="unsaved-badge"
 				>
 					<ExclamationCircleOutline class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
 					Unsaved changes

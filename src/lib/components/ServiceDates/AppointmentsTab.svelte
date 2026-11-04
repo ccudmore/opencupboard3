@@ -109,6 +109,21 @@
 
 	let bookingPrompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 
+	// ------------------------------------------------ emails sent, and the buttons to send them
+	type ListedKind = 'confirmation' | 'reminder';
+	const KINDS: { kind: ListedKind; label: string; sent: string; heading: string }[] = [
+		{ kind: 'confirmation', label: 'Confirmation', sent: 'Confirmation sent', heading: 'Confirmation emails' },
+		{ kind: 'reminder', label: 'Reminder', sent: 'Reminder sent', heading: 'Reminder emails' }
+	];
+	const sentFmt = $derived(new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeStyle: 'short', timeZone }));
+	const sentList = (a: Appointment, kind: ListedKind) => (kind === 'confirmation' ? a.booking?.confirmations : a.booking?.reminders) ?? [];
+	const emailTitle = () => (emailEnabled ? '' : 'Email is not set up on this server');
+
+	function sendEmail(event: MouseEvent, a: Appointment, kind: ListedKind) {
+		event.stopPropagation(); // don't open or close the appointment
+		if (a.booking) void bookingPrompts?.start(a.booking.id, kind, false);
+	}
+
 	let cancelBookingTarget = $state<Appointment | null>(null);
 	async function cancelBooking() {
 		const booking = cancelBookingTarget?.booking;
@@ -147,11 +162,11 @@
 		<h3 class="text-base font-semibold text-gray-900 dark:text-white">Appointments</h3>
 		<Badge color="green">{service.counts.open} open</Badge>
 		<Badge color="blue">{service.counts.booked} booked</Badge>
-		<span class="text-sm text-gray-600 dark:text-gray-300">of {service.counts.total}</span>
+		<span class="hint">of {service.counts.total}</span>
 	</div>
 
 	{#if service.appointments.length === 0}
-		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">No appointments yet. Add some below.</p>
+		<p class="mb-3 hint">No appointments yet. Add some below.</p>
 	{/if}
 
 	<ul class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -171,21 +186,60 @@
 					{/if}
 				</button>
 
+				{#if a.booking}
+					<!-- Which emails have gone out, and the buttons to send them -->
+					<div class="flex flex-wrap items-center justify-between gap-2 pb-2">
+						<div class="flex flex-wrap gap-1">
+							{#each KINDS as k (k.kind)}
+								{#if sentList(a, k.kind).length > 0}
+									<Badge color="green">&#10003; {k.sent}</Badge>
+								{:else}
+									<Badge color="gray">{k.label} not sent</Badge>
+								{/if}
+							{/each}
+						</div>
+						<div class="flex flex-wrap gap-2">
+							{#each KINDS as k (k.kind)}
+								<Button type="button" size="xs" outline color="dark" disabled={!emailEnabled} title={emailTitle()} onclick={(e: MouseEvent) => sendEmail(e, a, k.kind)}>
+									Send {k.label.toLowerCase()}
+								</Button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
 				{#if openAppointment === a.id}
 					<div class="mb-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
 						{#if a.booking}
 							<p class="text-sm text-gray-700 dark:text-gray-200">
 								Booked for <a href={`/households/${a.booking.householdId}`} class="font-medium text-blue-700 hover:underline dark:text-blue-400">{a.booking.name}</a>.
 							</p>
-							<div class="mt-2 flex flex-wrap gap-2">
+							<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+								{#each KINDS as k (k.kind)}
+									{@const sends = sentList(a, k.kind)}
+									<div class="min-w-0">
+										<h4 class="mb-1 text-sm font-medium text-gray-900 dark:text-white">{k.heading}</h4>
+										{#if sends.length === 0}
+											<p class="hint">Not sent yet.</p>
+										{:else}
+											<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-200">
+												{#each sends.toReversed() as e, i (i)}
+													<li class="wrap-break-word">{sentFmt.format(new Date(e.sentAt))}{e.to.length ? ` to ${e.to.join(', ')}` : ''}</li>
+												{/each}
+											</ul>
+										{/if}
+									</div>
+								{/each}
+							</div>
+							<div class="mt-3 flex flex-wrap gap-2">
 								{#if !a.past}<Button size="xs" outline color="red" onclick={() => (cancelBookingTarget = a)}>Cancel booking</Button>{/if}
 							</div>
 						{:else if a.past || cancelled}
-							<p class="text-sm text-gray-600 dark:text-gray-300">{cancelled ? 'This service date is cancelled.' : 'This appointment has passed.'}</p>
+							<p class="hint">{cancelled ? 'This service date is cancelled.' : 'This appointment has passed.'}</p>
 						{:else}
-							<Label for={`client-${a.id}`} class="mb-1">Find a client</Label>
+							<Label for={`client-${a.id}`}>Find a client</Label>
 							<Input id={`client-${a.id}`} placeholder="Name, phone, email, street or postal code" autocomplete="off" bind:value={clientQuery} oninput={() => onClientInput(a.id)} />
-							<Helper class="mt-1">Only active clients who are eligible for {service.date} are listed.</Helper>
+							<Helper class="field-help">Only active clients who are eligible for {service.date} are listed.</Helper>
 
 							{#if taken}
 								<Alert color="yellow" class="mt-3">
@@ -203,16 +257,16 @@
 								</Alert>
 							{/if}
 
-							{#if clientBusy}<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Searching…</p>{/if}
+							{#if clientBusy}<p class="mt-2 hint">Searching…</p>{/if}
 							{#if clientSearched && clientResults.length === 0 && !clientBusy}
-								<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No eligible active clients match. Clients who were booked recently aren't eligible until their next service date.</p>
+								<p class="mt-2 hint">No eligible active clients match. Clients who were booked recently aren't eligible until their next service date.</p>
 							{/if}
 							<ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
 								{#each clientResults as c (c.householdId)}
 									<li class="flex flex-wrap items-center justify-between gap-2 py-2">
 										<div class="min-w-0">
 											<div class="font-medium wrap-break-word text-gray-900 dark:text-white">{c.name}</div>
-											{#if c.detail}<div class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">{c.detail}</div>{/if}
+											{#if c.detail}<div class="wrap-break-word hint">{c.detail}</div>{/if}
 										</div>
 										<Button size="xs" color="dark" disabled={runner.busy === `book:${c.householdId}`} onclick={() => book(a.id, c.householdId, c.name)}>
 											{runner.busy === `book:${c.householdId}` ? 'Booking…' : 'Book'}
@@ -237,30 +291,30 @@
 		<div class="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
 			<div class="mb-2 flex flex-wrap items-center gap-3">
 				<span class="text-sm font-medium text-gray-900 dark:text-white">Add appointments</span>
-				<label class="flex items-center gap-1 text-sm text-gray-800 dark:text-gray-100"><input type="radio" name={`mode-${service.id}`} value="one" bind:group={addMode} />One</label>
-				<label class="flex items-center gap-1 text-sm text-gray-800 dark:text-gray-100"><input type="radio" name={`mode-${service.id}`} value="several" bind:group={addMode} />Several</label>
+				<label class="check-label text-sm"><input type="radio" name={`mode-${service.id}`} value="one" bind:group={addMode} />One</label>
+				<label class="check-label text-sm"><input type="radio" name={`mode-${service.id}`} value="several" bind:group={addMode} />Several</label>
 			</div>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				<div class="min-w-0">
-					<Label for={`add-start-${service.id}`} class="mb-1">{addMode === 'one' ? 'Time' : 'First one at'}</Label>
+					<Label for={`add-start-${service.id}`}>{addMode === 'one' ? 'Time' : 'First one at'}</Label>
 					<Input id={`add-start-${service.id}`} type="time" value={startClock} oninput={(e) => (addStart = (e.currentTarget as HTMLInputElement).value)} />
 				</div>
 				<div class="min-w-0">
-					<Label for={`add-length-${service.id}`} class="mb-1">Length (minutes)</Label>
+					<Label for={`add-length-${service.id}`}>Length (minutes)</Label>
 					<Input id={`add-length-${service.id}`} type="number" min="1" max="480" bind:value={add.lengthMinutes} />
 				</div>
 				{#if addMode === 'several'}
 					<div class="min-w-0">
-						<Label for={`add-count-${service.id}`} class="mb-1">How many</Label>
+						<Label for={`add-count-${service.id}`}>How many</Label>
 						<Input id={`add-count-${service.id}`} type="number" min="1" max="100" bind:value={add.count} />
 					</div>
 					<div class="min-w-0">
-						<Label for={`add-every-${service.id}`} class="mb-1">New one every (minutes)</Label>
+						<Label for={`add-every-${service.id}`}>New one every (minutes)</Label>
 						<Input id={`add-every-${service.id}`} type="number" min="1" max="480" bind:value={add.everyMinutes} />
 					</div>
 				{/if}
 			</div>
-			{#if addError}<p class="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{addError}</p>{/if}
+			{#if addError}<p class="mt-2 error-text" role="alert">{addError}</p>{/if}
 			<div class="mt-3">
 				<Button size="sm" color="dark" disabled={runner.busy === 'add'} onclick={addAppointments}>
 					<PlusOutline class="me-2 h-3.5 w-3.5" />{runner.busy === 'add' ? 'Adding…' : addMode === 'one' ? 'Add appointment' : 'Add appointments'}
@@ -277,7 +331,7 @@
 </section>
 
 <Modal title="Remove this appointment?" open={deleteTarget !== null} onclose={() => (deleteTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">Remove the {deleteTarget ? range(deleteTarget) : ''} appointment? It has no bookings.</p>
+	<p class="muted">Remove the {deleteTarget ? range(deleteTarget) : ''} appointment? It has no bookings.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={runner.busy === 'delete'} onclick={deleteAppointment}>Yes, remove it</Button>
 		<Button outline color="dark" onclick={() => (deleteTarget = null)}>Keep it</Button>
@@ -285,7 +339,7 @@
 </Modal>
 
 <Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		Cancel the booking for {cancelBookingTarget?.booking?.name} at {cancelBookingTarget ? time(cancelBookingTarget.startTime) : ''}? The time becomes open again.
 	</p>
 	{#snippet footer()}

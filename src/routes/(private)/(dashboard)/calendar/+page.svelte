@@ -51,7 +51,7 @@
 
 <!-- mode is either readonly, full, or volunteers-->
 <main class="mx-auto max-w-5xl p-4">
-	<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-white">Calendar</h1>
+	<h1 class="mb-4">Calendar</h1>
 	<Calendar
 		bind:events
 		categories={data.categories}

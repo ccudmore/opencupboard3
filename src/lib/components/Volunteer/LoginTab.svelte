@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { Alert, Badge, Button, Input, Label } from 'flowbite-svelte';
+	import { Alert, Badge, Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
 	import { callAction } from '$lib/client/callAction';
 
 	type Account = { id: string; email: string; active: boolean; hasPassword: boolean; onlyVolunteer: boolean; emailEnabled: boolean };
 
-	let { account, status }: { account: Account | null; status: 'ACTIVE' | 'ARCHIVED' } = $props();
+	let {
+		account,
+		status,
+		assignmentCount,
+		documentCount
+	}: { account: Account | null; status: 'ACTIVE' | 'ARCHIVED'; assignmentCount: number; documentCount: number } = $props();
 
 	// The volunteer page is one big <form>, so this section sits outside it and uses fetch.
 	let busy = $state(false);
@@ -14,6 +19,17 @@
 	let editing = $state(false);
 	let newEmail = $state('');
 	let confirmArchive = $state(false);
+	let deleteOpen = $state(false);
+
+	async function remove() {
+		busy = true;
+		const r = await callAction('delete', {}); // goes to the volunteer list when it works
+		busy = false;
+		if (!r.ok) {
+			deleteOpen = false;
+			error = r.message;
+		}
+	}
 
 	async function run(action: string, fields: Record<string, string>, done: string) {
 		busy = true;
@@ -43,9 +59,9 @@
 	}
 </script>
 
-<section class="rounded-lg bg-white p-4 shadow-md sm:p-5 dark:bg-gray-800">
+<section class="tab-section">
 	<div class="mb-3 flex flex-wrap items-center gap-2">
-		<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Login and status</h2>
+		<h2 class="section-title mb-0">Login and status</h2>
 		{#if status === 'ARCHIVED'}<Badge color="yellow">Archived</Badge>{:else}<Badge color="green">Active</Badge>{/if}
 	</div>
 
@@ -53,9 +69,9 @@
 		<Alert color="red">This volunteer's account could not be found.</Alert>
 	{:else}
 		<div class="mb-3 min-w-0 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-			<div class="text-sm text-gray-600 dark:text-gray-300">Signs in with</div>
+			<div class="hint">Signs in with</div>
 			<div class="font-medium break-all text-gray-900 dark:text-white">{account.email}</div>
-			<div class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+			<div class="mt-1 hint">
 				{account.hasPassword ? 'Has chosen a password.' : 'Has not chosen a password yet.'}
 				{#if !account.active}Their login is switched off.{/if}
 			</div>
@@ -63,7 +79,7 @@
 
 		{#if error}<Alert color="red" class="mb-3">{error}</Alert>{/if}
 
-		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+		<p class="mb-3 hint">
 			Passwords are never set here. Send a link and they choose their own.
 		</p>
 		<div class="flex flex-wrap gap-2">
@@ -81,10 +97,10 @@
 			{/if}
 		</div>
 		{#if !account.emailEnabled}
-			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Email is not set up, so messages can't be sent.</p>
+			<p class="mt-2 hint">Email is not set up, so messages can't be sent.</p>
 		{/if}
 		{#if !account.onlyVolunteer}
-			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">This person has other roles, so their email, roles and login status are managed in Admin &gt; Users.</p>
+			<p class="mt-2 hint">This person has other roles, so their email, roles and login status are managed in Admin &gt; Users.</p>
 		{/if}
 
 		{#if editing}
@@ -96,7 +112,7 @@
 				}}
 			>
 				<div class="min-w-0 grow">
-					<Label for="acct-email" class="mb-1">New login email</Label>
+					<Label for="acct-email">New login email</Label>
 					<Input id="acct-email" type="email" required autocomplete="off" bind:value={newEmail} class="block w-full max-w-full min-w-0" />
 				</div>
 				<Button type="submit" color="blue" disabled={busy}>Save</Button>
@@ -107,7 +123,7 @@
 		<hr class="my-4 border-gray-200 dark:border-gray-700" />
 
 		{#if status === 'ARCHIVED'}
-			<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">Archived volunteers are hidden from lists and can't be picked for shifts.</p>
+			<p class="mb-3 hint">Archived volunteers are hidden from lists and can't be picked for shifts.</p>
 			<Button type="button" color="blue" size="sm" disabled={busy} onclick={() => run('unarchive', {}, 'Volunteer restored.')}>Restore volunteer</Button>
 		{:else if confirmArchive}
 			<Alert color="yellow">
@@ -124,4 +140,24 @@
 			<Button type="button" outline color="dark" size="sm" disabled={busy} onclick={() => (confirmArchive = true)}>Archive volunteer</Button>
 		{/if}
 	{/if}
+
+	<hr class="my-4 border-gray-200 dark:border-gray-700" />
+	<Button type="button" outline color="red" size="sm" onclick={() => (deleteOpen = true)}>Delete volunteer</Button>
 </section>
+
+<Modal title="Delete volunteer" bind:open={deleteOpen} size="xs" autoclose={false}>
+	<p class="muted">
+		Delete this volunteer? Archiving is usually better: it keeps their history.
+		{#if assignmentCount > 0}
+			They will also be removed from {assignmentCount} {assignmentCount === 1 ? 'event' : 'events'}, including past ones.
+		{/if}
+		{#if documentCount > 0}
+			Their {documentCount} uploaded {documentCount === 1 ? 'document' : 'documents'} will be deleted too.
+		{/if}
+		This can't be undone.
+	</p>
+	{#snippet footer()}
+		<Button color="red" disabled={busy} onclick={remove}>Yes, delete</Button>
+		<Button outline color="dark" onclick={() => (deleteOpen = false)}>Cancel</Button>
+	{/snippet}
+</Modal>

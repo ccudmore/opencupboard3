@@ -1,9 +1,10 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import type { PageProps } from './$types';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Alert, Badge, Breadcrumb, BreadcrumbItem, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
-	import { ChevronDoubleRightOutline, EditOutline, HomeOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { Alert, Badge, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
+	import { EditOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { callAction } from '$lib/client/callAction';
 
@@ -157,22 +158,11 @@
 
 <svelte:head><title>Inventory</title></svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem>
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}Inventory
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Inventory' }]} bar />
 
 <div class="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
 	<div class="flex flex-wrap items-center justify-between gap-2">
-		<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Inventory</h1>
+		<h1>Inventory</h1>
 		<div class="flex flex-wrap gap-2">
 			<Button outline color="dark" onclick={openCategories}>Manage categories</Button>
 			<Button color="blue" onclick={() => openItem()} disabled={data.categories.length === 0 || data.sites.length === 0}>
@@ -196,7 +186,7 @@
 	{:else}
 		<!-- category filter: the trail to the chosen category, then the categories inside it -->
 		<div class="space-y-2">
-			<div class="flex flex-wrap items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+			<div class="flex flex-wrap items-center gap-1 hint">
 				<button type="button" class="rounded px-1 font-medium hover:underline {data.categoryId === '' ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'}" onclick={() => setParam('category', '')}>
 					All categories ({data.allItemCount})
 				</button>
@@ -224,11 +214,11 @@
 
 		<div class="grid gap-3 sm:grid-cols-2">
 			<div>
-				<Label for="inv-search" class="mb-1">Search</Label>
+				<Label for="inv-search">Search</Label>
 				<Input id="inv-search" type="search" placeholder="Name, room, shelf, box or notes" bind:value={q} oninput={onSearch} class={field} />
 			</div>
 			<div>
-				<Label for="inv-site" class="mb-1">Site</Label>
+				<Label for="inv-site">Site</Label>
 				<Select id="inv-site" items={siteItems} value={data.siteId} onchange={(e) => setParam('site', (e.currentTarget as HTMLSelectElement).value)} class={field} />
 			</div>
 		</div>
@@ -247,30 +237,30 @@
 				<table class="w-full text-left text-sm text-gray-700 dark:text-gray-300">
 					<thead class="bg-gray-50 text-xs text-gray-600 uppercase dark:bg-gray-800 dark:text-gray-300">
 						<tr>
-							<th class="px-3 py-2">Item</th>
-							<th class="px-3 py-2">Category</th>
-							<th class="px-3 py-2">Site</th>
-							<th class="px-3 py-2">Room</th>
-							<th class="px-3 py-2">Shelf</th>
-							<th class="px-3 py-2">Box</th>
-							<th class="px-3 py-2 text-right">Qty</th>
-							<th class="px-3 py-2"><span class="sr-only">Actions</span></th>
+							<th>Item</th>
+							<th>Category</th>
+							<th>Site</th>
+							<th>Room</th>
+							<th>Shelf</th>
+							<th>Box</th>
+							<th class="text-right">Qty</th>
+							<th><span class="sr-only">Actions</span></th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each data.items as item (item.id)}
 							<tr class="border-t border-gray-200 dark:border-gray-700">
-								<td class="px-3 py-2 font-medium wrap-break-word text-gray-900 dark:text-white">
+								<td class="font-medium wrap-break-word text-gray-900 dark:text-white">
 									{item.name}
 									{#if item.notes}<div class="text-xs font-normal text-gray-500 dark:text-gray-400">{item.notes}</div>{/if}
 								</td>
-								<td class="px-3 py-2"><Badge>{item.categoryName}</Badge></td>
-								<td class="px-3 py-2">{item.siteName}</td>
-								<td class="px-3 py-2">{item.room}</td>
-								<td class="px-3 py-2">{item.shelfNumber || '-'}</td>
-								<td class="px-3 py-2">{item.boxNumber || '-'}</td>
-								<td class="px-3 py-2 text-right">{item.quantity}</td>
-								<td class="px-3 py-2">
+								<td><Badge>{item.categoryName}</Badge></td>
+								<td>{item.siteName}</td>
+								<td>{item.room}</td>
+								<td>{item.shelfNumber || '-'}</td>
+								<td>{item.boxNumber || '-'}</td>
+								<td class="text-right">{item.quantity}</td>
+								<td>
 									<div class="flex justify-end gap-1">
 										<Button size="xs" outline color="dark" aria-label="Edit {item.name}" onclick={() => openItem(item)}><EditOutline class="h-4 w-4" /></Button>
 										<Button size="xs" outline color="red" aria-label="Delete {item.name}" onclick={() => (deleteItemTarget = item)}><TrashBinOutline class="h-4 w-4" /></Button>
@@ -289,7 +279,7 @@
 						<div class="flex items-start justify-between gap-2">
 							<div class="min-w-0">
 								<p class="font-medium wrap-break-word text-gray-900 dark:text-white">{item.name}</p>
-								<p class="mt-1 text-sm wrap-break-word text-gray-600 dark:text-gray-300">{where(item)}</p>
+								<p class="mt-1 wrap-break-word hint">{where(item)}</p>
 								{#if item.notes}<p class="mt-1 text-xs wrap-break-word text-gray-500 dark:text-gray-400">{item.notes}</p>{/if}
 							</div>
 							<div class="shrink-0 text-right">
@@ -319,21 +309,21 @@
 	>
 		{#if formError}<Alert color="red">{formError}</Alert>{/if}
 		<div>
-			<Label for="f-name" class="mb-1">Item name</Label>
+			<Label for="f-name">Item name</Label>
 			<Input id="f-name" bind:value={form.name} maxlength={120} required class={field} />
 		</div>
 		<div class="grid gap-3 sm:grid-cols-2">
 			<div>
-				<Label for="f-cat" class="mb-1">Category</Label>
+				<Label for="f-cat">Category</Label>
 				<Select id="f-cat" items={categoryItems} bind:value={form.categoryId} class={field} />
 			</div>
 			<div>
-				<Label for="f-site" class="mb-1">Site</Label>
+				<Label for="f-site">Site</Label>
 				<Select id="f-site" items={data.sites.map((s) => ({ value: s.id, name: s.name }))} bind:value={form.siteId} class={field} />
 			</div>
 		</div>
 		<div>
-			<Label for="f-room" class="mb-1">Room</Label>
+			<Label for="f-room">Room</Label>
 			<Input id="f-room" list="room-list" bind:value={form.room} maxlength={60} required class={field} />
 			<datalist id="room-list">
 				{#each data.rooms as r (r)}<option value={r}></option>{/each}
@@ -341,20 +331,20 @@
 		</div>
 		<div class="grid gap-3 sm:grid-cols-3">
 			<div>
-				<Label for="f-shelf" class="mb-1">Shelf number</Label>
+				<Label for="f-shelf">Shelf number</Label>
 				<Input id="f-shelf" bind:value={form.shelfNumber} maxlength={30} class={field} />
 			</div>
 			<div>
-				<Label for="f-box" class="mb-1">Box number</Label>
+				<Label for="f-box">Box number</Label>
 				<Input id="f-box" bind:value={form.boxNumber} maxlength={30} class={field} />
 			</div>
 			<div>
-				<Label for="f-qty" class="mb-1">Quantity</Label>
+				<Label for="f-qty">Quantity</Label>
 				<Input id="f-qty" type="number" min="0" step="1" inputmode="numeric" bind:value={form.quantity} class={field} />
 			</div>
 		</div>
 		<div>
-			<Label for="f-notes" class="mb-1">Notes</Label>
+			<Label for="f-notes">Notes</Label>
 			<Textarea id="f-notes" rows={2} maxlength={500} bind:value={form.notes} class={field} />
 			<Helper>Optional. For example a best-before date.</Helper>
 		</div>
@@ -367,7 +357,7 @@
 
 <!-- delete item -->
 <Modal title="Delete item" open={deleteItemTarget !== null} onclose={() => (deleteItemTarget = null)} size="xs" autoclose={false}>
-	<p class="text-gray-600 dark:text-gray-300">Delete {deleteItemTarget?.name}? This can't be undone.</p>
+	<p class="muted">Delete {deleteItemTarget?.name}? This can't be undone.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={busy} onclick={removeItem}>Yes, delete</Button>
 		<Button outline color="dark" onclick={() => (deleteItemTarget = null)}>Cancel</Button>
@@ -385,11 +375,11 @@
 		}}
 	>
 		<div class="min-w-0">
-			<Label for="c-new" class="mb-1">New category</Label>
+			<Label for="c-new">New category</Label>
 			<Input id="c-new" bind:value={newCategory} maxlength={60} class={field} />
 		</div>
 		<div class="min-w-0">
-			<Label for="c-parent" class="mb-1">Inside</Label>
+			<Label for="c-parent">Inside</Label>
 			<Select id="c-parent" items={parentChoices('')} bind:value={newParent} class={field} />
 		</div>
 		<Button type="submit" color="blue" disabled={busy || !newCategory.trim()}>Add</Button>
@@ -432,7 +422,7 @@
 </Modal>
 
 <Modal title="Delete category" open={deleteCatTarget !== null} onclose={() => (deleteCatTarget = null)} size="xs" autoclose={false}>
-	<p class="text-gray-600 dark:text-gray-300">Delete the category {deleteCatTarget?.name}? A category that still has items or categories inside it can't be deleted.</p>
+	<p class="muted">Delete the category {deleteCatTarget?.name}? A category that still has items or categories inside it can't be deleted.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={busy} onclick={removeCategory}>Yes, delete</Button>
 		<Button outline color="dark" onclick={() => (deleteCatTarget = null)}>Cancel</Button>

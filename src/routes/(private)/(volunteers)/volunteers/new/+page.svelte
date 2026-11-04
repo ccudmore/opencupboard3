@@ -1,9 +1,10 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import type { PageProps } from './$types';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { Alert, Breadcrumb, BreadcrumbItem, Button, Helper, Input, Label } from 'flowbite-svelte';
-	import { ChevronDoubleRightOutline, HomeOutline } from 'flowbite-svelte-icons';
+	import { Alert, Button, Helper, Input, Label } from 'flowbite-svelte';
+	
 	import { callAction } from '$lib/client/callAction';
 
 	let { data }: PageProps = $props();
@@ -20,7 +21,6 @@
 	let error = $state('');
 
 	const field = 'block w-full max-w-full min-w-0';
-	const checkClass = 'h-5 w-5 shrink-0 cursor-pointer rounded accent-blue-600 dark:accent-blue-400';
 
 	function reset() {
 		found = null;
@@ -64,21 +64,11 @@
 
 <svelte:head><title>New volunteer</title></svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}<HomeOutline class="me-2 h-4 w-4" />{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/volunteers">
-		{#snippet icon()}<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />{/snippet}Volunteers
-	</BreadcrumbItem>
-	<BreadcrumbItem>
-		{#snippet icon()}<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />{/snippet}New
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Volunteers', href: '/volunteers' }, { label: 'New' }]} bar />
 
 <div class="mx-auto w-full max-w-xl space-y-4 p-4 sm:p-6">
-	<h1 class="text-2xl font-semibold text-gray-900 dark:text-white">New volunteer</h1>
-	<p class="text-sm text-gray-600 dark:text-gray-300">
+	<h1>New volunteer</h1>
+	<p class="hint">
 		Every volunteer has a login, so start with their email address. We check whether they already have an account.
 	</p>
 
@@ -86,7 +76,7 @@
 
 	<form class="flex items-end gap-2" onsubmit={check}>
 		<div class="min-w-0 grow">
-			<Label for="v-email" class="mb-1">Email</Label>
+			<Label for="v-email">Email</Label>
 			<Input id="v-email" type="email" required autocomplete="off" bind:value={email} oninput={() => found && reset()} class={field} />
 		</div>
 		<Button type="submit" color="blue" disabled={busy || !email.trim() || found !== null}>{busy && !found ? 'Checking…' : 'Continue'}</Button>
@@ -112,18 +102,18 @@
 		<form class="space-y-3" onsubmit={add}>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<div class="min-w-0">
-					<Label for="v-first" class="mb-1">First name</Label>
+					<Label for="v-first">First name</Label>
 					<Input id="v-first" required maxlength={100} autocomplete="off" bind:value={firstName} class={field} />
 				</div>
 				<div class="min-w-0">
-					<Label for="v-last" class="mb-1">Last name</Label>
+					<Label for="v-last">Last name</Label>
 					<Input id="v-last" required maxlength={100} autocomplete="off" bind:value={lastName} class={field} />
 				</div>
 			</div>
 
 			{#if found.kind === 'none'}
-				<label class="flex cursor-pointer items-start gap-2 text-gray-900 dark:text-gray-100">
-					<input type="checkbox" class="{checkClass} mt-0.5" bind:checked={sendInvite} disabled={!data.emailEnabled} />
+				<label class="check-label items-start">
+					<input type="checkbox" class="mt-0.5" bind:checked={sendInvite} disabled={!data.emailEnabled} />
 					<span>Email them an invitation to choose a password</span>
 				</label>
 				{#if !data.emailEnabled}

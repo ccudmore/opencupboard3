@@ -283,28 +283,28 @@
 		<h3 class={headingClass}>Details</h3>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 			<div class="min-w-0 sm:col-span-2">
-				<Label for={`title-${service.id}`} class="mb-1">Title</Label>
+				<Label for={`title-${service.id}`}>Title</Label>
 				<Input id={`title-${service.id}`} bind:value={details.title} />
 			</div>
 			<div class="min-w-0">
-				<Label for={`date-${service.id}`} class="mb-1">Date</Label>
+				<Label for={`date-${service.id}`}>Date</Label>
 				<Input id={`date-${service.id}`} type="date" bind:value={details.date} />
 			</div>
 			<div class="min-w-0">
-				<Label for={`site-${service.id}`} class="mb-1">Site</Label>
+				<Label for={`site-${service.id}`}>Site</Label>
 				<Select id={`site-${service.id}`} items={siteItems} bind:value={details.siteId} />
 			</div>
 			<div class="min-w-0">
-				<Label for={`start-${service.id}`} class="mb-1">Starts</Label>
+				<Label for={`start-${service.id}`}>Starts</Label>
 				<Input id={`start-${service.id}`} type="time" bind:value={details.startClock} />
 			</div>
 			<div class="min-w-0">
-				<Label for={`end-${service.id}`} class="mb-1">Ends</Label>
+				<Label for={`end-${service.id}`}>Ends</Label>
 				<Input id={`end-${service.id}`} type="time" bind:value={details.endClock} />
 			</div>
 			<div class="min-w-0 sm:col-span-2">
-				<Label for={`note-${service.id}`} class="mb-1">Note</Label>
-				<Textarea id={`note-${service.id}`} rows={2} class="block w-full max-w-full min-w-0" bind:value={details.note} />
+				<Label for={`note-${service.id}`}>Note</Label>
+				<Textarea id={`note-${service.id}`} rows={2} bind:value={details.note} />
 			</div>
 		</div>
 		<div class="mt-3 flex flex-wrap gap-2">
@@ -326,11 +326,11 @@
 			<h3 class="text-base font-semibold text-gray-900 dark:text-white">Appointments</h3>
 			<Badge color="green">{service.counts.open} open</Badge>
 			<Badge color="blue">{service.counts.booked} booked</Badge>
-			<span class="text-sm text-gray-600 dark:text-gray-300">of {service.counts.total}</span>
+			<span class="hint">of {service.counts.total}</span>
 		</div>
 
 		{#if service.appointments.length === 0}
-			<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">No appointments yet. Add some below.</p>
+			<p class="mb-3 hint">No appointments yet. Add some below.</p>
 		{/if}
 
 		<ul class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -360,11 +360,11 @@
 									{#if !a.past}<Button size="xs" outline color="red" onclick={() => (cancelBookingTarget = a)}>Cancel booking</Button>{/if}
 								</div>
 							{:else if a.past || cancelled}
-								<p class="text-sm text-gray-600 dark:text-gray-300">{cancelled ? 'This service date is cancelled.' : 'This appointment has passed.'}</p>
+								<p class="hint">{cancelled ? 'This service date is cancelled.' : 'This appointment has passed.'}</p>
 							{:else}
-								<Label for={`client-${a.id}`} class="mb-1">Find a client</Label>
+								<Label for={`client-${a.id}`}>Find a client</Label>
 								<Input id={`client-${a.id}`} placeholder="Name, phone, email, street or postal code" autocomplete="off" bind:value={clientQuery} oninput={() => onClientInput(a.id)} />
-								<Helper class="mt-1">Only active clients who are eligible for {service.date} are listed.</Helper>
+								<Helper class="field-help">Only active clients who are eligible for {service.date} are listed.</Helper>
 
 								{#if taken}
 									<Alert color="yellow" class="mt-3">
@@ -382,16 +382,16 @@
 									</Alert>
 								{/if}
 
-								{#if clientBusy}<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Searching…</p>{/if}
+								{#if clientBusy}<p class="mt-2 hint">Searching…</p>{/if}
 								{#if clientSearched && clientResults.length === 0 && !clientBusy}
-									<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No eligible active clients match. Clients who were booked recently aren't eligible until their next service date.</p>
+									<p class="mt-2 hint">No eligible active clients match. Clients who were booked recently aren't eligible until their next service date.</p>
 								{/if}
 								<ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
 									{#each clientResults as c (c.householdId)}
 										<li class="flex flex-wrap items-center justify-between gap-2 py-2">
 											<div class="min-w-0">
 												<div class="font-medium wrap-break-word text-gray-900 dark:text-white">{c.name}</div>
-												{#if c.detail}<div class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">{c.detail}</div>{/if}
+												{#if c.detail}<div class="wrap-break-word hint">{c.detail}</div>{/if}
 											</div>
 											<Button size="xs" color="dark" disabled={busy === `book:${c.householdId}`} onclick={() => book(a.id, c.householdId, c.name)}>
 												{busy === `book:${c.householdId}` ? 'Booking…' : 'Book'}
@@ -416,30 +416,30 @@
 			<div class="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
 				<div class="mb-2 flex flex-wrap items-center gap-3">
 					<span class="text-sm font-medium text-gray-900 dark:text-white">Add appointments</span>
-					<label class="flex items-center gap-1 text-sm text-gray-800 dark:text-gray-100"><input type="radio" name={`mode-${service.id}`} value="one" bind:group={addMode} />One</label>
-					<label class="flex items-center gap-1 text-sm text-gray-800 dark:text-gray-100"><input type="radio" name={`mode-${service.id}`} value="several" bind:group={addMode} />Several</label>
+					<label class="check-label text-sm"><input type="radio" name={`mode-${service.id}`} value="one" bind:group={addMode} />One</label>
+					<label class="check-label text-sm"><input type="radio" name={`mode-${service.id}`} value="several" bind:group={addMode} />Several</label>
 				</div>
 				<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 					<div class="min-w-0">
-						<Label for={`add-start-${service.id}`} class="mb-1">{addMode === 'one' ? 'Time' : 'First one at'}</Label>
+						<Label for={`add-start-${service.id}`}>{addMode === 'one' ? 'Time' : 'First one at'}</Label>
 						<Input id={`add-start-${service.id}`} type="time" value={startClock} oninput={(e) => (addStart = (e.currentTarget as HTMLInputElement).value)} />
 					</div>
 					<div class="min-w-0">
-						<Label for={`add-length-${service.id}`} class="mb-1">Length (minutes)</Label>
+						<Label for={`add-length-${service.id}`}>Length (minutes)</Label>
 						<Input id={`add-length-${service.id}`} type="number" min="1" max="480" bind:value={add.lengthMinutes} />
 					</div>
 					{#if addMode === 'several'}
 						<div class="min-w-0">
-							<Label for={`add-count-${service.id}`} class="mb-1">How many</Label>
+							<Label for={`add-count-${service.id}`}>How many</Label>
 							<Input id={`add-count-${service.id}`} type="number" min="1" max="100" bind:value={add.count} />
 						</div>
 						<div class="min-w-0">
-							<Label for={`add-every-${service.id}`} class="mb-1">New one every (minutes)</Label>
+							<Label for={`add-every-${service.id}`}>New one every (minutes)</Label>
 							<Input id={`add-every-${service.id}`} type="number" min="1" max="480" bind:value={add.everyMinutes} />
 						</div>
 					{/if}
 				</div>
-				{#if addError}<p class="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{addError}</p>{/if}
+				{#if addError}<p class="mt-2 error-text" role="alert">{addError}</p>{/if}
 				<div class="mt-3">
 					<Button size="sm" color="dark" disabled={busy === 'add'} onclick={addAppointments}>
 						<PlusOutline class="me-2 h-3.5 w-3.5" />{busy === 'add' ? 'Adding…' : addMode === 'one' ? 'Add appointment' : 'Add appointments'}
@@ -465,9 +465,9 @@
 					{@const people = service.volunteers.filter((v) => v.role === r.role)}
 					<div>
 						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-							<label for={`need-${service.id}-${r.role}`} class="w-40 text-sm font-medium text-gray-900 dark:text-white">{r.role}</label>
+							<label for={`need-${service.id}-${r.role}`} class="mb-0 w-40">{r.role}</label>
 							<Input id={`need-${service.id}-${r.role}`} type="number" min="0" max="50" class="w-24" bind:value={needs[r.role]} />
-							<span class="text-sm text-gray-600 dark:text-gray-300">needed · {r.filled} filled</span>
+							<span class="hint">needed · {r.filled} filled</span>
 						</div>
 						<ul class="mt-1 ms-1 space-y-1">
 							{#each people as v (v.assignmentId)}
@@ -485,11 +485,11 @@
 						{/if}
 						{#if addingRole === r.role}
 							<div class="mt-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-								<Label for={`vol-q-${service.id}`} class="mb-1">Volunteers with the {r.role} skill</Label>
+								<Label for={`vol-q-${service.id}`}>Volunteers with the {r.role} skill</Label>
 								<Input id={`vol-q-${service.id}`} placeholder="Search by name" autocomplete="off" bind:value={volunteerQuery} oninput={onVolunteerInput} />
-								{#if volunteerBusy}<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Searching…</p>{/if}
+								{#if volunteerBusy}<p class="mt-2 hint">Searching…</p>{/if}
 								{#if !volunteerBusy && volunteerResults.length === 0}
-									<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No available volunteers with this skill. Skills are set on each volunteer's page.</p>
+									<p class="mt-2 hint">No available volunteers with this skill. Skills are set on each volunteer's page.</p>
 								{/if}
 								<ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
 									{#each volunteerResults as v (v.id)}
@@ -515,7 +515,7 @@
 <!-- Confirmations -->
  <!--
 <Modal title="Cancel this service date?" bind:open={cancelOpen} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		{service.counts.booked > 0
 			? `${service.counts.booked} ${service.counts.booked === 1 ? 'client is' : 'clients are'} booked. Their bookings are not cancelled automatically; cancel them first if you want to let them know.`
 			: 'Nobody is booked.'}
@@ -529,7 +529,7 @@
 -->
 <!--
 <Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		Cancel the booking for {cancelBookingTarget?.booking?.name} at {cancelBookingTarget ? time(cancelBookingTarget.startTime) : ''}? The time becomes open again.
 	</p>
 	{#snippet footer()}
@@ -540,7 +540,7 @@
 -->
 <!--
 <Modal title="Remove this appointment?" open={deleteTarget !== null} onclose={() => (deleteTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">Remove the {deleteTarget ? range(deleteTarget) : ''} appointment? It has no bookings.</p>
+	<p class="muted">Remove the {deleteTarget ? range(deleteTarget) : ''} appointment? It has no bookings.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={busy === 'delete'} onclick={deleteAppointment}>Yes, remove it</Button>
 		<Button outline color="dark" onclick={() => (deleteTarget = null)}>Keep it</Button>
@@ -549,7 +549,7 @@
 -->
 <!--
 <Modal title="Remove this volunteer?" open={removeTarget !== null} onclose={() => (removeTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">Remove {removeTarget?.name} from this service date? You'll be asked whether to send them a cancellation email.</p>
+	<p class="muted">Remove {removeTarget?.name} from this service date? You'll be asked whether to send them a cancellation email.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={busy === 'remove-vol'} onclick={removeVolunteer}>Yes, remove</Button>
 		<Button outline color="dark" onclick={() => (removeTarget = null)}>Keep</Button>
@@ -558,28 +558,28 @@
 -->
 <!--
 <Modal title="Duplicate this service date" bind:open={duplicateOpen} size="sm">
-	<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+	<p class="mb-3 hint">
 		Copies the site, appointments and the number of volunteers needed. Bookings and the volunteers themselves are not copied.
 	</p>
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<div class="min-w-0">
-			<Label for={`dup-date-${service.id}`} class="mb-1">New date</Label>
+			<Label for={`dup-date-${service.id}`}>New date</Label>
 			<Input id={`dup-date-${service.id}`} type="date" bind:value={dup.date} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-site-${service.id}`} class="mb-1">Site</Label>
+			<Label for={`dup-site-${service.id}`}>Site</Label>
 			<Select id={`dup-site-${service.id}`} items={siteItems} bind:value={dup.siteId} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-start-${service.id}`} class="mb-1">Starts</Label>
+			<Label for={`dup-start-${service.id}`}>Starts</Label>
 			<Input id={`dup-start-${service.id}`} type="time" bind:value={dup.startClock} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-end-${service.id}`} class="mb-1">Ends</Label>
+			<Label for={`dup-end-${service.id}`}>Ends</Label>
 			<Input id={`dup-end-${service.id}`} type="time" bind:value={dup.endClock} />
 		</div>
 	</div>
-	{#if dupError}<p class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">{dupError}</p>{/if}
+	{#if dupError}<p class="mt-3 error-text" role="alert">{dupError}</p>{/if}
 	{#snippet footer()}
 		<Button color="dark" disabled={busy === 'dup'} onclick={duplicate}>{busy === 'dup' ? 'Copying…' : 'Duplicate'}</Button>
 		<Button outline color="dark" onclick={() => (duplicateOpen = false)}>Cancel</Button>

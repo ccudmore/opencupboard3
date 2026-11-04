@@ -13,6 +13,7 @@ import { hasPermission } from '$lib/utils';
       {name: "Roles", label: "Roles", href: "/admin/roles", icon: CogOutline, subContent: ""},
     ]},
     donors: {name: "Donors", label: "Donors", href: "/donors", icon: CogOutline, subContent: ""},
+    expenses: {name: "Expenses", label: "Expenses", href: "/expenses", icon: CogOutline, subContent: ""},
     inventory: {name: "Inventory", label: "Inventory", href: "/inventory", icon: CogOutline, subContent: ""},
     volunteer: {name: "Volunteer", label: "My Volunteering", href: "/volunteer", icon: AwardOutline, subContent: ""},
   }
@@ -25,6 +26,7 @@ export function getPermittedApps(permissions: string[] | null | undefined,) {
     if (hasPermission(permissions, ['manage-configuration'])) { apps.push(availableApps.admin) }
     if (hasPermission(permissions, ['manage-volunteers'])) { apps.push(availableApps.volunteers) }
     if (hasPermission(permissions, ['manage-inventory'])) { apps.push(availableApps.inventory) }
+    if (hasPermission(permissions, ['submit-expenses', 'manage-expenses'])) { apps.push(availableApps.expenses) }
     if (hasPermission(permissions, ['manage-donors'])) { apps.push(availableApps.donors) }
     if (hasPermission(permissions, ['access-volunteer'])) { apps.push(availableApps.volunteer) }
     return apps

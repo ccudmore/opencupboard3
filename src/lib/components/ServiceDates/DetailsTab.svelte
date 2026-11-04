@@ -87,28 +87,28 @@
 	<h3 class={headingClass}>Details</h3>
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<div class="min-w-0 sm:col-span-2">
-			<Label for={`title-${service.id}`} class="mb-1">Title</Label>
+			<Label for={`title-${service.id}`}>Title</Label>
 			<Input id={`title-${service.id}`} bind:value={details.title} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`date-${service.id}`} class="mb-1">Date</Label>
+			<Label for={`date-${service.id}`}>Date</Label>
 			<Input id={`date-${service.id}`} type="date" bind:value={details.date} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`site-${service.id}`} class="mb-1">Site</Label>
+			<Label for={`site-${service.id}`}>Site</Label>
 			<Select id={`site-${service.id}`} items={siteItems} bind:value={details.siteId} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`start-${service.id}`} class="mb-1">Starts</Label>
+			<Label for={`start-${service.id}`}>Starts</Label>
 			<Input id={`start-${service.id}`} type="time" bind:value={details.startClock} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`end-${service.id}`} class="mb-1">Ends</Label>
+			<Label for={`end-${service.id}`}>Ends</Label>
 			<Input id={`end-${service.id}`} type="time" bind:value={details.endClock} />
 		</div>
 		<div class="min-w-0 sm:col-span-2">
-			<Label for={`note-${service.id}`} class="mb-1">Note</Label>
-			<Textarea id={`note-${service.id}`} rows={2} class="block w-full max-w-full min-w-0" bind:value={details.note} />
+			<Label for={`note-${service.id}`}>Note</Label>
+			<Textarea id={`note-${service.id}`} rows={2} bind:value={details.note} />
 		</div>
 	</div>
 	<div class="mt-3 flex flex-wrap gap-2">
@@ -124,7 +124,7 @@
 
 <!-- Confirmations -->
 <Modal title="Cancel this service date?" bind:open={cancelOpen} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		{service.counts.booked > 0
 			? `${service.counts.booked} ${service.counts.booked === 1 ? 'client is' : 'clients are'} booked. Their bookings are not cancelled automatically; cancel them first if you want to let them know.`
 			: 'Nobody is booked.'}
@@ -137,28 +137,28 @@
 </Modal>
 
 <Modal title="Duplicate this service date" bind:open={duplicateOpen} size="sm">
-	<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+	<p class="mb-3 hint">
 		Copies the site, appointments and the number of volunteers needed. Bookings and the volunteers themselves are not copied.
 	</p>
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<div class="min-w-0">
-			<Label for={`dup-date-${service.id}`} class="mb-1">New date</Label>
+			<Label for={`dup-date-${service.id}`}>New date</Label>
 			<Input id={`dup-date-${service.id}`} type="date" bind:value={dup.date} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-site-${service.id}`} class="mb-1">Site</Label>
+			<Label for={`dup-site-${service.id}`}>Site</Label>
 			<Select id={`dup-site-${service.id}`} items={siteItems} bind:value={dup.siteId} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-start-${service.id}`} class="mb-1">Starts</Label>
+			<Label for={`dup-start-${service.id}`}>Starts</Label>
 			<Input id={`dup-start-${service.id}`} type="time" bind:value={dup.startClock} />
 		</div>
 		<div class="min-w-0">
-			<Label for={`dup-end-${service.id}`} class="mb-1">Ends</Label>
+			<Label for={`dup-end-${service.id}`}>Ends</Label>
 			<Input id={`dup-end-${service.id}`} type="time" bind:value={dup.endClock} />
 		</div>
 	</div>
-	{#if dupError}<p class="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">{dupError}</p>{/if}
+	{#if dupError}<p class="mt-3 error-text" role="alert">{dupError}</p>{/if}
 	{#snippet footer()}
 		<Button color="dark" disabled={runner.busy === 'dup'} onclick={duplicate}>{runner.busy === 'dup' ? 'Copying…' : 'Duplicate'}</Button>
 		<Button outline color="dark" onclick={() => (duplicateOpen = false)}>Cancel</Button>

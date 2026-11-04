@@ -1,21 +1,9 @@
 <script lang="ts">
+	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
-	import {
-		Badge,
-		Button,
-		Search,
-		Select,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell,
-		Breadcrumb,
-		BreadcrumbItem
-	} from 'flowbite-svelte';
-	import { PlusOutline, HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
+	import { Badge, Button, Search, Select, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import { PlusOutline } from 'flowbite-svelte-icons';
 	import SearchPagination from '$lib/components/SearchPagination.svelte';
 
 	let { data } = $props();
@@ -58,19 +46,7 @@
 	<title>Volunteers</title>
 </svelte:head>
 
-<Breadcrumb class="bg-gray-50 px-5 py-3 dark:bg-gray-900">
-	<BreadcrumbItem href="/" home>
-		{#snippet icon()}
-			<HomeOutline class="me-2 h-4 w-4" />
-		{/snippet}Home
-	</BreadcrumbItem>
-	<BreadcrumbItem href="/volunteers">
-		{#snippet icon()}
-			<ChevronDoubleRightOutline class="mx-2 h-5 w-5 dark:text-white" />
-		{/snippet}
-		Volunteers
-	</BreadcrumbItem>
-</Breadcrumb>
+<PageBreadcrumb items={[{ label: 'Volunteers', href: '/volunteers' }]} bar />
 
 <Section name="advancedTable" sectionClass="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
 	<div class="overflow-hidden bg-white shadow-md sm:rounded-lg dark:bg-gray-800">
@@ -101,18 +77,18 @@
 			<div class="hidden md:block">
 				<Table hoverable={true}>
 					<TableHead>
-						<TableHeadCell class="px-4 py-3" scope="col">Name</TableHeadCell>
-						<TableHeadCell class="px-4 py-3" scope="col">Phone</TableHeadCell>
-						<TableHeadCell class="px-4 py-3" scope="col">Email</TableHeadCell>
-						<TableHeadCell class="px-4 py-3" scope="col">City</TableHeadCell>
+						<TableHeadCell scope="col">Name</TableHeadCell>
+						<TableHeadCell scope="col">Phone</TableHeadCell>
+						<TableHeadCell scope="col">Email</TableHeadCell>
+						<TableHeadCell scope="col">City</TableHeadCell>
 					</TableHead>
 					<TableBody class="divide-y">
 						{#each data.volunteers as v (v.id)}
 							<TableBodyRow class="cursor-pointer" onclick={() => goto(`/volunteers/${v.id}`)}>
-								<TableBodyCell class="px-4 py-3">{v.lastName}, {v.firstName}{#if v.status === 'ARCHIVED'} <Badge color="yellow" class="ms-1">Archived</Badge>{/if}</TableBodyCell>
-								<TableBodyCell class="px-4 py-3">{v.phone1 ?? ''}</TableBodyCell>
-								<TableBodyCell class="px-4 py-3">{v.user.email}</TableBodyCell>
-								<TableBodyCell class="px-4 py-3">{v.city ?? ''}</TableBodyCell>
+								<TableBodyCell>{v.lastName}, {v.firstName}{#if v.status === 'ARCHIVED'} <Badge color="yellow" class="ms-1">Archived</Badge>{/if}</TableBodyCell>
+								<TableBodyCell>{v.phone1 ?? ''}</TableBodyCell>
+								<TableBodyCell>{v.user.email}</TableBodyCell>
+								<TableBodyCell>{v.city ?? ''}</TableBodyCell>
 							</TableBodyRow>
 						{/each}
 					</TableBody>
@@ -126,12 +102,12 @@
 						<a href={`/volunteers/${v.id}`} class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
 							<div class="truncate font-semibold text-gray-900 dark:text-white">{v.firstName} {v.lastName}{#if v.status === 'ARCHIVED'} (archived){/if}</div>
 							{#if v.phone1 || v.user.email}
-								<div class="mt-0.5 truncate text-sm text-gray-600 dark:text-gray-300">
+								<div class="mt-0.5 truncate hint">
 									{[v.phone1, v.user.email].filter(Boolean).join(' · ')}
 								</div>
 							{/if}
 							{#if v.city}
-								<div class="truncate text-sm text-gray-600 dark:text-gray-300">{v.city}</div>
+								<div class="truncate hint">{v.city}</div>
 							{/if}
 						</a>
 					</li>

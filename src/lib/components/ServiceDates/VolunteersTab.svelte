@@ -99,9 +99,9 @@
 				{@const people = service.volunteers.filter((v) => v.role === r.role)}
 				<div>
 					<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-						<label for={`need-${service.id}-${r.role}`} class="w-40 text-sm font-medium text-gray-900 dark:text-white">{r.role}</label>
+						<label for={`need-${service.id}-${r.role}`} class="mb-0 w-40">{r.role}</label>
 						<Input id={`need-${service.id}-${r.role}`} type="number" min="0" max="50" class="w-24" bind:value={needs[r.role]} />
-						<span class="text-sm text-gray-600 dark:text-gray-300">needed · {r.filled} filled</span>
+						<span class="hint">needed · {r.filled} filled</span>
 					</div>
 					<ul class="mt-1 ms-1 space-y-1">
 						{#each people as v (v.assignmentId)}
@@ -119,11 +119,11 @@
 					{/if}
 					{#if addingRole === r.role}
 						<div class="mt-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-							<Label for={`vol-q-${service.id}`} class="mb-1">Volunteers with the {r.role} skill</Label>
+							<Label for={`vol-q-${service.id}`}>Volunteers with the {r.role} skill</Label>
 							<Input id={`vol-q-${service.id}`} placeholder="Search by name" autocomplete="off" bind:value={volunteerQuery} oninput={onVolunteerInput} />
-							{#if volunteerBusy}<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Searching…</p>{/if}
+							{#if volunteerBusy}<p class="mt-2 hint">Searching…</p>{/if}
 							{#if !volunteerBusy && volunteerResults.length === 0}
-								<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No available volunteers with this skill. Skills are set on each volunteer's page.</p>
+								<p class="mt-2 hint">No available volunteers with this skill. Skills are set on each volunteer's page.</p>
 							{/if}
 							<ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
 								{#each volunteerResults as v (v.id)}
@@ -145,7 +145,7 @@
 {/if}
 
 <Modal title="Remove this volunteer?" open={removeTarget !== null} onclose={() => (removeTarget = null)} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">Remove {removeTarget?.name} from this service date? You'll be asked whether to send them a cancellation email.</p>
+	<p class="muted">Remove {removeTarget?.name} from this service date? You'll be asked whether to send them a cancellation email.</p>
 	{#snippet footer()}
 		<Button color="red" disabled={runner.busy === 'remove-vol'} onclick={removeVolunteer}>Yes, remove</Button>
 		<Button outline color="dark" onclick={() => (removeTarget = null)}>Keep</Button>

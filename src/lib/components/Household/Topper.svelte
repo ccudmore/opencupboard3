@@ -45,7 +45,7 @@
 							<div class="text-xl font-bold leading-tight text-gray-900 dark:text-white">
 								{member.firstName} {member.lastName}
 							</div>
-							<div class="truncate text-sm text-gray-600 dark:text-gray-300">
+							<div class="truncate hint">
 								{[member.phone, member.email].filter(Boolean).join(" · ")}
 							</div>
 						</li>

@@ -28,8 +28,6 @@
 		{ value: 'INACTIVE', name: 'Inactive' }
 	];
 	const MIN_PASSWORD = 8;
-
-	const checkClass = 'h-5 w-5 shrink-0 cursor-pointer rounded accent-primary-600 dark:accent-primary-400';
 	const drawerClass =
 		'max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white';
 
@@ -206,18 +204,18 @@
 	<div class="hidden md:block">
 		<Table hoverable={true}>
 			<TableHead>
-				<TableHeadCell class="px-4 py-3" scope="col">Name</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Email</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Roles</TableHeadCell>
-				<TableHeadCell class="px-4 py-3" scope="col">Status</TableHeadCell>
+				<TableHeadCell scope="col">Name</TableHeadCell>
+				<TableHeadCell scope="col">Email</TableHeadCell>
+				<TableHeadCell scope="col">Roles</TableHeadCell>
+				<TableHeadCell scope="col">Status</TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
 				{#each data.users as user (user.id)}
 					<TableBodyRow class="cursor-pointer" onclick={() => openEdit(user)}>
-						<TableBodyCell class="px-4 py-3">{user.name}</TableBodyCell>
-						<TableBodyCell class="px-4 py-3">{user.email}</TableBodyCell>
-						<TableBodyCell class="px-4 py-3">{@render roleBadges(user)}</TableBodyCell>
-						<TableBodyCell class="px-4 py-3">
+						<TableBodyCell>{user.name}</TableBodyCell>
+						<TableBodyCell>{user.email}</TableBodyCell>
+						<TableBodyCell>{@render roleBadges(user)}</TableBodyCell>
+						<TableBodyCell>
 							<Badge color={user.status === 'ACTIVE' ? 'green' : 'gray'}>{statusName(user.status)}</Badge>
 						</TableBodyCell>
 					</TableBodyRow>
@@ -234,7 +232,7 @@
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
 							<div class="truncate font-semibold text-gray-900 dark:text-white">{user.name}</div>
-							<div class="truncate text-sm text-gray-600 dark:text-gray-300">{user.email}</div>
+							<div class="truncate hint">{user.email}</div>
 						</div>
 						<Badge color={user.status === 'ACTIVE' ? 'green' : 'gray'}>{statusName(user.status)}</Badge>
 					</div>
@@ -252,32 +250,32 @@
 <!-- ============================ New user ============================ -->
 <Drawer placement="bottom" bind:open={newOpen} class={drawerClass}>
 	<div class="mx-auto w-full max-w-3xl min-w-0 space-y-5 px-4 pt-2 pb-8">
-		<h3 class="text-lg font-semibold">New user</h3>
+		<h3>New user</h3>
 
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			<div class="min-w-0">
-				<Label for="new-name" class="mb-2">Name</Label>
+				<Label for="new-name">Name</Label>
 				<Input id="new-name" autocomplete="off" maxlength={100} bind:value={newName} onkeydown={ignoreEnter} />
 			</div>
 			<div class="min-w-0">
-				<Label for="new-email" class="mb-2">Email</Label>
+				<Label for="new-email">Email</Label>
 				<Input id="new-email" type="email" autocomplete="off" bind:value={newEmail} onkeydown={ignoreEnter} />
 			</div>
 			<div class="min-w-0 md:col-span-2">
-				<Label for="new-password" class="mb-2">Password (optional)</Label>
+				<Label for="new-password">Password (optional)</Label>
 				<Input id="new-password" type="password" autocomplete="new-password" bind:value={newPassword} onkeydown={ignoreEnter} />
-				<Helper class="mt-1">
+				<Helper class="field-help">
 					At least {MIN_PASSWORD} characters. Leave it empty if they will sign in with Google or Microsoft.
 				</Helper>
 			</div>
 		</div>
 
 		<fieldset>
-			<legend class="mb-2 text-sm font-medium">Roles</legend>
+			<legend>Roles</legend>
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 				{#each data.roles as role (role.id)}
-					<label class="flex cursor-pointer items-center gap-2 text-gray-900 dark:text-gray-100">
-						<input type="checkbox" class={checkClass} checked={newRoleIds.includes(role.id)} onchange={(e) => (newRoleIds = toggle(newRoleIds, role.id, e.currentTarget.checked))} />
+					<label class="check-label">
+						<input type="checkbox" checked={newRoleIds.includes(role.id)} onchange={(e) => (newRoleIds = toggle(newRoleIds, role.id, e.currentTarget.checked))} />
 						{role.name}{role.status === 'ACTIVE' ? '' : ' (inactive)'}
 					</label>
 				{/each}
@@ -285,7 +283,7 @@
 		</fieldset>
 
 		{#if newError}
-			<p class="text-sm text-red-600 dark:text-red-400" role="alert">{newError}</p>
+			<p class="error-text" role="alert">{newError}</p>
 		{/if}
 
 		<div class="flex gap-2">
@@ -302,12 +300,12 @@
 	{#if editing}
 		<div class="mx-auto w-full max-w-3xl min-w-0 space-y-6 px-4 pt-2 pb-8">
 			<div>
-				<h3 class="text-lg font-semibold">{editing.name}{isSelf ? ' (you)' : ''}</h3>
-				<p class="text-sm wrap-break-word text-gray-600 dark:text-gray-300">{editing.email} · added {fmtDate(editing.createdAt)}</p>
+				<h3>{editing.name}{isSelf ? ' (you)' : ''}</h3>
+				<p class="wrap-break-word hint">{editing.email} · added {fmtDate(editing.createdAt)}</p>
 			</div>
 
 			{#if editError}
-				<p class="text-sm text-red-600 dark:text-red-400" role="alert">{editError}</p>
+				<p class="error-text" role="alert">{editError}</p>
 			{/if}
 
 			<!-- Status -->
@@ -329,8 +327,8 @@
 				<h4 class="text-sm font-medium">Roles</h4>
 				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 					{#each data.roles as role (role.id)}
-						<label class="flex cursor-pointer items-center gap-2 text-gray-900 dark:text-gray-100">
-							<input type="checkbox" class={checkClass} checked={editRoleIds.includes(role.id)} onchange={(e) => (editRoleIds = toggle(editRoleIds, role.id, e.currentTarget.checked))} />
+						<label class="check-label">
+							<input type="checkbox" checked={editRoleIds.includes(role.id)} onchange={(e) => (editRoleIds = toggle(editRoleIds, role.id, e.currentTarget.checked))} />
 							{role.name}{role.status === 'ACTIVE' ? '' : ' (inactive)'}
 						</label>
 					{/each}
@@ -345,11 +343,11 @@
 				<h4 class="text-sm font-medium">Change password</h4>
 				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<div class="min-w-0">
-						<Label for="pw" class="mb-1">New password</Label>
+						<Label for="pw">New password</Label>
 						<Input id="pw" type="password" autocomplete="new-password" bind:value={password} onkeydown={ignoreEnter} />
 					</div>
 					<div class="min-w-0">
-						<Label for="pw2" class="mb-1">Confirm password</Label>
+						<Label for="pw2">Confirm password</Label>
 						<Input id="pw2" type="password" autocomplete="new-password" bind:value={confirm} onkeydown={ignoreEnter} />
 					</div>
 				</div>

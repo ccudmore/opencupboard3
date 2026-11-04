@@ -38,6 +38,7 @@ model User {
   roles         UserRole[]
   volunteer	Volunteer?
   notifications Notification[]
+  expenses      Expense[]     @relation("ExpenseSubmitter")
 
   @@unique([email])
   @@map("user")
@@ -502,4 +503,83 @@ model InventoryItem {
   @@index([categoryId])
   @@index([siteId])
   @@map("inventory_item")
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REIMBURSED
+}
+
+enum ExpensePaymentMethod {
+  CASH
+  PERSONAL_CARD
+  ORG_CARD
+  OTHER
+}
+
+enum ExpenseCategory {
+  DAIRY
+  EGGS
+  MEAT
+  OIL_MARGARINE
+  FORMULA
+  DIAPERS
+  OTHER_FOOD
+  OTHER_NON_FOOD
+  TAX
+  OTHER
+}
+
+enum ReimbursementMethod {
+  CASH
+  CHEQUE
+  E_TRANSFER
+  DIRECT_DEPOSIT
+  OTHER
+}
+
+model Expense {
+  id                  String               @id @default(cuid())
+  submittedBy         User                 @relation("ExpenseSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  submittedById       String
+  purchaseDate        DateTime             @db.Date
+  vendor              String
+  description         String
+  amountCents         Int // total paid, in cents
+  taxCents            Int? // of which tax, in cents
+  categories          ExpenseCategory[]
+  categoryOther       String? // what "Other" means, when Other is chosen
+  paymentMethod       ExpensePaymentMethod
+  notes               String?
+  status              ExpenseStatus        @default(PENDING)
+  reviewedBy          String? // user id of the manager who last decided
+  reviewedAt          DateTime?
+  reviewNote          String?
+  reimbursedOn        DateTime?            @db.Date
+  reimbursementMethod ReimbursementMethod?
+  reimbursementNote   String?
+  receipts            ExpenseReceipt[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([submittedById])
+  @@index([status])
+  @@index([purchaseDate])
+  @@map("expense")
+}
+
+model ExpenseReceipt {
+  id          String   @id @default(cuid())
+  expense     Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  expenseId   String
+  name        String // the file name people see
+  contentType String // chosen by the server from the file type, never taken from the browser
+  size        Int // bytes
+  content     Bytes
+  createdAt   DateTime @default(now())
+
+  @@index([expenseId])
+  @@map("expense_receipt")
 }

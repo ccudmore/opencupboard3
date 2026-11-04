@@ -49,7 +49,6 @@
 	const choiceOff =
 		'border-gray-300 bg-white text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700';
 	const radioClass = 'h-5 w-5 shrink-0 cursor-pointer accent-primary-600 dark:accent-primary-400';
-	const checkClass = 'h-5 w-5 shrink-0 cursor-pointer rounded accent-primary-600 dark:accent-primary-400';
 
 	let emailPrompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 
@@ -395,7 +394,7 @@
 
 <!-- Heading and action, shared by both layouts -->
 <div class="flex flex-wrap items-center justify-between gap-2 bg-white px-5 pb-3 pt-3 dark:bg-gray-800">
-	<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Appointments</h2>
+	<h2>Appointments</h2>
 	<Button type="button" outline color="dark" onclick={openNew}>New Booking</Button>
 </div>
 
@@ -438,7 +437,7 @@
 						<Badge color={statusColor(b.status)}>{statusName(b.status)}</Badge>
 					</div>
 					{#if siteNameOf(b)}
-						<div class="text-sm text-gray-600 dark:text-gray-300">{siteNameOf(b)}</div>
+						<div class="hint">{siteNameOf(b)}</div>
 					{/if}
 					<div class="mt-2">{@render sentBadges(b)}</div>
 				</button>
@@ -455,11 +454,11 @@
 	class="max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white"
 >
 	<div class="mx-auto w-full max-w-5xl min-w-0 space-y-5 px-4 pb-8 pt-2">
-		<h3 class="text-lg font-semibold">New booking</h3>
+		<h3>New booking</h3>
 
 		<!-- 1. Service date -->
 		<fieldset>
-			<legend class="mb-2 text-sm font-medium">Service date</legend>
+			<legend>Service date</legend>
 			<div class="max-h-64 space-y-2 overflow-y-auto pr-1">
 				<label
 					class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 {selectedService === UNSCHEDULED
@@ -476,7 +475,7 @@
 					/>
 					<span class="flex-1">
 						<span class="block font-medium">Unscheduled</span>
-						<span class="block text-sm text-gray-600 dark:text-gray-300">
+						<span class="block hint">
 							No appointment time. You can still note a date, time and location.
 						</span>
 					</span>
@@ -500,7 +499,7 @@
 							<span class="block font-medium">
 								{fmtDate(s.startTime)}, {fmtTime(s.startTime)} &ndash; {fmtTime(s.endTime)}
 							</span>
-							<span class="block text-sm text-gray-600 dark:text-gray-300">
+							<span class="block hint">
 								{[s.title, s.location.name].filter(Boolean).join(' · ')}
 							</span>
 						</span>
@@ -509,24 +508,24 @@
 				{/each}
 			</div>
 			{#if services.length === 0}
-				<Helper class="mt-2">No future service dates have open appointments.</Helper>
+				<Helper class="field-help">No future service dates have open appointments.</Helper>
 			{/if}
 		</fieldset>
 
 		<!-- 2a. Unscheduled: optional date, time and location -->
 		{#if selectedService === UNSCHEDULED}
 			<fieldset class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-				<legend class="mb-2 text-sm font-medium">Planned date, time and location (optional)</legend>
+				<legend>Planned date, time and location (optional)</legend>
 				<div class="min-w-0">
-					<Label class="mb-2">Date</Label>
+					<Label>Date</Label>
 					<Datepicker bind:value={plannedDate} locale="en-CA" firstDayOfWeek={1} inputClass="w-full" />
 				</div>
 				<div class="min-w-0">
-					<Label for="planned-time" class="mb-2">Time</Label>
+					<Label for="planned-time">Time</Label>
 					<Input id="planned-time" type="time" bind:value={plannedTime} onkeydown={ignoreEnter} />
 				</div>
 				<div class="min-w-0">
-					<Label for="planned-site" class="mb-2">Location</Label>
+					<Label for="planned-site">Location</Label>
 					<Select id="planned-site" items={siteItems} bind:value={plannedSiteId} />
 				</div>
 				{#if plannedIncomplete}
@@ -545,8 +544,8 @@
 					<span class="font-semibold">Before this household is eligible.</span>
 					This household is next eligible on {fmtDate(eligibleDate)}, and this date is earlier.
 				</p>
-				<label class="mt-3 flex cursor-pointer items-center gap-2 font-medium">
-					<input type="checkbox" class={checkClass} bind:checked={acknowledgedEarly} />
+				<label class="check-label mt-3 font-medium">
+					<input type="checkbox" bind:checked={acknowledgedEarly} />
 					I understand, book it anyway
 				</label>
 			</div>
@@ -555,7 +554,7 @@
 		<!-- 3. Time -->
 		{#if service}
 			<fieldset>
-				<legend class="mb-2 text-sm font-medium">Time</legend>
+				<legend>Time</legend>
 				<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
 					{#each service.appointments as a (a.id)}
 						<label
@@ -580,18 +579,17 @@
 
 		<!-- 4. Special request -->
 		<div class="min-w-0">
-			<Label for="new-request" class="mb-2">Special request (optional)</Label>
+			<Label for="new-request">Special request (optional)</Label>
 			<Textarea
 				id="new-request"
 				rows={3}
-				class="block w-full max-w-full min-w-0"
 				maxlength={MAX_REQUEST_LENGTH}
 				bind:value={newRequest}
 			/>
 		</div>
 
 		{#if newError}
-			<p class="text-sm text-red-600 dark:text-red-400" role="alert">{newError}</p>
+			<p class="error-text" role="alert">{newError}</p>
 		{/if}
 
 		<div class="flex gap-2">
@@ -612,48 +610,47 @@
 	{#if editing}
 		<div class="mx-auto w-full max-w-5xl min-w-0 space-y-5 px-4 pb-8 pt-2">
 			<div>
-				<h3 class="text-lg font-semibold">{whenText(editing)}</h3>
+				<h3>{whenText(editing)}</h3>
 				{#if editing.appointment}
-					<p class="text-sm text-gray-600 dark:text-gray-300">
+					<p class="hint">
 						{[editing.appointment.event.title, editing.appointment.event.location.name].filter(Boolean).join(' · ')}
 					</p>
 				{/if}
 			</div>
 
 			<div class="max-w-xs">
-				<Label for="edit-status" class="mb-2">Status</Label>
+				<Label for="edit-status">Status</Label>
 				<Select id="edit-status" items={appointmentBookingStatusOptions} bind:value={editStatus} />
 			</div>
 
 			<!-- Unscheduled bookings can note a planned date, time and location -->
 			{#if !editing.appointment}
 				<fieldset class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<legend class="mb-2 text-sm font-medium">Planned date, time and location</legend>
+					<legend>Planned date, time and location</legend>
 					<div class="min-w-0">
-						<Label class="mb-2">Date</Label>
+						<Label>Date</Label>
 						<Datepicker bind:value={editDate} locale="en-CA" firstDayOfWeek={1} inputClass="w-full" />
 					</div>
 					<div class="min-w-0">
-						<Label for="edit-time" class="mb-2">Time</Label>
+						<Label for="edit-time">Time</Label>
 						<Input id="edit-time" type="time" bind:value={editTime} onkeydown={ignoreEnter} />
 					</div>
 					<div class="min-w-0">
-						<Label for="edit-site" class="mb-2">Location</Label>
+						<Label for="edit-site">Location</Label>
 						<Select id="edit-site" items={siteItems} bind:value={editSiteId} />
 					</div>
 				</fieldset>
 			{/if}
 
 			<div class="min-w-0">
-				<Label for="edit-request" class="mb-2">Special request</Label>
+				<Label for="edit-request">Special request</Label>
 				<Textarea
 					id="edit-request"
 					rows={3}
-					class="block w-full max-w-full min-w-0"
 					maxlength={MAX_REQUEST_LENGTH}
 					bind:value={editRequest}
 				/>
-				<Helper class="mt-1">Clear the text to remove the special request.</Helper>
+				<Helper class="field-help">Clear the text to remove the special request.</Helper>
 			</div>
 
 			<!-- When the emails were sent -->
@@ -663,7 +660,7 @@
 					<div class="min-w-0">
 						<h4 class="mb-1 text-sm font-medium">{k.label} emails</h4>
 						{#if sends.length === 0}
-							<p class="text-sm text-gray-600 dark:text-gray-300">Not sent yet.</p>
+							<p class="hint">Not sent yet.</p>
 						{:else}
 							<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-200">
 								{#each sends.toReversed() as e, i (i)}
@@ -678,7 +675,7 @@
 			</div>
 
 			{#if editError}
-				<p class="text-sm text-red-600 dark:text-red-400" role="alert">{editError}</p>
+				<p class="error-text" role="alert">{editError}</p>
 			{/if}
 
 			<div class="flex flex-wrap gap-2">
@@ -709,7 +706,7 @@
 </Drawer>
 
 <Modal title="Delete booking" bind:open={confirmDeleteOpen} size="xs">
-	<p class="text-gray-600 dark:text-gray-300">
+	<p class="muted">
 		Delete this booking? Its special request is deleted with it, and the appointment becomes available again.
 	</p>
 	{#snippet footer()}
