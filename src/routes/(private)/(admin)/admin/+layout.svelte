@@ -2,14 +2,15 @@
 	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
 	import { page } from '$app/state';
 	
-	import { UsersGroupSolid, AwardOutline } from 'flowbite-svelte-icons';
+	import { UsersGroupSolid, AwardOutline, MapPinOutline } from 'flowbite-svelte-icons';
 
 	let { children } = $props();
 
 	// One tab per admin component. Add new ones here and under src/routes/(private)/(admin)/admin/.
 	const tabs = [
 		{ href: '/admin/users', label: 'Users', icon: UsersGroupSolid },
-		{ href: '/admin/roles', label: 'Roles', icon: AwardOutline }
+		{ href: '/admin/roles', label: 'Roles', icon: AwardOutline },
+		{ href: '/admin/sites', label: 'Sites', icon: MapPinOutline }
 	];
 
 	const isActive = (href: string) => page.url.pathname === href || page.url.pathname.startsWith(href + '/');

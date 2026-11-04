@@ -11,6 +11,7 @@ import { hasPermission } from '$lib/utils';
     submenus: [
       {name: "Users", label: "Users", href: "/admin/users", icon: CogOutline, subContent: ""},
       {name: "Roles", label: "Roles", href: "/admin/roles", icon: CogOutline, subContent: ""},
+      {name: "Sites", label: "Sites", href: "/admin/sites", icon: CogOutline, subContent: ""},
     ]},
     donors: {name: "Donors", label: "Donors", href: "/donors", icon: CogOutline, subContent: ""},
     expenses: {name: "Expenses", label: "Expenses", href: "/expenses", icon: CogOutline, subContent: ""},
