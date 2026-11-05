@@ -30,7 +30,7 @@ let prompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 	/** Offers to email the attendees of an event that was just added. */
 	function offerConfirmation(ev: CalendarEvent) {
 		const hasPeople = (ev.volunteers?.length ?? 0) > 0 || (ev.guests ?? []).some((g) => g.email);
-		if (hasPeople) void prompts?.start(ev.id, 'confirmation', true);
+		if (ev.id && hasPeople) void prompts?.start(ev.id, 'confirmation', true);
 	}
 
 	/** Sends one change set to the named action in +page.server.ts. Returns whether it saved. */
@@ -75,7 +75,9 @@ let prompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 		bind:hiddenCategories={hidden}
 		mode={data.mode}
 		emailEnabled={data.emailEnabled}
-		onemail={(ev, kind, occurrence) => prompts?.start(ev.id, kind, false, { occurrence })}
+		onemail={(ev, kind, occurrence) => {
+			if (ev.id) void prompts?.start(ev.id, kind, false, { occurrence });
+		}}
 		onadd={async (ev, changes) => {
 			if (await send('add', changes)) offerConfirmation(ev);
 		}}
