@@ -1,3 +1,4 @@
+import { eventPlace } from '$lib/eventLocation';
 import { Prisma } from '$prisma/client';
 import { EventStatus, VolunteerAssignmentsStatus } from '$prisma/enums';
 import prisma from '$lib/prisma';
@@ -98,7 +99,7 @@ export async function openShiftsFor(volunteer: { id: string; skills: string[] })
 			note: e.note,
 			startTime: e.startTime,
 			endTime: e.endTime,
-			location: e.location.name,
+			location: eventPlace(e),
 			spots
 		});
 	}
@@ -235,7 +236,7 @@ export async function shiftBoard() {
 			type: e.type,
 			startTime: e.startTime,
 			endTime: e.endTime,
-			location: e.location.name,
+			location: eventPlace(e),
 			roles: rolesFor(e.type).map((role) => ({
 				role,
 				required: e.needs.find((n) => n.role === role)?.count ?? 0,

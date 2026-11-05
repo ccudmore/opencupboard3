@@ -195,7 +195,7 @@
 		if (!editing) return [];
 		const roles = rolesFor(editing.type);
 		if (editing.role && !roles.includes(editing.role)) roles.push(editing.role);
-		return roles.length === 0 ? [] : [{ value: '', name: 'No role' }, ...roles.map((r) => ({ value: r, name: r }))];
+		return roles.length === 0 ? [] : [{ value: '', name: 'Attendee' }, ...roles.map((r) => ({ value: r, name: r }))];
 	});
 
 	function openEdit(a: Assignment) {

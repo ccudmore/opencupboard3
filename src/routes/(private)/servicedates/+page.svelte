@@ -143,6 +143,7 @@
 									timeZone={data.timeZone}
 									emailEnabled={data.emailEnabled}
 									canManageVolunteers={data.canManageVolunteers}
+									initialTab={data.focus && s.date === data.focus ? data.tab : 'details'}
 									onopen={openAfterDuplicate}
 								/>
 							</div>

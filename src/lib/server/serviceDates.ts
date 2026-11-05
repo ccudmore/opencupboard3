@@ -117,8 +117,8 @@ export async function loadServiceDates(showPast: boolean, timeZone: string) {
 			startClock: local.time,
 			endClock: zonedParts(e.endTime, timeZone).time,
 			past: e.endTime < now,
-			siteId: e.location.id,
-			siteName: e.location.name,
+			siteId: e.location?.id ?? '',
+			siteName: e.location?.name ?? '',
 			appointments,
 			counts: { total: appointments.length, booked, open: appointments.length - booked },
 			roles: roles.map((role) => ({
@@ -246,7 +246,7 @@ export async function addAppointments(eventId: string, fields: Record<string, st
 	if (clash) return fail(409, `There is already an appointment at ${fmt(clash.start)}.`);
 
 	await prisma.appointment.createMany({
-		data: slots.map((s) => ({ eventId, siteId: event.locationId, startTime: s.start, endTime: s.end, createdBy: userId }))
+		data: slots.map((s) => ({ eventId, siteId: event.locationId ?? undefined, startTime: s.start, endTime: s.end, createdBy: userId }))
 	});
 	return { ok: true, added: slots.length };
 }
@@ -417,7 +417,7 @@ export async function duplicateServiceDate(sourceId: string, fields: Record<stri
 	const source = await prisma.event.findFirst({ where: { id: sourceId, type: SERVICE_TYPE }, include: { needs: true, appointments: true } });
 	if (!source) return fail(404, 'That service date no longer exists.');
 
-	const d = readDetails({ ...fields, siteId: fields.siteId || source.locationId, title: fields.title ?? '' }, timeZone);
+	const d = readDetails({ ...fields, siteId: fields.siteId || source.locationId || '', title: fields.title ?? '' }, timeZone);
 	if (!d.ok) return d;
 	if (!(await siteExists(d.siteId))) return fail(400, 'That site does not exist.');
 

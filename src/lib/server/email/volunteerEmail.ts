@@ -47,7 +47,8 @@ export function buildVars(a: EmailAssignment, options: { organization: string; t
 	const dateFormat = new Intl.DateTimeFormat('en-CA', { dateStyle: 'full', timeZone: options.timeZone });
 	const timeFormat = new Intl.DateTimeFormat('en-CA', { timeStyle: 'short', timeZone: options.timeZone });
 	const loc = a.event.location;
-	const address = [streetWithUnit(loc.street, loc.unitNumber), loc.city].filter(Boolean).join(', ');
+	const address = loc ? [streetWithUnit(loc.street, loc.unitNumber), loc.city].filter(Boolean).join(', ') : '';
+	const locationName = loc?.name ?? a.event.locationText ?? '';
 	const note = a.event.note?.trim() ?? '';
 
 	return {
@@ -61,8 +62,8 @@ export function buildVars(a: EmailAssignment, options: { organization: string; t
 		date: dateFormat.format(a.event.startTime),
 		time: timeFormat.format(a.event.startTime),
 		endTime: timeFormat.format(a.event.endTime),
-		location: [loc.name, address].filter(Boolean).join(', '),
-		locationName: loc.name,
+		location: [locationName, address].filter(Boolean).join(', '),
+		locationName,
 		address,
 		note,
 		noteSection: note ? `Note: ${note}\n` : '',

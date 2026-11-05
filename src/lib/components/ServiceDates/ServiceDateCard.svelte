@@ -14,6 +14,7 @@
 		timeZone,
 		emailEnabled,
 		canManageVolunteers,
+		initialTab = 'details',
 		onopen
 	}: {
 		service: Service;
@@ -21,6 +22,8 @@
 		timeZone: string;
 		emailEnabled: boolean;
 		canManageVolunteers: boolean;
+		/** the tab to show first */
+		initialTab?: string;
 		/** called with the id of a service date that should be opened (after a duplicate) */
 		onopen: (id: string) => void;
 	} = $props();
@@ -276,7 +279,7 @@
 <div class="space-y-4"> <!-- craig - has been moved over to the tabview-->
 
 
-<TabView {service} {sites} {timeZone} {emailEnabled} {onopen} {canManageVolunteers}/>
+<TabView {service} {sites} {timeZone} {emailEnabled} {onopen} {canManageVolunteers} {initialTab} />
 	<!-- Details -->
 	 <!--
 	<section class={sectionClass}>

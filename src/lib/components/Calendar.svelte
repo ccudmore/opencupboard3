@@ -23,6 +23,25 @@
 		 * role from the event's category. A bare id string means "no role".
 		 */
 		volunteers?: (string | EventVolunteer)[];
+		/** One of the sites. When empty, `location` is a place that was typed in. */
+		siteId?: string;
+		/** Attendees who aren't volunteers (the default "Attendee" type). */
+		guests?: EventGuest[];
+		/** Shown for reference only: can't be edited or deleted here. */
+		readonly?: boolean;
+		/** Where to manage this event, when it has its own page (overrides the category's). */
+		href?: string;
+	}
+
+	export interface EventGuest {
+		name: string;
+		email?: string;
+	}
+
+	/** One of the sites an event can be held at. */
+	export interface Site {
+		id: string;
+		name: string;
 	}
 
 	export interface EventVolunteer {
@@ -42,6 +61,12 @@
 		color: string;
 		/** Roles volunteers can be given on events of this category. Omit for none. */
 		roles?: string[];
+		/** false: can't be added here (and its events can only have their volunteers changed). */
+		creatable?: boolean;
+		/** Where this kind of event is managed, if not here. */
+		href?: string;
+		/** Said when adding an event, for a category that can't be added here. */
+		addHint?: string;
 	}
 
 	/**
@@ -80,6 +105,8 @@
 		categories?: CalendarCategory[];
 		/** Volunteers that can be added to events. */
 		volunteers?: Volunteer[];
+		/** The sites an event can be held at (a place can also be typed in). */
+		sites?: Site[];
 		/**
 		 * 'full' (default): add, edit and delete events.
 		 * 'volunteers': events can't be added or deleted; only their volunteers and roles can be changed.
@@ -109,6 +136,7 @@
 		events = $bindable([]),
 		categories = [],
 		volunteers = [],
+		sites = [],
 		mode = 'full',
 		hiddenCategories = $bindable([]),
 		view = $bindable('month'),
@@ -256,9 +284,16 @@
 	};
 
 	/* ---------- what the current mode allows ---------- */
-	const canAdd = $derived(mode === 'full' && categories.length > 0);
+	const canAdd = $derived(mode === 'full' && categories.some((c) => c.creatable !== false));
 	const canDelete = $derived(mode === 'full');
 	const canEdit = $derived(mode === 'full' || (mode === 'volunteers' && volunteers.length > 0));
+	const catOf = (name: string) => categories.find((c) => c.name === name);
+	/** Categories that can be added here (service dates are made on their own page). */
+	const creatable = $derived(categories.filter((c) => c.creatable !== false));
+	/** For these events only the volunteers can change here. */
+	const volunteersOnly = (ev?: CalendarEvent) => mode === 'volunteers' || (!!ev && catOf(ev.category)?.creatable === false);
+	const canEditEv = (ev: CalendarEvent) => canEdit && !ev.readonly;
+	const canDeleteEv = (ev: CalendarEvent) => canDelete && !ev.readonly && catOf(ev.category)?.creatable !== false;
 
 	const byDay = $derived.by(() => {
 		const m = new Map<string, Occurrence[]>();
@@ -503,6 +538,11 @@
 		unit: 'day' | 'week';
 		/** 'YYYY-MM-DD', or '' to repeat with no end date. */
 		until: string;
+		/** The chosen site's id, or '' when `location` is typed in. */
+		siteId: string;
+		guests: EventGuest[];
+		guestName: string;
+		guestEmail: string;
 		volunteers: string[];
 		/** Role per volunteer id (missing or '' = no role). */
 		roles: Record<string, string>;
@@ -511,6 +551,9 @@
 	}
 	let draft = $state<Draft | null>(null);
 	let editing = $state<Occurrence | null>(null);
+	const editsVolunteersOnly = $derived(volunteersOnly(editing?.event));
+	const fullForm = $derived(mode === 'full' && !editsVolunteersOnly);
+	const siteItems = $derived([{ name: 'Another place (type it below)', value: '' }, ...sites.map((x) => ({ name: x.name, value: x.id }))]);
 	let formError = $state('');
 	let formOpen = $state(false);
 	let titleInput = $state<HTMLInputElement>();
@@ -552,8 +595,23 @@
 	const sameEvent = (a: CalendarEvent, b: CalendarEvent) => (b.id != null ? a.id === b.id : a === b);
 	const newId = () => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
 
-	async function openForm(start: Date, end: Date, occ: Occurrence | null = null) {
-		if (occ ? !canEdit : !canAdd) return;
+	/** What kind of event to add: asked first, then the form for that kind opens. */
+	let pickerOpen = $state(false);
+	let pending = $state<{ start: Date; end: Date } | null>(null);
+
+	function choose(category: string) {
+		const p = pending;
+		pickerOpen = false;
+		if (p) openForm(p.start, p.end, null, category);
+	}
+
+	async function openForm(start: Date, end: Date, occ: Occurrence | null = null, category?: string) {
+		if (occ ? !canEdit || occ.event.readonly : !canAdd) return;
+		if (!occ && category === undefined) {
+			pending = { start, end };
+			pickerOpen = true;
+			return;
+		}
 		const endsAtMidnight = end.getHours() === 0 && end.getMinutes() === 0;
 		const ev = occ?.event;
 		editing = occ;
@@ -564,7 +622,11 @@
 			startT: toInputTime(start),
 			endT: endsAtMidnight ? '23:59' : toInputTime(end),
 			// New events default to the first category that is currently shown.
-			category: ev?.category ?? (categories.find((c) => shownCategories.has(c.name)) ?? categories[0])?.name ?? '',
+			category: ev?.category ?? category ?? creatable[0]?.name ?? '',
+			siteId: ev?.siteId ?? '',
+			guests: (ev?.guests ?? []).map((g) => ({ ...g })),
+			guestName: '',
+			guestEmail: '',
 			repeating: ev?.repeating ?? false,
 			every: ev?.repeatEvery ?? 1,
 			unit: ev?.repeatUnit === 'day' ? 'day' : 'week',
@@ -577,6 +639,25 @@
 		formOpen = true;
 		await tick();
 		titleInput?.focus();
+	}
+
+	/** Adds the typed guest to the draft (a name is required, an email is optional). */
+	function addGuest() {
+		if (!draft) return;
+		const name = draft.guestName.trim();
+		const email = draft.guestEmail.trim();
+		if (!name) {
+			formError = 'Enter the guest\'s name.';
+			return;
+		}
+		if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			formError = 'Enter a valid email address, or leave it blank.';
+			return;
+		}
+		formError = '';
+		draft.guests = [...draft.guests, { name, ...(email ? { email } : {}) }];
+		draft.guestName = '';
+		draft.guestEmail = '';
 	}
 
 	function setRole(id: string, role: string) {
@@ -609,7 +690,7 @@
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
 		if (!draft) return;
-		if (mode === 'volunteers') return submitVolunteers();
+		if (editsVolunteersOnly) return submitVolunteers();
 		if (mode !== 'full') return;
 		const title = draft.title.trim();
 		if (!title) {
@@ -637,9 +718,12 @@
 		const repeats = draft.repeating && scope !== 'this';
 		// Make sure the saved event doesn't vanish because its category is switched off.
 		showCategory(draft.category);
+		const site = sites.find((x) => x.id === draft!.siteId);
 		const details = {
 			title,
-			location: draft.location.trim(),
+			location: site ? site.name : draft.location.trim(),
+			siteId: site ? site.id : undefined,
+			guests: draft.guests.map((g) => ({ ...g })),
 			category: draft.category,
 			volunteers: draft.volunteers.map((id): EventVolunteer => {
 				const role = draft!.roles[id];
@@ -1044,7 +1128,7 @@
 	<!-- Add event -->
 	<Modal
 		bind:open={formOpen}
-		title={mode === 'volunteers' ? `Volunteers: ${editing ? editing.event.title : ''}` : editing ? 'Edit event' : 'New event'}
+		title={editsVolunteersOnly ? `Volunteers: ${editing ? editing.event.title : ''}` : editing ? 'Edit event' : `New ${draft?.category ?? ''} event`}
 		size="xs"
 	>
 		{#if draft}
@@ -1058,15 +1142,18 @@
 					</fieldset>
 				{/if}
 
-				{#if mode === 'full'}
+				{#if fullForm}
 				<Label class="space-y-1">
 					<span>Title</span>
 					<Input bind:elementRef={titleInput} bind:value={draft.title} required />
 				</Label>
 				<Label class="space-y-1">
 					<span>Location</span>
-					<Input bind:value={draft.location} />
+					<Select items={siteItems} bind:value={draft.siteId} />
 				</Label>
+				{#if !draft.siteId}
+					<Input aria-label="Location" placeholder="Where is it?" bind:value={draft.location} />
+				{/if}
 
 				<div class="grid grid-cols-3 gap-2">
 					<Label class="col-span-3 space-y-1 sm:col-span-1">
@@ -1084,7 +1171,10 @@
 				</div>
 
 				{#if categories.length}
-						\1
+						<Label class="space-y-1">
+							<span>Type of event</span>
+							<Select items={creatable.map((c) => ({ name: c.name, value: c.name }))} bind:value={draft.category} onchange={pruneRoles} />
+						</Label>
 					{/if}
 					{:else if editing}
 						<!-- 'volunteers' mode: the event itself is read-only -->
@@ -1115,7 +1205,7 @@
 									<Select
 										size="sm"
 										aria-label="Role for {volunteerName(id)}"
-										items={[{ name: 'No role', value: '' }, ...roleList.map((r) => ({ name: r, value: r }))]}
+										items={[{ name: 'Attendee', value: '' }, ...roleList.map((r) => ({ name: r, value: r }))]}
 										value={draft.roles[id] ?? ''}
 										onchange={(e) => setRole(id, e.currentTarget.value)}
 									/>
@@ -1125,7 +1215,24 @@
 					{/if}
 				{/if}
 
-				{#if mode === 'full' && !(editing?.event.repeating && draft.scope === 'this')}
+				{#if fullForm}
+					<fieldset class="space-y-2 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+						<legend class="px-1">Other attendees</legend>
+						{#each draft.guests as g, i (i)}
+							<div class="flex items-center justify-between gap-2 text-sm text-gray-900 dark:text-white">
+								<span class="min-w-0 truncate">{g.name}{g.email ? ` · ${g.email}` : ''}</span>
+								<Button size="xs" color="alternative" onclick={() => draft && (draft.guests = draft.guests.filter((_, j) => j !== i))}>Remove</Button>
+							</div>
+						{/each}
+						<div class="grid grid-cols-2 gap-2">
+							<Input aria-label="Attendee name" placeholder="Name" bind:value={draft.guestName} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(); } }} />
+							<Input aria-label="Attendee email" type="email" placeholder="Email (optional)" bind:value={draft.guestEmail} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(); } }} />
+						</div>
+						<Button size="xs" color="alternative" onclick={addGuest}>Add attendee</Button>
+					</fieldset>
+				{/if}
+
+				{#if fullForm && !(editing?.event.repeating && draft.scope === 'this')}
 					<Checkbox color="blue" class={checkedStyle} bind:checked={draft.repeating}>Repeating event</Checkbox>
 
 					{#if draft.repeating}
@@ -1157,6 +1264,32 @@
 		{/snippet}
 	</Modal>
 
+	<!-- What kind of event? -->
+	<Modal bind:open={pickerOpen} title="What kind of event?" size="xs">
+		<div class="grid grid-cols-1 gap-2">
+			{#each creatable as c (c.name)}
+				<button
+					type="button"
+					class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-left text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+					style="--c:{c.color}"
+					onclick={() => choose(c.name)}
+				>
+					<span class="dot big"></span>{c.name}
+				</button>
+			{/each}
+			{#each categories.filter((c) => c.addHint && c.href) as c (c.name)}
+				<a
+					href={c.href}
+					class="flex items-center gap-3 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-gray-900 hover:bg-gray-50 dark:border-gray-500 dark:text-white dark:hover:bg-gray-700"
+					style="--c:{c.color}"
+				>
+					<span class="dot big"></span>
+					<span>{c.name}<span class="block text-xs text-gray-500 dark:text-gray-400">{c.addHint}</span></span>
+				</a>
+			{/each}
+		</div>
+	</Modal>
+
 	<!-- Event details / delete -->
 	<Modal
 		bind:open={detailOpen}
@@ -1183,6 +1316,12 @@
 						{/if}
 					</dd>
 					{#if ev.location}<dt>Where</dt><dd>{ev.location}</dd>{/if}
+					{#if ev.guests?.length}
+						<dt>Attendees</dt>
+						<dd>
+							{#each ev.guests as g}<div>{g.name}{g.email ? ` · ${g.email}` : ''}</div>{/each}
+						</dd>
+					{/if}
 					{#if volsOf(ev).length}
 						<dt>Volunteers</dt>
 						<dd>
@@ -1190,6 +1329,9 @@
 						</dd>
 					{/if}
 				</dl>
+				{#if ev.href ?? catOf(ev.category)?.href}
+					<p class="text-sm"><a class="text-blue-700 underline dark:text-blue-400" href={ev.href ?? catOf(ev.category)?.href}>Open in Service Dates</a></p>
+				{/if}
 				{#if confirming}
 					{#if ev.repeating}
 						<fieldset class="space-y-1 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
@@ -1211,12 +1353,12 @@
 					<Button color="red" onclick={doDelete}>Delete</Button>
 				{:else}
 					<Button color="alternative" onclick={() => (detailOpen = false)}>Close</Button>
-					{#if canEdit}
+					{#if viewing && canEditEv(viewing.event)}
 						<Button color="alternative" onclick={editViewing}>
-							{mode === 'volunteers' ? 'Edit volunteers' : 'Edit'}
+							{volunteersOnly(viewing.event) ? 'Edit volunteers' : 'Edit'}
 						</Button>
 					{/if}
-					{#if canDelete}
+					{#if viewing && canDeleteEv(viewing.event)}
 						<Button color="red" outline onclick={() => (confirming = true)}>Delete</Button>
 					{/if}
 				{/if}

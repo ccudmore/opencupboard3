@@ -1,3 +1,4 @@
+import { eventPlace } from '$lib/eventLocation';
 import type { Actions, PageServerLoad } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate, message } from 'sveltekit-superforms';
@@ -67,7 +68,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 		type: a.event.type,
 		startTime: a.event.startTime,
 		endTime: a.event.endTime,
-		location: a.event.location.name,
+		location: eventPlace(a.event),
 		role: a.eventRole,
 		status: a.status,
 		confirmations: a.confirmations,
@@ -109,7 +110,7 @@ async function eventsToChooseFrom() {
 		type: e.type,
 		startTime: e.startTime,
 		endTime: e.endTime,
-		location: e.location.name
+		location: eventPlace(e)
 	}));
 	const upcoming = rows.filter((e) => e.startTime >= now);
 	const past = rows.filter((e) => e.startTime < now).reverse();

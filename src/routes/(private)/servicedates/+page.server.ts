@@ -42,6 +42,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		sites: await getSites(),
 		showPast,
 		focus: url.searchParams.get('focus') ?? '',
+		tab: url.searchParams.get('tab') === 'appointments' ? 'appointments' : 'details',
 		timeZone: timeZone(),
 		emailEnabled: isMailConfigured(),
 		canManageVolunteers: (locals.user?.permissions ?? []).some((p) => VOLUNTEERS.includes(p))

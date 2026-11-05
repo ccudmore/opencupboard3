@@ -20,6 +20,8 @@
 		events = data.events;
 	});
 		let error = $state('');
+	// The appointment slots are listed for reference, but start switched off so they don't crowd the calendar
+	let hidden = $state<string[]>(['Appointment']);
 
 
 /** Sends one change set to the named action in +page.server.ts. */
@@ -56,11 +58,14 @@
 		bind:events
 		categories={data.categories}
 		volunteers={data.volunteers}
+		sites={data.sites}
+		bind:hiddenCategories={hidden}
 		mode={data.mode}
 		onadd={(_, changes) => send('add', changes)}
 		onedit={(_, __, changes) => send('update', changes)}
 		ondelete={(_, __, changes) => send('delete', changes)}
 	/>
+	{#if error}<p class="error-text mb-2" role="alert">{error}</p>{/if}
 	<!--p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{events.length} events</p-->
 	<CalendarSubscribe/>
 </main>

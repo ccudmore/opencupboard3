@@ -1,3 +1,4 @@
+import { eventPlace } from '$lib/eventLocation';
 import { streetWithUnit } from '$lib/address';
 import { error, json } from '@sveltejs/kit';
 import { requirePermission } from '$lib/utils';
@@ -32,7 +33,7 @@ export async function GET({ url, locals }) {
     			URL: `${urlbase.origin}/event/${event.id}`, 
 				desc1: event.title,
   				desc2: event.startTime.toLocaleString("en-CA"),
-				desc3: event.location.name,
+				desc3: eventPlace(event),
 				category: 'Event'
   			};
 		});

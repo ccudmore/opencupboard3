@@ -57,7 +57,7 @@ export async function getAvailableServices() {
 			title: e.title,
 			startTime: e.startTime,
 			endTime: e.endTime,
-			location: { id: e.location.id, name: e.location.name, street: e.location.street, unitNumber: e.location.unitNumber, city: e.location.city },
+			location: e.location ? { id: e.location.id, name: e.location.name, street: e.location.street, unitNumber: e.location.unitNumber, city: e.location.city } : { id: '', name: e.locationText ?? '', street: null, unitNumber: null, city: null },
 			openCount: e.appointments.length,
 			appointments: e.appointments.map((a) => ({ id: a.id, startTime: a.startTime, endTime: a.endTime }))
 		}));

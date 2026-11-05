@@ -206,9 +206,18 @@ model Event {
   endTime      DateTime
   note         String?
   status       EventStatus
-  locationId   String
-  location     Site                   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Either one of the sites, or a place typed in. Service dates always have a site.
+  locationId   String?
+  location     Site?                  @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locationText String?
+  // Repeating events are stored once, with the rule (the calendar works out each occurrence)
+  repeating    Boolean                @default(false)
+  repeatEvery  Int?
+  repeatUnit   String? // 'day' or 'week'
+  repeatUntil  DateTime?              @db.Date
+  exceptions   String[] // 'YYYY-MM-DD' of occurrences removed from the series
   volunteers   VolunteerAssignments[]
+  guests       EventGuest[]
   createdAt    DateTime               @default(now())
   createdBy    String?
   appointments Appointment[]
@@ -216,6 +225,23 @@ model Event {
 
   @@index([locationId])
   @@map("event")
+}
+
+/** Someone attending an event who isn't a volunteer: the default "Attendee" type. */
+model EventGuest {
+  id            String   @id @default(cuid())
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId       String
+  name          String
+  email         String?
+  // Each is a list of { sentAt, to, sentBy }, one entry per email sent
+  confirmations Json?
+  reminders     Json?
+  createdAt     DateTime @default(now())
+  createdBy     String?
+
+  @@index([eventId])
+  @@map("event_guest")
 }
 
 model EventVolunteerNeed {

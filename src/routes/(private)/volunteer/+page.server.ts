@@ -1,3 +1,4 @@
+import { eventPlace } from '$lib/eventLocation';
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { env as privateEnv } from '$env/dynamic/private';
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		note: a.event.note,
 		startTime: a.event.startTime,
 		endTime: a.event.endTime,
-		location: a.event.location.name
+		location: eventPlace(a.event)
 	}));
 
 	const upcoming = rows.filter((r) => r.endTime >= now).sort((a, b) => +a.startTime - +b.startTime);

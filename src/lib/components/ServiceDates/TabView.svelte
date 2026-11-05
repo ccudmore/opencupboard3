@@ -13,7 +13,8 @@
 		timeZone,
 		emailEnabled,
 		onopen,
-		canManageVolunteers
+		canManageVolunteers,
+		initialTab = 'details'
 	}: {
 		service: Service;
 		sites: Site[];
@@ -21,6 +22,7 @@
 		emailEnabled: boolean;
 		onopen: (id: string) => void;
 		canManageVolunteers: boolean;
+		initialTab?: string;
 	} = $props();
 
 	// One shared runner (busy + run) for all three tabs. Must be called during init.
@@ -33,7 +35,7 @@
 		divider={false}
 		class="tabs-panel"
 	>
-		<TabItem open>
+		<TabItem open={initialTab !== 'appointments'}>
 			{#snippet titleSlot()}
 				<div class="flex items-center gap-2">
 					<InfoCircleSolid size="md" />Details
@@ -42,7 +44,7 @@
 			<DetailsTab {service} {sites} {timeZone} {emailEnabled} {onopen} {canManageVolunteers} />
 		</TabItem>
 
-		<TabItem>
+		<TabItem open={initialTab === 'appointments'}>
 			{#snippet titleSlot()}
 				<div class="flex items-center gap-2">
 					<CalendarMonthSolid size="md" />Appointments

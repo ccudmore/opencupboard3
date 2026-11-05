@@ -95,7 +95,7 @@
 
 	/** The day and time of a booking: its appointment, or the planned time of an unscheduled one. */
 	const startOf = (b: BookingRow): Date | null => b.appointment?.startTime ?? b.plannedStart ?? null;
-	const siteNameOf = (b: BookingRow): string => b.appointment?.event.location.name ?? b.plannedSite?.name ?? '';
+	const siteNameOf = (b: BookingRow): string => b.appointment?.event.location?.name ?? b.plannedSite?.name ?? '';
 
 	function whenText(b: BookingRow): string {
 		if (b.appointment) return `${fmtDate(b.appointment.startTime)}, ${fmtTime(b.appointment.startTime)}`;
@@ -613,7 +613,7 @@
 				<h3>{whenText(editing)}</h3>
 				{#if editing.appointment}
 					<p class="hint">
-						{[editing.appointment.event.title, editing.appointment.event.location.name].filter(Boolean).join(' · ')}
+						{[editing.appointment.event.title, editing.appointment.event.location?.name].filter(Boolean).join(' · ')}
 					</p>
 				{/if}
 			</div>
