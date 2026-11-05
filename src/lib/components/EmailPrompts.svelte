@@ -26,7 +26,7 @@
 		/** name of the form field that carries the id, e.g. "bookingId" */
 		idField: string;
 		/** who receives it, for the wording of the prompts */
-		audience: 'household' | 'volunteer';
+		audience: 'household' | 'volunteer' | 'attendee';
 	} = $props();
 
 	type Draft = {
@@ -35,6 +35,8 @@
 		to: { name: string; email: string }[];
 		subject: string;
 		body: string;
+		/** more fields sent with the id, for example which occurrence of a repeating event */
+		extra: Record<string, string>;
 	};
 
 	let draft = $state<Draft | null>(null);
@@ -48,7 +50,9 @@
 	const toWhom = $derived(
 		audience === 'volunteer'
 			? 'the volunteer'
-			: draft && draft.to.length > 1
+			: audience === 'attendee'
+				? 'the attendees'
+				: draft && draft.to.length > 1
 				? 'the primary members'
 				: 'the primary member'
 	);
@@ -58,15 +62,15 @@
 	 * askFirst: begin with "Send a ... email?" (right after something was created or cancelled);
 	 * otherwise begin with "Customize it?" (the person already pressed a Send button).
 	 */
-	export async function start(id: string, kind: EmailKind, askFirst: boolean) {
+	export async function start(id: string, kind: EmailKind, askFirst: boolean, extra: Record<string, string> = {}) {
 		if (!emailEnabled) return;
 
-		const result = await callAction(previewAction, { [idField]: id, kind });
+		const result = await callAction(previewAction, { [idField]: id, kind, ...extra });
 		if (!result.ok) {
 			toast(result.message);
 			return;
 		}
-		draft = { kind, id, to: result.data.to, subject: result.data.subject, body: result.data.body };
+		draft = { kind, id, to: result.data.to, subject: result.data.subject, body: result.data.body, extra };
 		if (askFirst) askSendOpen = true;
 		else askCustomizeOpen = true;
 	}
@@ -99,6 +103,7 @@
 		const result = await callAction(sendAction, {
 			[idField]: draft.id,
 			kind: draft.kind,
+			...draft.extra,
 			...(edited ? { subject: draft.subject, body: draft.body } : {})
 		});
 		busy = false;

@@ -1,0 +1,15 @@
+Subject: You are invited to {{eventTitle}} on {{date}}
+
+Hello {{firstName}},
+
+This is to confirm that you are expected at {{eventTitle}} with {{organization}}.
+
+Date: {{date}}
+Time: {{time}} to {{endTime}}
+Location: {{location}}
+
+{{noteSection}}
+If you can no longer make it, please let us know as soon as you can.
+
+Thank you,
+{{organization}}

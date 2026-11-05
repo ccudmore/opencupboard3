@@ -36,6 +36,8 @@
 	export interface EventGuest {
 		name: string;
 		email?: string;
+		confirmed?: boolean;
+		reminded?: boolean;
 	}
 
 	/** One of the sites an event can be held at. */
@@ -47,6 +49,9 @@
 	export interface EventVolunteer {
 		id: string;
 		role?: string;
+		/** a confirmation / reminder email has been sent to them */
+		confirmed?: boolean;
+		reminded?: boolean;
 	}
 
 	/** An available volunteer. Events store the `id`. */
@@ -128,6 +133,10 @@
 		/** Called after an edit; `event` is the changed or newly created event. */
 		onedit?: (event: CalendarEvent, scope: RepeatScope, changes: CalendarChanges) => void;
 		ondelete?: (event: CalendarEvent, scope: RepeatScope, changes: CalendarChanges) => void;
+		/** Asks to email the attendees. `occurrence` is the start of the occurrence that was open (ISO). */
+		onemail?: (event: CalendarEvent, kind: 'confirmation' | 'reminder', occurrence: string) => void;
+		/** false hides the email buttons (the server isn't set up to send email) */
+		emailEnabled?: boolean;
 	}
 
 	type RepeatScope = 'this' | 'following' | 'all';
@@ -146,7 +155,9 @@
 		maxPerCell = 3,
 		onadd,
 		onedit,
-		ondelete
+		ondelete,
+		onemail,
+		emailEnabled = false
 	}: Props = $props();
 
 	interface Occurrence {
@@ -293,6 +304,13 @@
 	/** For these events only the volunteers can change here. */
 	const volunteersOnly = (ev?: CalendarEvent) => mode === 'volunteers' || (!!ev && catOf(ev.category)?.creatable === false);
 	const canEditEv = (ev: CalendarEvent) => canEdit && !ev.readonly;
+	/** Service dates are emailed from their own page, appointments have no attendees. */
+	const canEmailEv = (ev: CalendarEvent) => emailEnabled && !!onemail && canEdit && !ev.readonly && catOf(ev.category)?.creatable !== false;
+	/** What has been emailed to a person, for the details: "(confirmation sent, reminder sent)". */
+	const sentText = (p: { confirmed?: boolean; reminded?: boolean }) => {
+		const parts = [p.confirmed ? 'confirmation sent' : '', p.reminded ? 'reminder sent' : ''].filter(Boolean);
+		return parts.length ? ` (${parts.join(', ')})` : '';
+	};
 	const canDeleteEv = (ev: CalendarEvent) => canDelete && !ev.readonly && catOf(ev.category)?.creatable !== false;
 
 	const byDay = $derived.by(() => {
@@ -1319,13 +1337,13 @@
 					{#if ev.guests?.length}
 						<dt>Attendees</dt>
 						<dd>
-							{#each ev.guests as g}<div>{g.name}{g.email ? ` · ${g.email}` : ''}</div>{/each}
+							{#each ev.guests as g}<div>{g.name}{g.email ? ` · ${g.email}` : ''}<span class="hint">{sentText(g)}</span></div>{/each}
 						</dd>
 					{/if}
 					{#if volsOf(ev).length}
 						<dt>Volunteers</dt>
 						<dd>
-							{#each volsOf(ev) as v}<div>{volunteerLabel(v)}</div>{/each}
+							{#each volsOf(ev) as v}<div>{volunteerLabel(v)}<span class="hint">{sentText(v)}</span></div>{/each}
 						</dd>
 					{/if}
 				</dl>
@@ -1353,6 +1371,10 @@
 					<Button color="red" onclick={doDelete}>Delete</Button>
 				{:else}
 					<Button color="alternative" onclick={() => (detailOpen = false)}>Close</Button>
+					{#if viewing && canEmailEv(viewing.event)}
+						<Button color="alternative" onclick={() => viewing && onemail?.(viewing.event, 'confirmation', viewing.start.toISOString())}>Send confirmation</Button>
+						<Button color="alternative" onclick={() => viewing && onemail?.(viewing.event, 'reminder', viewing.start.toISOString())}>Send reminder</Button>
+					{/if}
 					{#if viewing && canEditEv(viewing.event)}
 						<Button color="alternative" onclick={editViewing}>
 							{volunteersOnly(viewing.event) ? 'Edit volunteers' : 'Edit'}

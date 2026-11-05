@@ -9,6 +9,8 @@ import type {
 	Site
 } from '$lib/components/Calendar.svelte';
 import { eventPlace } from '$lib/eventLocation';
+import { buildEventEmail, sendEventEmail } from '$lib/server/email/eventEmail';
+import { isMailConfigured } from '$lib/server/email/mailer';
 import { zonedParts } from '$lib/timezone';
 import { env as privateEnv } from '$env/dynamic/private';
 import type { Prisma } from '$prisma/client';
@@ -68,6 +70,9 @@ async function volunteerIds(): Promise<Set<string>> {
 	return new Set((await getVolunteers()).map((v) => v.id));
 }
 
+/** Whether the JSON history of sent emails has any entry. */
+const wasSent = (json: unknown) => Array.isArray(json) && json.length > 0;
+
 const dateOnly = (d: Date) => d.toISOString().slice(0, 10);
 
 /** The Service Dates page opened on one service date (and its Appointments tab, for an appointment). */
@@ -121,8 +126,13 @@ async function getEvents(canSeeAppointments: boolean): Promise<CalendarEvent[]> 
 		// cancelled assignments aren't shown on the calendar
 		volunteers: v.volunteers
 			.filter((a) => a.status !== VolunteerAssignmentsStatus.CANCELLED)
-			.map((a) => (a.eventRole === NO_ROLE ? { id: a.volunteerId } : { id: a.volunteerId, role: a.eventRole })),
-		guests: v.guests.map((g) => ({ name: g.name, email: g.email ?? undefined }))
+			.map((a) => ({
+				id: a.volunteerId,
+				...(a.eventRole === NO_ROLE ? {} : { role: a.eventRole }),
+				confirmed: wasSent(a.confirmations),
+				reminded: wasSent(a.reminders)
+			})),
+		guests: v.guests.map((g) => ({ name: g.name, email: g.email ?? undefined, confirmed: wasSent(g.confirmations), reminded: wasSent(g.reminders) }))
 	}));
 
 	for (const a of appointments) {
@@ -155,7 +165,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const canSeeAppointments = !!hasPermission(locals?.user?.permissions, ['manage-households']);
 	const [allCategories, volunteers, events, sites] = await Promise.all([getCategories(), getVolunteers(), getEvents(canSeeAppointments), getSites()]);
 	const categories = canSeeAppointments ? allCategories : allCategories.filter((c) => c.name !== APPOINTMENT);
-	return { categories, volunteers, events, sites, mode };
+	return { categories, volunteers, events, sites, mode, emailEnabled: isMailConfigured() };
 };
 
 /** Who may add, change and delete events (the calendar's "full" mode). */
@@ -195,6 +205,35 @@ export const actions: Actions = {
 		return message ? fail(400, { message }) : { saved: true };
 	},
 
+	/** The message that would be sent to an event's attendees. Nothing is sent. */
+	previewEmail: async ({ request, url, locals }) => {
+		requirePermission(locals?.user?.permissions, url, MANAGE_OR_VOLUNTEERS);
+		const f = emailFields(await request.formData());
+		if (!f) return fail(400, { message: 'Invalid request.' });
+		const result = await buildEventEmail(f.eventId, f.kind, { occurrence: f.occurrence, includeGuests: canManageEvents(locals.user?.permissions) });
+		if (!result.ok) return fail(result.status, { message: result.message });
+		return { to: result.draft.to, subject: result.draft.subject, body: result.draft.body };
+	},
+
+	/** Sends it, one message per person. People who only manage volunteers email only the volunteers. */
+	sendEmail: async ({ request, url, locals }) => {
+		requirePermission(locals?.user?.permissions, url, MANAGE_OR_VOLUNTEERS);
+		const fd = await request.formData();
+		const f = emailFields(fd);
+		if (!f) return fail(400, { message: 'Invalid request.' });
+		const subject = fd.get('subject');
+		const body = fd.get('body');
+		const result = await sendEventEmail({
+			...f,
+			userId: locals.user?.id,
+			includeGuests: canManageEvents(locals.user?.permissions),
+			subject: typeof subject === 'string' ? subject : undefined,
+			body: typeof body === 'string' ? body : undefined
+		});
+		if (!result.ok) return fail(result.status, { message: result.message });
+		return { to: result.to, failed: result.failed };
+	},
+
 	/** A delete: removed events, and/or a series trimmed (exception or earlier end date). */
 	delete: async ({ request, url, locals }) => {
 		requirePermission(locals?.user?.permissions, url, MANAGE);
@@ -206,6 +245,14 @@ export const actions: Actions = {
 		return message ? fail(400, { message }) : { saved: true };
 	}
 };
+
+function emailFields(fd: FormData) {
+	const eventId = fd.get('eventId');
+	const kind = fd.get('kind');
+	const occurrence = fd.get('occurrence');
+	if (typeof eventId !== 'string' || !eventId || (kind !== 'confirmation' && kind !== 'reminder')) return null;
+	return { eventId, kind: kind as 'confirmation' | 'reminder', occurrence: typeof occurrence === 'string' && occurrence ? occurrence : undefined };
+}
 
 /** Fields saved on the event itself (not its people). */
 async function eventData(ev: CalendarEvent): Promise<Prisma.EventUncheckedCreateInput | string> {
