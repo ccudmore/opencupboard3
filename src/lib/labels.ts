@@ -1,6 +1,7 @@
 import { HouseholdStatus, AppointmentBookingStatus, VolunteerAssignmentsStatus, ClientIdentificationType, ClientRelationship, ServiceTime, DeliveryType, DatedRequestStatus} from '$prisma/browser';
 
 export const householdStatusLabels = {
+  	PENDING: 'Pending',
   	ACTIVE: 'Active',
   	INACTIVE: 'Inactive',
   	ARCHIVED: 'Archived',
