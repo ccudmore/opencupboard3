@@ -329,6 +329,7 @@ model DatedRequest {
 }
 
 enum HouseholdStatus {
+  PENDING // signed up on the public booking page; waiting for a household manager to approve
   ACTIVE
   ARCHIVED
   INACTIVE
@@ -357,6 +358,8 @@ model Household {
   id                    String                @id @default(cuid())
   status                HouseholdStatus       @default(ACTIVE)
   uniqueId              String?               @unique
+  adultCount            Int?
+  childCount            Int?
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
   dietaryRestrictions   String[]
   pets                  String?

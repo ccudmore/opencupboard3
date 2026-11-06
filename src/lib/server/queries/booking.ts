@@ -43,7 +43,7 @@ export async function getAvailableServices() {
 			appointments: {
 				where: {
 					startTime: { gt: now },
-					bookings: { none: { status: AppointmentBookingStatus.ACTIVE } }
+					bookings: { none: { status: { in: [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE] } } }
 				},
 				orderBy: { startTime: 'asc' }
 			}

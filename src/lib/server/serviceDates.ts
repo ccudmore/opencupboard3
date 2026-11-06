@@ -59,7 +59,7 @@ export async function loadServiceDates(showPast: boolean, timeZone: string) {
 				orderBy: { startTime: 'asc' },
 				include: {
 					bookings: {
-						where: { status: AppointmentBookingStatus.ACTIVE },
+						where: { status: { in: [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE] } },
 						include: {
 							household: {
 								select: {
@@ -98,7 +98,7 @@ export async function loadServiceDates(showPast: boolean, timeZone: string) {
 					? {
 							id: b.id,
 							householdId: b.householdId,
-							name: primaryNames(b.household.members) || 'Unnamed household',
+							name: (primaryNames(b.household.members) || 'Unnamed household') + (b.status === AppointmentBookingStatus.PENDING ? ' (pending)' : ''),
 							confirmations: sentEntries(b.confirmations),
 							reminders: sentEntries(b.reminders)
 						}
@@ -298,7 +298,7 @@ export async function searchEligibleClients(appointmentId: string, term: string)
 	const clients = households
 		.filter((h) => {
 			// Already booked on this service date?
-			if (h.bookings.some((b) => b.status === AppointmentBookingStatus.ACTIVE && b.appointment?.eventId === appt.eventId)) return false;
+			if (h.bookings.some((b) => (b.status === AppointmentBookingStatus.ACTIVE || b.status === AppointmentBookingStatus.PENDING) && b.appointment?.eventId === appt.eventId)) return false;
 			const eligibleDate = calculateNextServiceDate(h.bookings as Parameters<typeof calculateNextServiceDate>[0]);
 			return !eligibleDate || day >= eligibleDate;
 		})
@@ -322,7 +322,7 @@ export async function suggestAlternatives(appointmentId: string, limit = 3) {
 			eventId: appt.eventId,
 			id: { not: appointmentId },
 			startTime: { gt: new Date() },
-			bookings: { none: { status: AppointmentBookingStatus.ACTIVE } }
+			bookings: { none: { status: { in: [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE] } } }
 		}
 	});
 	return open
@@ -335,7 +335,7 @@ export async function suggestAlternatives(appointmentId: string, limit = 3) {
 /** Cancels a booking (the appointment opens up again). */
 export async function cancelBooking(bookingId: string): Promise<Result> {
 	const { count } = await prisma.appointmentBookings.updateMany({
-		where: { id: bookingId, status: AppointmentBookingStatus.ACTIVE },
+		where: { id: bookingId, status: { in: [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE] } },
 		data: { status: AppointmentBookingStatus.CANCELLED }
 	});
 	return count === 0 ? fail(409, 'That booking was already cancelled.') : { ok: true };

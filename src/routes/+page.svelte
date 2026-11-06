@@ -1,21 +1,31 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import AppointmentsTile from '$lib/components/Dashboard/AppointmentsTile.svelte';
+	import ExpensesTile from '$lib/components/Dashboard/ExpensesTile.svelte';
+	import VolunteersTile from '$lib/components/Dashboard/VolunteersTile.svelte';
+
 	let { data }: { data: PageData } = $props();
+	const hasTiles = $derived(!!(data.appointments || data.expenses || data.volunteers));
 </script>
 
-<h1>SvelteKit + Prisma 7 + Better Auth</h1>
+<svelte:head><title>Home</title></svelte:head>
 
-{#if data.user}
-	<p>Signed in as <strong>{data.user.email}</strong> (roles: {data.user.roles.join(', ') || 'none'}).</p>
-	<p><a href="/dashboard">Go to your dashboard →</a></p>
-{:else}
-	<p>This is a public page — no auth required.</p>
-	<p><a href="/login">Sign in</a> or <a href="/register">create an account</a>.</p>
-{/if}
+<div class="page-content space-y-4">
+	<h1>Home</h1>
 
-<h2>Try the protected routes</h2>
-<ul>
-	<li><code>/dashboard</code> — any signed-in user</li>
-	<li><code>/reports</code> — requires the <code>reports:view</code> permission (manager/admin by default)</li>
-	<li><code>/admin</code> — requires the <code>admin</code> role</li>
-</ul>
+	{#if hasTiles}
+		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+			{#if data.appointments}
+				<AppointmentsTile {...data.appointments} timeZone={data.timeZone} />
+			{/if}
+			{#if data.volunteers}
+				<VolunteersTile {...data.volunteers} timeZone={data.timeZone} />
+			{/if}
+			{#if data.expenses}
+				<ExpensesTile {...data.expenses} />
+			{/if}
+		</div>
+	{:else}
+		<p class="muted">There is nothing to show here yet. Use the menu to get to the pages you can use.</p>
+	{/if}
+</div>

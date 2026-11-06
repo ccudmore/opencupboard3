@@ -6,6 +6,9 @@ import { calculateNextServiceDate } from '$lib/utils';
 import { bookingInclude, getHouseholdBookings } from '$lib/server/queries/booking';
 import { buildEmail, sendBookingEmail } from '$lib/server/email/bookingEmail';
 
+/** A booking in one of these statuses holds its appointment, so nobody else can book it. */
+export const HOLDS_APPOINTMENT: AppointmentBookingStatus[] = [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE];
+
 /** Matches the type used by the "Special Requests" tab on the household page. */
 const SPECIAL_REQUEST_TYPE = 'Special';
 const MAX_REQUEST_LENGTH = 1000;
@@ -109,7 +112,7 @@ export async function createBooking(householdId: string, userId: string | undefi
 			async (tx) => {
 				if (appointmentId) {
 					const taken = await tx.appointmentBookings.count({
-						where: { appointmentId, status: AppointmentBookingStatus.ACTIVE }
+						where: { appointmentId, status: { in: HOLDS_APPOINTMENT } }
 					});
 					if (taken > 0) throw new BookingError('That appointment was just booked by someone else.', 'taken');
 				}
@@ -183,9 +186,9 @@ export async function updateBooking(householdId: string, userId: string | undefi
 				if (!booking) throw new BookingError('Booking not found.');
 
 				// Re-activating a booking must not double-book the appointment
-				if (status === AppointmentBookingStatus.ACTIVE && booking.appointmentId && booking.status !== AppointmentBookingStatus.ACTIVE) {
+				if (HOLDS_APPOINTMENT.includes(status) && booking.appointmentId && !HOLDS_APPOINTMENT.includes(booking.status)) {
 					const taken = await tx.appointmentBookings.count({
-						where: { appointmentId: booking.appointmentId, status: AppointmentBookingStatus.ACTIVE, id: { not: booking.id } }
+						where: { appointmentId: booking.appointmentId, status: { in: HOLDS_APPOINTMENT }, id: { not: booking.id } }
 					});
 					if (taken > 0) throw new BookingError('That appointment is already booked by someone else.');
 				}

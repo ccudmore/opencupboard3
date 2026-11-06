@@ -1,0 +1,13 @@
+Subject: You are signed up with {{organization}}
+
+Hello {{firstNames}},
+
+Thank you for signing up with {{organization}}. Your household has been approved.
+
+Your household ID is: {{uniqueId}}
+
+Please keep it somewhere safe. You can use it to book your appointment online:
+{{bookingUrl}}
+
+Thank you,
+{{organization}}

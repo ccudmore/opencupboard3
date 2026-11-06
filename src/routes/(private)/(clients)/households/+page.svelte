@@ -66,6 +66,9 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 md:ml-auto md:justify-end">
+        <Button outline color="dark" class="shrink-0" href="/households/pending">
+          Pending requests{data.pendingCount ? ` (${data.pendingCount})` : ''}
+        </Button>
         <Button outline color="dark" class="shrink-0" onclick={() => (newModal = true)}>
           <PlusOutline class="mr-2 h-3.5 w-3.5" />New Household
         </Button>

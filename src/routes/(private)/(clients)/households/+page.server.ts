@@ -17,7 +17,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
 	const form = await superValidate(zod4(newHouseholdSchema));
 
-	return { ...result, form };
+	// Requests from the public booking page that are waiting for someone
+	const [pendingBookings, pendingHouseholds] = await Promise.all([
+		prisma.appointmentBookings.count({ where: { status: 'PENDING' } }),
+		prisma.household.count({ where: { status: 'PENDING' } })
+	]);
+
+	return { ...result, form, pendingCount: pendingBookings + pendingHouseholds };
 };
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
