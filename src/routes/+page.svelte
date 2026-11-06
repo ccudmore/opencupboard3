@@ -2,10 +2,11 @@
 	import type { PageData } from './$types';
 	import AppointmentsTile from '$lib/components/Dashboard/AppointmentsTile.svelte';
 	import ExpensesTile from '$lib/components/Dashboard/ExpensesTile.svelte';
+	import MyShiftsTile from '$lib/components/Dashboard/MyShiftsTile.svelte';
 	import VolunteersTile from '$lib/components/Dashboard/VolunteersTile.svelte';
 
 	let { data }: { data: PageData } = $props();
-	const hasTiles = $derived(!!(data.appointments || data.expenses || data.volunteers));
+	const hasTiles = $derived(!!(data.myShifts || data.appointments || data.expenses || data.volunteers));
 </script>
 
 <svelte:head><title>Home</title></svelte:head>
@@ -15,6 +16,9 @@
 
 	{#if hasTiles}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+			{#if data.myShifts}
+				<MyShiftsTile {...data.myShifts} timeZone={data.timeZone} />
+			{/if}
 			{#if data.appointments}
 				<AppointmentsTile {...data.appointments} timeZone={data.timeZone} />
 			{/if}

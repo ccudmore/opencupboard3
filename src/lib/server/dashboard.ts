@@ -50,6 +50,30 @@ export async function upcomingServiceDates(timeZone: string, limit = 8): Promise
 	});
 }
 
+/** The next shifts of the volunteer tied to this login, with where each stands (pending, active...). */
+export async function myUpcomingShifts(userId: string, limit = 8) {
+	const volunteer = await prisma.volunteer.findUnique({ where: { userId }, select: { id: true } });
+	if (!volunteer) return [];
+	const rows = await prisma.volunteerAssignments.findMany({
+		where: {
+			volunteerId: volunteer.id,
+			status: { not: VolunteerAssignmentsStatus.CANCELLED },
+			event: { status: EventStatus.ACTIVE, endTime: { gte: new Date() } }
+		},
+		include: { event: { include: { location: { select: { name: true } } } } },
+		orderBy: { event: { startTime: 'asc' } },
+		take: limit
+	});
+	return rows.map((a) => ({
+		id: a.id,
+		title: a.event.title ?? a.event.type,
+		role: a.eventRole,
+		status: a.status,
+		start: a.event.startTime,
+		place: a.event.location?.name ?? a.event.locationText ?? ''
+	}));
+}
+
 /** Bookings that households asked for online and nobody has confirmed. */
 export const pendingAppointmentCount = () =>
 	prisma.appointmentBookings.count({ where: { status: AppointmentBookingStatus.PENDING } });
