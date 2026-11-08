@@ -123,7 +123,7 @@
 	-->
 	<Search
 		size="md"
-		class="mt-1 w-96 border focus:outline-none"
+		class="mt-1 w-full border focus:outline-none lg:w-96"
 		placeholder="Search"
 		autocomplete="off"
 		spellcheck={false}
