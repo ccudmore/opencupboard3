@@ -3,30 +3,42 @@
 export type SentEmail = { sentAt: string; to: string[] };
 
 export type Appointment = {
-	id: string;
-	startTime: Date;
-	endTime: Date;
-	past: boolean;
-	booking: { id: string; householdId: string; name: string; confirmations: SentEmail[]; reminders: SentEmail[] } | null;
+  id: string;
+  startTime: Date;
+  endTime: Date;
+  past: boolean;
+  booking: {
+    id: string;
+    householdId: string;
+    name: string;
+    confirmations: SentEmail[];
+    reminders: SentEmail[];
+  } | null;
 };
 
 export type Service = {
-	id: string;
-	title: string;
-	note: string;
-	status: 'ACTIVE' | 'CANCELLED';
-	startTime: Date;
-	endTime: Date;
-	date: string; // YYYY-MM-DD in the organization's time zone
-	startClock: string; // HH:MM
-	endClock: string;
-	past: boolean;
-	siteId: string;
-	siteName: string;
-	appointments: Appointment[];
-	counts: { total: number; booked: number; open: number };
-	roles: { role: string; required: number; filled: number }[];
-	volunteers: { assignmentId: string; volunteerId: string; name: string; role: string; status: string }[];
+  id: string;
+  title: string;
+  note: string;
+  status: "ACTIVE" | "CANCELLED";
+  startTime: Date;
+  endTime: Date;
+  date: string; // YYYY-MM-DD in the organization's time zone
+  startClock: string; // HH:MM
+  endClock: string;
+  past: boolean;
+  siteId: string;
+  siteName: string;
+  appointments: Appointment[];
+  counts: { total: number; booked: number; open: number };
+  roles: { role: string; required: number; filled: number }[];
+  volunteers: {
+    assignmentId: string;
+    volunteerId: string;
+    name: string;
+    role: string;
+    status: string;
+  }[];
 };
 
 export type Site = { id: string; name: string };

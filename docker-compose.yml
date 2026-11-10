@@ -40,8 +40,8 @@ services:
       retries: 10
       start_period: 10s
 
-# One-shot job: applies the schema, then loads reference data (permissions and
-# roles). Both steps are safe to repeat on every `up`.
+  # One-shot job: applies the schema, then loads reference data (permissions and
+  # roles). Both steps are safe to repeat on every `up`.
   db-push:
     image: craigcudmore/opencupboard3:latest
     pull_policy: always

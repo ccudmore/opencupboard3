@@ -7,6 +7,6 @@ export async function geocode(query: string, apiKey: string) {
     const [lng, lat] = data.features[0].geometry.coordinates;
     return { lat, lng };
   } else {
-    throw new Error('Location not found');
+    throw new Error("Location not found");
   }
 }

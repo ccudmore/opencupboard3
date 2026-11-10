@@ -1,118 +1,138 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle } from "@sveltejs/kit";
 
 import { auth } from "$lib/server/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
-import { building } from '$app/environment'
-import prisma from "$lib/prisma"
-import { sequence } from '@sveltejs/kit/hooks';
-import { env } from '$env/dynamic/private';
+import { building } from "$app/environment";
+import prisma from "$lib/prisma";
+import { sequence } from "@sveltejs/kit/hooks";
+import { env } from "$env/dynamic/private";
 
 type RolePermission = { permissionId: string };
 type RoleEntry = { role: { permissions: RolePermission[] } };
 
 function uniquePermissionIds(data: RoleEntry[]): string[] {
-  return [...new Set(data.flatMap((d) => d.role.permissions.map((p) => p.permissionId)))];
+  return [
+    ...new Set(
+      data.flatMap((d) => d.role.permissions.map((p) => p.permissionId)),
+    ),
+  ];
 }
 
-const CSP_HEADER = env.CSP_ENFORCE === 'true'
-	? 'Content-Security-Policy'
-	: 'Content-Security-Policy-Report-Only';
+const CSP_HEADER =
+  env.CSP_ENFORCE === "true"
+    ? "Content-Security-Policy"
+    : "Content-Security-Policy-Report-Only";
 
 async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
-    // don't touch the database for public content
-	const path = event.url.pathname;
-	if (path === '/healthz' || path.startsWith('/logo/')) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
+  // don't touch the database for public content
+  const path = event.url.pathname;
+  if (path === "/healthz" || path.startsWith("/logo/")) {
+    event.locals.user = null;
+    event.locals.session = null;
+    return resolve(event);
+  }
 
-    const authSession = await auth.api.getSession({ headers: event.request.headers });
-    // An inactive user is treated as signed out, even if they still have a session
-    if (authSession && authSession.user.status !== 'INACTIVE') {
-        const roleRows = await prisma.userRole.findMany({
-            // permissions of an inactive role aren't given out
-            where: { userId: authSession.user.id, role: { status: 'ACTIVE' } },
-            select: { role: { select: { name: true, id: true, permissions: true } } }
-        });
-        event.locals.user = {
-            id: authSession.user.id,
-            name: authSession.user.name,
-            email: authSession.user.email,
-            image: authSession.user.image??'',
-            roles: roleRows.map((r) => r.role.name),
-            permissions: uniquePermissionIds(roleRows),
-        };
-        event.locals.session = {
-            id: authSession.session.id,
-            expiresAt: authSession.session.expiresAt
-        };
-    } else {
-        event.locals.user = null;
-        event.locals.session = null;
-    }
-    return resolve(event)
+  const authSession = await auth.api.getSession({
+    headers: event.request.headers,
+  });
+  // An inactive user is treated as signed out, even if they still have a session
+  if (authSession && authSession.user.status !== "INACTIVE") {
+    const roleRows = await prisma.userRole.findMany({
+      // permissions of an inactive role aren't given out
+      where: { userId: authSession.user.id, role: { status: "ACTIVE" } },
+      select: { role: { select: { name: true, id: true, permissions: true } } },
+    });
+    event.locals.user = {
+      id: authSession.user.id,
+      name: authSession.user.name,
+      email: authSession.user.email,
+      image: authSession.user.image ?? "",
+      roles: roleRows.map((r) => r.role.name),
+      permissions: uniquePermissionIds(roleRows),
+    };
+    event.locals.session = {
+      id: authSession.session.id,
+      expiresAt: authSession.session.expiresAt,
+    };
+  } else {
+    event.locals.user = null;
+    event.locals.session = null;
+  }
+  return resolve(event);
 }
 const CSP = [
-	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline'",
-	"worker-src 'self' blob:",
-	"style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.googleusercontent.com",
-	"connect-src 'self' https://nominatim.openstreetmap.org https://api.maptiler.com",
-	"font-src 'self' data:",
-	"object-src 'none'",
-	"base-uri 'self'",
-	"form-action 'self'",
-	"frame-ancestors 'none'"
-].join('; ');
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.googleusercontent.com",
+  "connect-src 'self' https://nominatim.openstreetmap.org https://api.maptiler.com",
+  "font-src 'self' data:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
 
 const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
-	const response = await resolve(event);
+  const response = await resolve(event);
 
-	try {
-		const h = response.headers;
-		// X-Content-Type-Options, X-Frame-Options, Referrer-Policy and HSTS come from nginx.
-		h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  try {
+    const h = response.headers;
+    // X-Content-Type-Options, X-Frame-Options, Referrer-Policy and HSTS come from nginx.
+    h.set(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=()",
+    );
 
-		// Don't override a stricter CSP a route sets itself (the /logo route does).
-		if (!h.has('Content-Security-Policy')) {
-			h.set(CSP_HEADER, CSP);
-		}
-	} catch {
-		// Some responses (for example ones passed through from fetch) have immutable headers.
-	}
+    // Don't override a stricter CSP a route sets itself (the /logo route does).
+    if (!h.has("Content-Security-Policy")) {
+      h.set(CSP_HEADER, CSP);
+    }
+  } catch {
+    // Some responses (for example ones passed through from fetch) have immutable headers.
+  }
 
-	return response;
+  return response;
 };
 
 const handleSecurityHeadersOld: Handle = async ({ event, resolve }) => {
-	const response = await resolve(event);
+  const response = await resolve(event);
 
-	try {
-		const h = response.headers;
-		h.set('X-Content-Type-Options', 'nosniff');
-		h.set('X-Frame-Options', 'DENY');
-		h.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-		h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  try {
+    const h = response.headers;
+    h.set("X-Content-Type-Options", "nosniff");
+    h.set("X-Frame-Options", "DENY");
+    h.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    h.set(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=()",
+    );
 
-		// Don't override a stricter CSP a route sets itself (the /logo route does).
-		if (!h.has('Content-Security-Policy')) {
-        	h.set(CSP_HEADER, CSP);
-		}
-
-		// Only meaningful over HTTPS. nginx terminates TLS, so key off the public URL.
-		if (env.BETTER_AUTH_URL?.startsWith('https://')) {
-			h.set('Strict-Transport-Security', 'max-age=31536000');
-		}
-	} catch {
-	    const headers = new Headers(response.headers);
-	    headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-	    if (!headers.has('Content-Security-Policy')) headers.set(CSP_HEADER, CSP);
-	    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    // Don't override a stricter CSP a route sets itself (the /logo route does).
+    if (!h.has("Content-Security-Policy")) {
+      h.set(CSP_HEADER, CSP);
     }
 
-	return response;
+    // Only meaningful over HTTPS. nginx terminates TLS, so key off the public URL.
+    if (env.BETTER_AUTH_URL?.startsWith("https://")) {
+      h.set("Strict-Transport-Security", "max-age=31536000");
+    }
+  } catch {
+    const headers = new Headers(response.headers);
+    headers.set(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=()",
+    );
+    if (!headers.has("Content-Security-Policy")) headers.set(CSP_HEADER, CSP);
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  }
+
+  return response;
 };
 
 // Authorization is now done in the +layout.server.ts at the route group level
@@ -154,8 +174,12 @@ async function authorizationHandle({event, resolve} : {event:any, resolve:any}) 
 */
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
-	return svelteKitHandler({ event, resolve, auth, building });
+  return svelteKitHandler({ event, resolve, auth, building });
 };
 
 //export const handle: Handle = sequence(handleAuthentication, handleBetterAuth);
-export const handle: Handle = sequence(handleSecurityHeaders, handleAuthentication, handleBetterAuth);
+export const handle: Handle = sequence(
+  handleSecurityHeaders,
+  handleAuthentication,
+  handleBetterAuth,
+);

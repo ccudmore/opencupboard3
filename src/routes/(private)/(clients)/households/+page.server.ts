@@ -1,32 +1,37 @@
-import type { PageServerLoad } from './$types';
-import { searchHousehold, parseHouseholdSearchParams } from '$lib/server/queries/household';
-import { fail } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import prisma from '$lib/prisma';
-import { superValidate, setError, message } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-import { newHouseholdSchema } from '$lib/formschemas/household';
+import type { PageServerLoad } from "./$types";
+import {
+  searchHousehold,
+  parseHouseholdSearchParams,
+} from "$lib/server/queries/household";
+import { fail } from "@sveltejs/kit";
+import type { Actions } from "./$types";
+import prisma from "$lib/prisma";
+import { superValidate, setError, message } from "sveltekit-superforms";
+import { zod4 } from "sveltekit-superforms/adapters";
+import { newHouseholdSchema } from "$lib/formschemas/household";
 import { redirect } from "@sveltejs/kit";
-import { requirePermission } from '$lib/utils';
-import { randomInt } from 'node:crypto';
-import { ClientRelationship } from '$prisma/enums';
+import { requirePermission } from "$lib/utils";
+import { randomInt } from "node:crypto";
+import { ClientRelationship } from "$prisma/enums";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-  requirePermission(locals?.user?.permissions, url, ['manage-households']);
+  requirePermission(locals?.user?.permissions, url, ["manage-households"]);
 
-	const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
-	const form = await superValidate(zod4(newHouseholdSchema));
+  const result = await searchHousehold(
+    parseHouseholdSearchParams(url.searchParams),
+  );
+  const form = await superValidate(zod4(newHouseholdSchema));
 
-	// Requests from the public booking page that are waiting for someone
-	const [pendingBookings, pendingHouseholds] = await Promise.all([
-		prisma.appointmentBookings.count({ where: { status: 'PENDING' } }),
-		prisma.household.count({ where: { status: 'PENDING' } })
-	]);
+  // Requests from the public booking page that are waiting for someone
+  const [pendingBookings, pendingHouseholds] = await Promise.all([
+    prisma.appointmentBookings.count({ where: { status: "PENDING" } }),
+    prisma.household.count({ where: { status: "PENDING" } }),
+  ]);
 
-	return { ...result, form, pendingCount: pendingBookings + pendingHouseholds };
+  return { ...result, form, pendingCount: pendingBookings + pendingHouseholds };
 };
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 /*
 function generateRandomString(length: number): string {
   let result = '';
@@ -38,7 +43,7 @@ function generateRandomString(length: number): string {
 */
 
 function generateUniqueId(length = 4): string {
-  let id = '';
+  let id = "";
   for (let i = 0; i < length; i++) {
     id += ALPHABET[randomInt(ALPHABET.length)];
   }
@@ -47,35 +52,49 @@ function generateUniqueId(length = 4): string {
 
 export const actions: Actions = {
   createHousehold: async ({ request, locals, url }) => {
-    requirePermission(locals?.user?.permissions, url, ['manage-households']);
-    
+    requirePermission(locals?.user?.permissions, url, ["manage-households"]);
+
     const form = await superValidate(request, zod4(newHouseholdSchema));
-		if (!form.valid) return fail(400, { form });
-    
-    let newHousehold = null
+    if (!form.valid) return fail(400, { form });
+
+    let newHousehold = null;
     for (let attempt = 0; attempt < 5 && !newHousehold; attempt++) {
       try {
-  	    const { firstName, lastName, email, phone, ...householdWithoutMembers } = form.data;
-		    const household = {...householdWithoutMembers,
+        const {
+          firstName,
+          lastName,
+          email,
+          phone,
+          ...householdWithoutMembers
+        } = form.data;
+        const household = {
+          ...householdWithoutMembers,
           uniqueId: generateUniqueId(),
-          createdBy: locals.user?.id??'system',
-          members: {create: {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            phone: phone,
-            createdBy: locals.user?.id??'system',
-            relationship: ClientRelationship.PRIMARY}
-          }
-        }
+          createdBy: locals.user?.id ?? "system",
+          members: {
+            create: {
+              firstName: firstName,
+              lastName: lastName,
+              email: email,
+              phone: phone,
+              createdBy: locals.user?.id ?? "system",
+              relationship: ClientRelationship.PRIMARY,
+            },
+          },
+        };
         newHousehold = await prisma.household.create({
-                                  data: household })
+          data: household,
+        });
       } catch (err) {
-        if ((err as { code?: string }).code === 'P2002') continue; // ID collision, try another
-        console.error(err)
-        return message(form, 'Could not save the household. Please try again.', { status: 500 });
+        if ((err as { code?: string }).code === "P2002") continue; // ID collision, try another
+        console.error(err);
+        return message(
+          form,
+          "Could not save the household. Please try again.",
+          { status: 500 },
+        );
       }
-      throw redirect(303, '/households/'+newHousehold.id)
+      throw redirect(303, "/households/" + newHousehold.id);
     }
-  }
+  },
 };

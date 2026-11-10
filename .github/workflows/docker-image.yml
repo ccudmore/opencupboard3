@@ -2,9 +2,9 @@ name: opencupboard CI (amd64)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 # Default token is read-only; no job needs more.
 permissions:
@@ -28,9 +28,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v6   # use the current major you trust
+        uses: actions/setup-node@v6 # use the current major you trust
         with:
-          node-version: 24            # match the Node version in your Dockerfile
+          node-version: 24 # match the Node version in your Dockerfile
           cache: npm
 
       - run: npm ci
@@ -73,12 +73,12 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Scan image
-        uses: aquasecurity/trivy-action@v0.35.0   # pin to a current release or commit SHA
+        uses: aquasecurity/trivy-action@v0.35.0 # pin to a current release or commit SHA
         with:
           image-ref: opencupboard3:ci
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: '1'
+          exit-code: "1"
 
       # Everything below runs only on a merge/push to main.
       - name: Log in to Docker Hub
