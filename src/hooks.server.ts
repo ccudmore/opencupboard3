@@ -62,7 +62,7 @@ async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
 }
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.googleusercontent.com",
@@ -82,7 +82,7 @@ const handleSecurityHeaders: Handle = async ({ event, resolve }) => {
     // X-Content-Type-Options, X-Frame-Options, Referrer-Policy and HSTS come from nginx.
     h.set(
       "Permissions-Policy",
-      "camera=(), microphone=(), geolocation=(), payment=()",
+      "camera=(self), microphone=(), geolocation=(), payment=()",
     );
 
     // Don't override a stricter CSP a route sets itself (the /logo route does).
@@ -106,7 +106,7 @@ const handleSecurityHeadersOld: Handle = async ({ event, resolve }) => {
     h.set("Referrer-Policy", "strict-origin-when-cross-origin");
     h.set(
       "Permissions-Policy",
-      "camera=(), microphone=(), geolocation=(), payment=()",
+      "camera=(self), microphone=(), geolocation=(), payment=()",
     );
 
     // Don't override a stricter CSP a route sets itself (the /logo route does).
@@ -122,7 +122,7 @@ const handleSecurityHeadersOld: Handle = async ({ event, resolve }) => {
     const headers = new Headers(response.headers);
     headers.set(
       "Permissions-Policy",
-      "camera=(), microphone=(), geolocation=(), payment=()",
+      "camera=(self), microphone=(), geolocation=(), payment=()",
     );
     if (!headers.has("Content-Security-Policy")) headers.set(CSP_HEADER, CSP);
     return new Response(response.body, {

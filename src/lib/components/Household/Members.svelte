@@ -8,6 +8,8 @@
   	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
 	import { idTypeOptions, relationshipOptions, relationshipLabels } from '$lib/labels'
+	import IdScanner from './IdScanner.svelte';
+	import { namesAgree, birthYearOf, todayIso, type LicenceInfo } from '$lib/idScan/aamva';
 
 	// for opening and closing the member detail drawer
 	let openMemberRow: number | null | undefined = $state();
@@ -22,9 +24,66 @@
     // for opening and closing the id confirmation modal
 	let idVerificationRow: number | null | undefined = $state();
 	let idVerificationModal = $state(false);
+	let idType = $state(String(idTypeOptions[0]?.value ?? ''));
+	let scanning = $state(false);
+	let licence = $state<LicenceInfo | null>(null);
+	let otherBarcode = $state(false);
+
+	// closing the dialog any way at all switches the camera off
+	$effect(() => {
+		if (!idVerificationModal) scanning = false;
+	});
+
+	// scanning a licence from the member drawer fills in this member's name and birth year
+	let drawerScanning = $state(false);
+	let drawerOther = $state(false);
+	$effect(() => {
+		if (!openMemberDrawer) { drawerScanning = false; drawerOther = false; }
+	});
+	function onDrawerScan(found: LicenceInfo) {
+		if (openMemberRow == null) return;
+		const member = $form.members[openMemberRow];
+		if (found.givenNames) member.firstName = found.givenNames;
+		if (found.familyName) member.lastName = found.familyName;
+		const year = birthYearOf(found);
+		if (year) member.birthYear = year;
+		member.idChecked = 'DRIVERS_LICENSE';
+		member.idCheckDate = new Date();
+		drawerScanning = false;
+		drawerOther = false;
+		toast('Filled in from the licence');
+	}
+
+	function onScan(found: LicenceInfo) {
+		licence = found;
+		otherBarcode = false;
+		scanning = false;
+		idType = 'DRIVERS_LICENSE';
+	}
+
+	/** How the scanned licence compares with the member being checked. */
+	const checks = $derived.by(() => {
+		if (!licence || idVerificationRow == null) return [];
+		const m = $form.members[idVerificationRow];
+		const name = namesAgree(m, licence);
+		const year = birthYearOf(licence);
+		const out: { ok: boolean; text: string }[] = [
+			name.first && name.last
+				? { ok: true, text: 'The name matches.' }
+				: { ok: false, text: `The name on the card does not match ${m.firstName} ${m.lastName}.` }
+		];
+		if (year && m.birthYear) out.push(m.birthYear === year ? { ok: true, text: 'The birth year matches.' } : { ok: false, text: `The birth year on the card (${year}) is not ${m.birthYear}.` });
+		else if (year) out.push({ ok: true, text: `The birth year (${year}) will be filled in.` });
+		if (licence.expiryDate && licence.expiryDate < todayIso()) out.push({ ok: false, text: `The card expired on ${licence.expiryDate}.` });
+		return out;
+	});
 
     function toggleIdConfirmation(i: number, event: MouseEvent) {
     	idVerificationRow = openMemberRow === i ? null : i;
+		idType = idTypeOptions[0]?.value ?? '';
+		licence = null;
+		otherBarcode = false;
+		scanning = false;
 		idVerificationModal=true
 		event.stopPropagation()
 
@@ -45,14 +104,16 @@
 	}
 	
 	function updateId({ action, data }: { action: string; data: FormData }) {
-		const idType = (data.get("idtype") as string)
-
 	    if (action === "confirm" && idType && idVerificationRow != null) {
-			$form.members[idVerificationRow].idChecked = idType
-			$form.members[idVerificationRow].idCheckDate = new Date()
+			const member = $form.members[idVerificationRow]
+			member.idChecked = idType
+			member.idCheckDate = new Date()
+			// the birth year is the one thing kept from the scan, and only when it was blank
+			if (licence && !member.birthYear) member.birthYear = birthYearOf(licence)
+			toast("Id updated")
 		}
-		toast("Id updated")
-		return true;
+		scanning = false
+		licence = null
 	}
 
 	function confirmDelete() {
@@ -164,8 +225,40 @@
 	</ul>
 {/if}
 
-<Modal title="Identification Check" form size="xs" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
-	ID type presented<Select class="mb-2" items={idTypeOptions} name="idtype"/>
+<Modal title="Identification Check" form size="md" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
+	<div class="space-y-3">
+		{#if scanning}
+			<IdScanner onscan={onScan} onother={() => (otherBarcode = true)} />
+			<Button type="button" outline color="dark" onclick={() => (scanning = false)}>Stop scanning</Button>
+		{:else}
+			<Button type="button" outline color="blue" onclick={() => { otherBarcode = false; scanning = true; }}>
+				{licence ? 'Scan again' : 'Scan ID with the camera'}
+			</Button>
+		{/if}
+
+		{#if otherBarcode}
+			<p class="text-sm text-yellow-700 dark:text-yellow-400">A barcode was read, but it is not a driver's licence or provincial ID barcode, so nothing could be filled in. Choose the ID type yourself.</p>
+		{/if}
+
+		{#if licence}
+			<div class="rounded-lg border border-gray-200 p-3 text-sm text-gray-900 dark:border-gray-600 dark:text-white">
+				<p class="font-semibold">{licence.givenNames} {licence.familyName}</p>
+				<p class="hint">
+					{licence.birthDate ? `Born ${licence.birthDate}` : ''}{licence.expiryDate ? ` · Expires ${licence.expiryDate}` : ''}{licence.issuer ? ` · ${licence.issuer}` : ''}
+				</p>
+				<ul class="mt-2 space-y-1">
+					{#each checks as c}
+						<li class={c.ok ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>{c.ok ? '✓' : '✗'} {c.text}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		<div>
+			<Label for="idtype" class="mb-1">ID type presented</Label>
+			<Select id="idtype" class="mb-2" items={idTypeOptions} name="idtype" bind:value={idType} />
+		</div>
+	</div>
 	{#snippet footer()}
     	<Button outline type="submit" value="confirm" color="dark">Confirm</Button>
     	<Button outline type="submit" value="cancel" color="dark">Cancel</Button>
@@ -225,6 +318,17 @@
 					</Helper>
 				{/if}
 			</div>
+		</div>
+
+		<div class="mt-4 space-y-2 px-4 sm:pl-10">
+			{#if drawerScanning}
+				<IdScanner onscan={onDrawerScan} onother={() => (drawerOther = true)} />
+				<Button type="button" outline color="dark" onclick={() => (drawerScanning = false)}>Stop scanning</Button>
+			{:else}
+				<Button type="button" outline color="blue" onclick={() => { drawerOther = false; drawerScanning = true; }}>Scan driver’s licence to fill in name and birth year</Button>
+			{/if}
+			{#if drawerOther}<p class="text-sm text-yellow-700 dark:text-yellow-400">That barcode isn't a driver's licence or provincial ID, so nothing was filled in.</p>{/if}
+			<p class="hint">Scanning also records the ID as checked today. The card is not saved.</p>
 		</div>
 
 		<div class="mt-0 px-4 pb-5 pt-5 sm:pl-10">

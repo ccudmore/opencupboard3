@@ -3,6 +3,8 @@
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { Modal, Label, Input, Textarea, MultiSelect, Button, ButtonGroup, Helper, Alert } from 'flowbite-svelte';
 	import { newHouseholdSchema } from '$lib/formschemas/household';
+	import IdScanner from './IdScanner.svelte';
+	import { provinceName, type LicenceInfo } from '$lib/idScan/aamva';
     import { toast } from "svelte-sonner";
   	import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
 
@@ -25,6 +27,24 @@ let {
 		}
 	});
 
+	// Scanning a licence fills in the name and address of the first member. Nothing from the scan is
+	// kept except what ends up in these fields, and the person can still change any of it.
+	let scanning = $state(false);
+	let scanned = $state(false);
+	let otherBarcode = $state(false);
+	function onScan(l: LicenceInfo) {
+		const fill = (cur: string | undefined, v: string) => (v ? v : (cur ?? ''));
+		$form.firstName = fill($form.firstName, l.givenNames);
+		$form.lastName = fill($form.lastName, l.familyName);
+		$form.street = fill($form.street, l.street);
+		$form.city = fill($form.city, l.city);
+		$form.postalCode = fill($form.postalCode, l.postalCode);
+		if (l.issuer) $form.province = provinceName(l.issuer);
+		scanning = false;
+		scanned = true;
+		otherBarcode = false;
+	}
+
 	const languages = ['English', 'French', 'Arabic', 'Mandarin', 'Spanish', 'Somali'].map((l) => ({
 		value: l,
 		name: l
@@ -36,11 +56,24 @@ let {
 
 </script>
 
-<Modal title="New Household" bind:open size="lg" onclose={() => reset()}>
+<Modal title="New Household" bind:open size="lg" onclose={() => { scanning = false; scanned = false; otherBarcode = false; reset(); }}>
 	<form method="POST" action="?/createHousehold" use:enhance class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#if $message}
 			<Alert color="red" class="md:col-span-2">{$message}</Alert>
 		{/if}
+
+		<div class="space-y-2 md:col-span-2">
+			{#if scanning}
+				<IdScanner onscan={onScan} onother={() => (otherBarcode = true)} />
+				<Button type="button" outline color="dark" onclick={() => (scanning = false)}>Stop scanning</Button>
+			{:else}
+				<Button type="button" outline color="blue" onclick={() => { otherBarcode = false; scanning = true; }}>
+					{scanned ? 'Scan a different licence' : 'Scan driver’s licence to fill in name and address'}
+				</Button>
+			{/if}
+			{#if scanned}<p class="hint">Filled in from the licence. Please check it. The card was not saved.</p>{/if}
+			{#if otherBarcode}<p class="text-sm text-yellow-700 dark:text-yellow-400">That barcode isn't a driver's licence or provincial ID, so nothing was filled in. Please type the details.</p>{/if}
+		</div>
 
 		<div>
 			<Label for="firstName">First name</Label>
