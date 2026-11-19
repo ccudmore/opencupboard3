@@ -30,7 +30,8 @@
   })
 </script>
 <Navbar class="relative mx-10 sm:mx-0">
-  <NavDrawer/>
+  <!--NavDrawer/-->
+    <AppsMenu />
   <NavBrand href="/" class="mx-10">
   	<Logo class="h-8" />
     <span class="ml-px self-center text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">{organizationName}</span>

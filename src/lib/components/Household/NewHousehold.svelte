@@ -22,13 +22,31 @@ let {
 			toast(`Error: ${result.error.message}`);
 		},
 		onUpdated({ form }) {
-			toast('updated '+form.data.firstName)
-			if (form.valid) open = false;
+			if (form.valid) {
+				toast('updated '+form.data.firstName)
+				open = false;
+			}
 		}
 	});
 
 	// Scanning a licence fills in the name and address of the first member. Nothing from the scan is
 	// kept except what ends up in these fields, and the person can still change any of it.
+	// the address is already registered: the server sends back who is there, and the person decides
+	type Match = { id: string; uniqueId: string | null; name: string; address: string; status: string };
+	const duplicates = $derived<Match[]>(($message && typeof $message === 'object' && $message.duplicates) || []);
+	let confirmDuplicate = $state(false);
+	let formEl: HTMLFormElement | undefined = $state();
+	function createAnyway() {
+		confirmDuplicate = true;
+		// let the hidden field pick up the new value before submitting
+		queueMicrotask(() => formEl?.requestSubmit());
+	}
+	// changing the address starts the question again
+	$effect(() => {
+		void $form.street; void $form.unitNumber; void $form.postalCode;
+		confirmDuplicate = false;
+	});
+
 	let scanning = $state(false);
 	let scanned = $state(false);
 	let otherBarcode = $state(false);
@@ -57,8 +75,24 @@ let {
 </script>
 
 <Modal title="New Household" bind:open size="lg" onclose={() => { scanning = false; scanned = false; otherBarcode = false; reset(); }}>
-	<form method="POST" action="?/createHousehold" use:enhance class="grid grid-cols-1 gap-4 md:grid-cols-2">
-		{#if $message}
+	<form bind:this={formEl} method="POST" action="?/createHousehold" use:enhance class="grid grid-cols-1 gap-4 md:grid-cols-2">
+		<input type="hidden" name="confirmDuplicate" value={confirmDuplicate ? 'true' : ''} />
+		{#if duplicates.length}
+			<Alert color="yellow" class="md:col-span-2">
+				<p class="font-medium">This address is already registered.</p>
+				<ul class="mt-2 space-y-2">
+					{#each duplicates as d (d.id)}
+						<li class="wrap-break-word">
+							<span class="font-medium">{d.name}</span>{d.uniqueId ? ` (ID ${d.uniqueId})` : ''} · {d.address} · {d.status}
+							<Button size="xs" color="blue" class="ml-2" href={`/households/${d.id}`}>Open this household</Button>
+						</li>
+					{/each}
+				</ul>
+				<div class="mt-3">
+					<Button type="button" size="xs" outline color="dark" disabled={$submitting} onclick={createAnyway}>It's a different household, create it anyway</Button>
+				</div>
+			</Alert>
+		{:else if $message && typeof $message === 'string'}
 			<Alert color="red" class="md:col-span-2">{$message}</Alert>
 		{/if}
 

@@ -19,11 +19,14 @@
 	let sendInvite = $state(true);
 	let busy = $state(false);
 	let error = $state('');
+	type Match = { id: string; name: string; email: string; status: string };
+	let duplicates = $state<Match[]>([]);
 
 	const field = 'block w-full max-w-full min-w-0';
 
 	function reset() {
 		found = null;
+		duplicates = [];
 		checkedEmail = '';
 		error = '';
 	}
@@ -48,13 +51,17 @@
 		}
 	}
 
-	async function add(e: SubmitEvent) {
-		e.preventDefault();
+	async function add(e?: SubmitEvent, confirmDuplicate = false) {
+		e?.preventDefault();
 		error = '';
+		duplicates = [];
 		busy = true;
-		const r = await callAction('add', { email: checkedEmail, firstName, lastName, sendInvite: String(sendInvite && found?.kind === 'none') });
+		const r = await callAction('add', { email: checkedEmail, firstName, lastName, sendInvite: String(sendInvite && found?.kind === 'none'), confirmDuplicate: String(confirmDuplicate) });
 		busy = false;
-		if (!r.ok) return (error = r.message);
+		if (!r.ok) {
+			if (r.data?.duplicates?.length) return (duplicates = r.data.duplicates);
+			return (error = r.message);
+		}
 		if (r.data.invite === 'sent') toast.success('Volunteer added and invitation sent.');
 		else if (r.data.invite === 'failed') toast.warning(`Volunteer added, but the invitation was not sent: ${r.data.inviteMessage}`);
 		else toast.success('Volunteer added.');
@@ -99,7 +106,24 @@
 			<Alert color="green">No account has this email yet. One will be created for the volunteer.</Alert>
 		{/if}
 
-		<form class="space-y-3" onsubmit={add}>
+		{#if duplicates.length}
+			<Alert color="yellow">
+				<p class="font-medium">A volunteer with this name already exists.</p>
+				<ul class="mt-2 space-y-2">
+					{#each duplicates as d (d.id)}
+						<li class="wrap-break-word">
+							{d.name} · {d.email} · {d.status}
+							<Button size="xs" color="blue" class="ml-2" href={`/volunteers/${d.id}`}>Open this volunteer</Button>
+						</li>
+					{/each}
+				</ul>
+				<div class="mt-3">
+					<Button size="xs" outline color="dark" disabled={busy} onclick={() => add(undefined, true)}>It's a different person, add anyway</Button>
+				</div>
+			</Alert>
+		{/if}
+
+		<form class="space-y-3" onsubmit={(e) => add(e)}>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<div class="min-w-0">
 					<Label for="v-first">First name</Label>
