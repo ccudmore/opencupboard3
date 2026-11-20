@@ -7,7 +7,7 @@ import {
   AppointmentBookingStatus,
   ClientRelationship,
   HouseholdStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import { sendApprovalEmail } from "#lib/server/email/householdEmail.ts";
 import { previewEmail, sendEmail } from "#lib/server/bookingActions.ts";

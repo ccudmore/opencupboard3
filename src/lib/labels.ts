@@ -7,7 +7,7 @@ import {
   ServiceTime,
   DeliveryType,
   DatedRequestStatus,
-} from "$prisma/browser";
+} from "#prisma/browser";
 
 export const householdStatusLabels = {
   PENDING: "Pending",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 
 /** Food inventory: items in categories, each stored at a site, in a room, on a shelf, in a box. */
 

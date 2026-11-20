@@ -2,7 +2,7 @@
 	import { Alert, Badge, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
 	import { PlusOutline, TrashBinOutline, FileCopyOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 	import type { Service, Site, Appointment } from './types';
@@ -48,11 +48,11 @@
 		busy = '';
 		if (!r.ok) {
 			toast(r.message);
-			await invalidateAll();
+			await refreshAll();
 			return null;
 		}
 		if (done) toast(done);
-		await invalidateAll();
+		await refreshAll();
 		return r.data;
 	}
 
@@ -103,7 +103,7 @@
 		}
 		duplicateOpen = false;
 		toast('Service date duplicated. Appointments and volunteer counts were copied; bookings and volunteers were not.');
-		await invalidateAll();
+		await refreshAll();
 		onopen(r.data.id);
 	}
 
@@ -134,7 +134,7 @@
 			return;
 		}
 		toast(r.data.added === 1 ? 'Appointment added.' : `${r.data.added} appointments added.`);
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	async function deleteAppointment() {
@@ -192,14 +192,14 @@
 			} else {
 				toast(r.message);
 			}
-			await invalidateAll(); // shows who has the time now
+			await refreshAll(); // shows who has the time now
 			return;
 		}
 		toast(`${name} booked.`);
 		openAppointment = '';
 		clientQuery = '';
 		clientResults = [];
-		await invalidateAll();
+		await refreshAll();
 		// The usual prompts: send a confirmation email? customize it?
 		await bookingPrompts?.start(r.data.bookingId, 'confirmation', true);
 	}

@@ -6,7 +6,7 @@ import {
   DatedRequestStatus,
   ServiceTime,
   DeliveryType,
-} from "$prisma/enums";
+} from "#prisma/enums";
 
 // Canadian postal code: A1A 1A1
 // First letter excludes D, F, I, O, Q, U, W, Z; the other letters exclude D, F, I, O, Q, U

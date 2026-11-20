@@ -2,7 +2,7 @@ import { eventPlace } from "#lib/eventLocation.ts";
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
 import { TIMEZONE } from "$app/env/private";
-import { EventStatus } from "$prisma/enums";
+import { EventStatus } from "#prisma/enums";
 import prisma from "#lib/prisma.ts";
 import { requirePermission } from "#lib/utils.ts";
 import { openShiftsFor, signUp, withdrawSignup } from "#lib/server/shifts.ts";

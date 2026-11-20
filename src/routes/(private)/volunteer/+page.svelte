@@ -2,7 +2,7 @@
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { Alert, Badge, Button, Card } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { CalendarMonthOutline, MapPinOutline, ClockOutline } from 'flowbite-svelte-icons';
 
@@ -26,11 +26,11 @@
 		if (!r.ok) {
 			toast(r.message);
 			// the shift may have just filled up; refresh the list either way
-			await invalidateAll();
+			await refreshAll();
 			return;
 		}
 		toast(done);
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	const firstName = $derived(data.volunteer?.firstName ?? data.userName.split(' ')[0]);

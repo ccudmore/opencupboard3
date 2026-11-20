@@ -3,7 +3,7 @@
 	import { Select, Label } from "flowbite-svelte";
 	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate } from "#lib/utils.ts"; 
 	import {householdStatusOptions} from '#lib/labels.ts'
-	import { ClientRelationship } from '$prisma/enums';
+	import { ClientRelationship } from '#prisma/enums';
 
 	let { form, errors, constraints, bookings, enhance } = $props();
 

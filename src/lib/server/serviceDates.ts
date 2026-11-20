@@ -8,7 +8,7 @@ import {
   EventStatus,
   HouseholdStatus,
   VolunteerAssignmentsStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { calculateNextServiceDate } from "#lib/utils.ts";
 import { rolesFor } from "#lib/volunteerRoles.ts";
 import { zonedParts, zonedToDate } from "#lib/timezone.ts";

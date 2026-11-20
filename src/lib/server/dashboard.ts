@@ -4,7 +4,7 @@ import {
   EventStatus,
   ExpenseStatus,
   VolunteerAssignmentsStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { zonedParts } from "#lib/timezone.ts";
 
 // The numbers on the home page tiles. The page decides who may see which; these only count.

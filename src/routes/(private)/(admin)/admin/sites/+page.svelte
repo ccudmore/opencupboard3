@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Button, Drawer, Input, Label, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -56,7 +56,7 @@
 		}
 		toast(editing ? 'Site saved' : 'Site added');
 		open = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	async function remove() {
@@ -71,7 +71,7 @@
 		}
 		toast('Site deleted');
 		open = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	const ignoreEnter = (e: KeyboardEvent) => e.key === 'Enter' && e.preventDefault();

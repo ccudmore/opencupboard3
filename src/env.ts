@@ -10,7 +10,12 @@ export const variables = defineEnvVars({
 	PUBLIC_ORGANIZATION_NAME: { public: true, schema: (input) => input },
 	PUBLIC_BETTER_AUTH_URL: { public: true, schema: (input) => input },
 	DATABASE_URL: { schema: (input) => input },
-	PUBLIC_ID_RENEWAL_PERIOD_MONTHS: { public: true, schema: (input) => input },
+	PUBLIC_ID_RENEWAL_PERIOD_MONTHS: { public: true, 
+		schema: (input: string | undefined) => {
+			const months = Number(input);
+			return Number.isFinite(months) && months > 0 ? months : 12; // 12 when unset or invalid
+		}
+ 	},
 	BETTER_AUTH_SECRET: { schema: (input) => input },
 	GOOGLE_CLIENT_ID: { schema: (input) => input },
 	GOOGLE_CLIENT_SECRET: { schema: (input) => input },

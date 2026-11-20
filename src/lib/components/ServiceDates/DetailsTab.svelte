@@ -2,7 +2,7 @@
 	import { Button, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import type { Service, Site } from './types';
 	import { FileCopyOutline } from 'flowbite-svelte-icons';
 	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
@@ -78,7 +78,7 @@
 		}
 		duplicateOpen = false;
 		toast('Service date duplicated. Appointments and volunteer counts were copied; bookings and volunteers were not.');
-		await invalidateAll();
+		await refreshAll();
 		onopen(r.data.id);
 	}
 </script>

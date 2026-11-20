@@ -13,10 +13,10 @@ import { buildEventEmail, sendEventEmail } from "#lib/server/email/eventEmail.ts
 import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import { zonedParts } from "#lib/timezone.ts";
 import { TIMEZONE } from "$app/env/private";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import { requirePermission, hasPermission } from "#lib/utils.ts";
 import { rolesFor } from "#lib/volunteerRoles.ts";
-import { VolunteerAssignmentsStatus } from "$prisma/enums";
+import { VolunteerAssignmentsStatus } from "#prisma/enums";
 import prisma from "#lib/prisma.ts";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";

@@ -3,7 +3,7 @@
 	import { Alert, Badge, Button, Card, Input } from 'flowbite-svelte';
 	
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 
@@ -38,7 +38,7 @@
 		if (!r.ok) return toast(r.message);
 		delete edits[e.id];
 		toast('Staffing saved.');
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	async function approve(id: string) {
@@ -47,10 +47,10 @@
 		busy = '';
 		if (!r.ok) {
 			toast(r.message);
-			await invalidateAll();
+			await refreshAll();
 			return;
 		}
-		await invalidateAll();
+		await refreshAll();
 		// Once approved, offer the confirmation email (the usual prompts)
 		await emailPrompts?.start(id, 'confirmation', true);
 	}
@@ -61,7 +61,7 @@
 		busy = '';
 		if (!r.ok) toast(r.message);
 		else toast('Signup declined.');
-		await invalidateAll();
+		await refreshAll();
 	}
 </script>
 

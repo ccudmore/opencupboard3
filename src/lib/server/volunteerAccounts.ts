@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import { sendAccountLink } from "#lib/server/accountLinks.ts";
 import { isMailConfigured } from "#lib/server/email/mailer.ts";
 

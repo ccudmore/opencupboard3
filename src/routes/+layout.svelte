@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signOut } from '#lib/auth-client.ts';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import '../app.css';
 	import { Navbar } from '#lib'
@@ -14,7 +14,7 @@
 	const favicon = '/images/default-logo.svg'
 	async function handleSignOut() {
 		await signOut();
-		await invalidateAll();
+		await refreshAll();
 		await goto('/login');
 	}
 </script>

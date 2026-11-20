@@ -2,7 +2,7 @@
 	import { Alert, Button, Datepicker, Helper, Input, Label, Select, Textarea } from 'flowbite-svelte';
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { CATEGORIES, PAYMENT_METHODS, toIsoDate } from '#lib/expenses.ts';
 
@@ -79,7 +79,7 @@
 		form = empty();
 		categories = [];
 		files = [];
-		await invalidateAll();
+		await refreshAll();
 		onsubmitted?.();
 	}
 </script>

@@ -3,7 +3,7 @@
     import { ShieldCheckOutline, LockOutline, UserSettingsOutline } from "flowbite-svelte-icons";
     import { page } from "$app/state";
 	import { signOut } from '#lib/auth-client.ts';
-    import { goto, invalidateAll } from '$app/navigation';
+    import { goto, refreshAll } from '$app/navigation';
     import UserAvatar from '#lib/components/UserAvatar.svelte';
 
    const user = $derived({
@@ -14,7 +14,7 @@
 
     async function doSignout() {
         await signOut();
-        await invalidateAll();
+        await refreshAll();
         await goto('/login');  
     }
 

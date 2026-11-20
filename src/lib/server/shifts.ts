@@ -1,6 +1,6 @@
 import { eventPlace } from "#lib/eventLocation.ts";
-import { Prisma } from "$prisma/client";
-import { EventStatus, VolunteerAssignmentsStatus } from "$prisma/enums";
+import { Prisma } from "#prisma/client";
+import { EventStatus, VolunteerAssignmentsStatus } from "#prisma/enums";
 import prisma from "#lib/prisma.ts";
 import { TIMEZONE } from "$app/env/private";
 import { rolesFor } from "#lib/volunteerRoles.ts";

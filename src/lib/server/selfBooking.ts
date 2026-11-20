@@ -6,7 +6,7 @@ import {
   ClientRelationship,
   EventStatus,
   HouseholdStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { calculateNextServiceDate } from "#lib/utils.ts";
 import { getHouseholdBookings } from "#lib/server/queries/booking.ts";
 import { notifyPermission } from "#lib/server/notifications.ts";

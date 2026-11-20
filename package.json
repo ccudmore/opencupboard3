@@ -57,6 +57,9 @@
   },
   "imports": {
     "#lib": "./src/lib/index.js",
-    "#lib/*": "./src/lib/*"
+    "#lib/*": "./src/lib/*",
+    "#prisma/client": "./prisma/src/generated/prisma/client.ts",
+    "#prisma/enums": "./prisma/src/generated/prisma/enums.ts",
+    "#prisma/browser": "./prisma/src/generated/prisma/browser.ts"
   }
 }

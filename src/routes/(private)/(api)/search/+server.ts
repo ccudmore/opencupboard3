@@ -1,6 +1,6 @@
 import { eventPlace } from "#lib/eventLocation.ts";
 import { streetWithUnit } from "#lib/address.ts";
-import { error, json } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
 import {
   searchHousehold,
@@ -72,7 +72,7 @@ export async function GET({ url, locals }) {
     destinationArray.push(...transformedEvents);
     destinationArray.push(...transformedVolunteers);
 
-    return json({ results: destinationArray });
+    return Response.json({ results: destinationArray });
   } catch (e) {
     console.error("Search query failed", e);
     error(500, "Search failed");

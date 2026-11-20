@@ -1,12 +1,12 @@
 import type { PageServerLoad } from "./$types";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import { requirePermission } from "#lib/utils.ts";
 import {
   EventStatus,
   AppointmentBookingStatus,
   HouseholdStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 
 export const load: PageServerLoad = async ({ url, locals }) => {
   //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));

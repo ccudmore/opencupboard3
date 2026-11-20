@@ -1,8 +1,7 @@
 import { callAction } from "#lib/client/callAction.ts";
 import { toast } from "svelte-sonner";
-import { invalidateAll } from "$app/navigation";
+import { refreshAll } from "$app/navigation";
 import { writable } from "svelte/store";
-//export const sharedValue = writable('Hello World');
 
 export let busy = writable($state(""));
 export async function run(
@@ -16,10 +15,10 @@ export async function run(
   busy.set("");
   if (!r.ok) {
     toast(r.message);
-    await invalidateAll();
+    await refreshAll();
     return null;
   }
   if (done) toast(done);
-  await invalidateAll();
+  await refreshAll();
   return r.data;
 }

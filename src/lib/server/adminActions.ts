@@ -3,8 +3,8 @@ import { fail } from "@sveltejs/kit";
 import { z } from "zod";
 import { hashPassword } from "better-auth/crypto";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
-import { RoleStatus, UserStatus } from "$prisma/enums";
+import type { Prisma } from "#prisma/client";
+import { RoleStatus, UserStatus } from "#prisma/enums";
 
 // The user and role actions for the Admin pages. The caller has already checked the
 // `admin` permission. Each action returns a plain object on success or fail(...) with a message.

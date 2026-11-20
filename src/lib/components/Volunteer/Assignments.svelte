@@ -16,11 +16,11 @@
 		TableHeadCell
 	} from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { volunteerAssignmentStatusOptions } from '#lib/labels.ts';
 	import { rolesFor } from '#lib/volunteerRoles.ts';
-	import { VolunteerAssignmentsStatus } from '$prisma/browser';
+	import { VolunteerAssignmentsStatus } from '#prisma/browser';
 	import EmailPrompts, { type EmailKind } from '#lib/components/EmailPrompts.svelte';
 
 	type Assignment = {
@@ -175,7 +175,7 @@
 			return;
 		}
 		newOpen = false;
-		await invalidateAll();
+		await refreshAll();
 		toast('Added to the event');
 		await emailPrompts?.start(result.data.assignmentId, 'confirmation', true);
 	}
@@ -221,7 +221,7 @@
 			return;
 		}
 		editOpen = false;
-		await invalidateAll();
+		await refreshAll();
 		toast('Assignment updated');
 		// Cancelled: offer to tell the volunteer
 		if (cancelling) await emailPrompts?.start(id, 'cancellation', true);
@@ -241,7 +241,7 @@
 		}
 		confirmDeleteOpen = false;
 		editOpen = false;
-		await invalidateAll();
+		await refreshAll();
 		toast('Removed from the event');
 	}
 </script>

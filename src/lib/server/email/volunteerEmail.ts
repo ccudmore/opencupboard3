@@ -1,7 +1,7 @@
 import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import { TIMEZONE } from "$app/env/private";
 import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import type { PageProps } from './$types';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Alert, Badge, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
 	import { EditOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
@@ -21,10 +21,10 @@
 		q = data.q;
 	});
 	function setParam(key: string, value: string) {
-		const url = new URL(page.url);
+		const url = new URL(page.url.href);
 		if (value) url.searchParams.set(key, value);
 		else url.searchParams.delete(key);
-		goto(url, { keepFocus: true, noScroll: true });
+		goto(url, { reset: false });
 	}
 	let timer: ReturnType<typeof setTimeout>;
 	const onSearch = () => {
@@ -81,7 +81,7 @@
 		if (!r.ok) return (formError = r.message);
 		itemOpen = false;
 		toast.success(editingId ? 'Item saved' : 'Item added');
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	let deleteItemTarget = $state<Item | null>(null);
@@ -93,7 +93,7 @@
 		if (!r.ok) return toast.error(r.message);
 		deleteItemTarget = null;
 		toast.success('Item deleted');
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// ---- category dialog
@@ -130,7 +130,7 @@
 			return false;
 		}
 		toast.success(done);
-		await invalidateAll();
+		await refreshAll();
 		resetEdits();
 		return true;
 	}

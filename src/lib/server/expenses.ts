@@ -1,12 +1,12 @@
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import type {
   ExpenseCategory,
   ExpensePaymentMethod,
   ExpenseStatus,
   ReimbursementMethod,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { notify, notifyPermission } from "#lib/server/notifications.ts";
 import {
   ALLOWED_EXTENSIONS,

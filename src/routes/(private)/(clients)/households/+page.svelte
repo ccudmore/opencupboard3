@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import { householdStatusLabels } from '#lib/labels.ts'
-	import { HouseholdStatus } from '$prisma/browser';
+	import { HouseholdStatus } from '#prisma/browser';
 	import { Button, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Table, Search, Toggle } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import SearchPagination from '#lib/components/SearchPagination.svelte';
@@ -30,22 +30,21 @@
 	}
 
 	function go(page: number) {
-		goto(pageUrl(data.q, page, activeOnly), { keepFocus: true, noScroll: true });
+		goto(pageUrl(data.q, page, activeOnly), { reset: false });
 	}
 
 	$effect(() => {
 		const term = searchTerm.trim();
 		if (term === data.q) return;
 		const timer = setTimeout(() => {
-			goto(pageUrl(term, 1, activeOnly), { keepFocus: true, noScroll: true, replaceState: true });
+			goto(pageUrl(term, 1, activeOnly), { reset: false });
 		}, 300);
 		return () => clearTimeout(timer);
 	});
 
 	function onToggle(checked: boolean) {
 		goto(pageUrl(searchTerm.trim(), 1, checked), {
-			keepFocus: true,
-			noScroll: true,
+			reset: false,
 			replaceState: true
 		});
 	}

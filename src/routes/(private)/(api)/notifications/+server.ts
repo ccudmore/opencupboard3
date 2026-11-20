@@ -1,4 +1,4 @@
-import { error, json } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import {
   listFor,
@@ -22,8 +22,8 @@ function userId(locals: App.Locals): string {
 export async function GET({ locals, url }) {
   const id = userId(locals);
   if (url.searchParams.has("count"))
-    return json({ unread: await unreadCount(id) });
-  return json(await listFor(id));
+    return Response.json({ unread: await unreadCount(id) });
+  return Response.json(await listFor(id));
 }
 
 const bodySchema = z.object({
@@ -55,5 +55,5 @@ export async function POST({ locals, request }) {
         : await markRead(id, notificationId, action === "read");
     if (!ok) throw error(404, "Notification not found.");
   }
-  return json({ unread: await unreadCount(id) });
+  return Response.json({ unread: await unreadCount(id) });
 }

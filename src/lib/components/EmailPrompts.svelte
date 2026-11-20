@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { Button, Input, Label, Modal, Textarea } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 
 	// The prompts for sending a confirmation, reminder or cancellation email:
@@ -118,7 +118,7 @@
 		editorOpen = false;
 		draft = null;
 		toast(`${label} email sent to ${count} ${count === 1 ? 'person' : 'people'}`);
-		await invalidateAll(); // refreshes "sent" in the lists
+		await refreshAll(); // refreshes "sent" in the lists
 	}
 
 	/** Pressing Enter in a text input must not submit a surrounding form. */

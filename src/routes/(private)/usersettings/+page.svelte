@@ -3,7 +3,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { Alert, Button, Card, Helper, Input, Label, Spinner } from 'flowbite-svelte';
 	
 	import { page } from '$app/state';
@@ -19,7 +19,7 @@
 		resetForm: false,
 		onUpdated({ form }) {
 			if (form.message) toast(form.message);
-			if (form.valid && form.message) invalidateAll(); // refresh the email shown in the menu
+			if (form.valid && form.message) refreshAll(); // refresh the email shown in the menu
 		},
 		onError({ result }) {
 			toast(`Error: ${result.error.message}`);
@@ -33,7 +33,7 @@
 		resetForm: false,
 		onUpdated({ form }) {
 			if (form.message) toast(form.message);
-			if (form.valid) invalidateAll(); // refresh the icon in the menu
+			if (form.valid) refreshAll(); // refresh the icon in the menu
 		},
 		onError({ result }) {
 			toast(`Error: ${result.error.message}`);

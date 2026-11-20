@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert, Badge, Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 
 	type Account = { id: string; email: string; active: boolean; hasPassword: boolean; onlyVolunteer: boolean; emailEnabled: boolean };
@@ -43,7 +43,7 @@
 		toast.success(done);
 		editing = false;
 		confirmArchive = false;
-		await invalidateAll();
+		await refreshAll();
 		return true;
 	}
 
@@ -55,7 +55,7 @@
 		if (!r.ok) return (error = r.message);
 		toast.success(r.data.loginDisabled ? 'Volunteer archived and login switched off.' : 'Volunteer archived.');
 		confirmArchive = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 </script>
 

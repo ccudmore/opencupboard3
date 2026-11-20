@@ -3,7 +3,7 @@
 	import { Alert, Badge, Button, Helper, Input, Label, Modal } from 'flowbite-svelte';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
@@ -60,7 +60,7 @@
 			return;
 		}
 		toast(r.data.added === 1 ? 'Appointment added.' : `${r.data.added} appointments added.`);
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// ------------------------------------------------ booking a client
@@ -95,14 +95,14 @@
 			} else {
 				toast(r.message);
 			}
-			await invalidateAll(); // shows who has the time now
+			await refreshAll(); // shows who has the time now
 			return;
 		}
 		toast(`${name} booked.`);
 		openAppointment = '';
 		clientQuery = '';
 		clientResults = [];
-		await invalidateAll();
+		await refreshAll();
 		// The usual prompts: send a confirmation email? customize it?
 		await bookingPrompts?.start(r.data.bookingId, 'confirmation', true);
 	}

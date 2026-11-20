@@ -3,7 +3,7 @@
 	import { Badge, Button, Input, Label, Modal, Select, Textarea, Toggle } from 'flowbite-svelte';
 	import { PlusOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { tick } from 'svelte';
 	import { callAction } from '#lib/client/callAction.ts';
 	import MonthPicker from '#lib/components/ServiceDates/MonthPicker.svelte';
@@ -32,7 +32,7 @@
 	});
 
 	function setShowPast(on: boolean) {
-		goto(on ? '?past=1' : '?', { keepFocus: true, noScroll: true });
+		goto(on ? '?past=1' : '?', { reset: false });
 	}
 
 	function pickDate(date: string) {
@@ -40,7 +40,7 @@
 		if (s) return void reveal(s.id);
 		if (data.markedDates.includes(date)) {
 			// It's an earlier service date that isn't listed yet
-			return void goto(`?past=1&focus=${date}`, { noScroll: true });
+			return void goto(`?past=1&focus=${date}`, { reset: false });
 		}
 		openNew(date);
 	}
@@ -70,15 +70,15 @@
 		toast('Service date added. Now add its appointments.');
 		const date = form.date;
 		if (new Date(`${date}T00:00:00`) < new Date(`${today}T00:00:00`) && !data.showPast) {
-			await goto(`?past=1&focus=${date}`, { noScroll: true });
+			await goto(`?past=1&focus=${date}`, { reset: false });
 		} else {
-			await invalidateAll();
+			await refreshAll();
 			await reveal(r.data.id);
 		}
 	}
 
 	async function openAfterDuplicate(id: string) {
-		await invalidateAll();
+		await refreshAll();
 		await reveal(id);
 	}
 </script>

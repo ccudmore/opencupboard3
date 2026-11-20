@@ -5,7 +5,7 @@
 		type CalendarEvent
 	} from '#lib/components/Calendar.svelte';
 	
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 
 	import type { PageProps } from './$types';
@@ -58,7 +58,7 @@ let prompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 		}
 		// Reload from the server so the calendar always shows what was actually saved
 		// (this also rolls back the on-screen change if saving failed).
-		await invalidateAll();
+		await refreshAll();
 		return saved;
 	}
 

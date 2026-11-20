@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert, Button, Datepicker, Input, Label, Modal, Select, Textarea, Toggle } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { REIMBURSEMENT_METHODS, fromIsoDate, money, toIsoDate } from '#lib/expenses.ts';
@@ -33,7 +33,7 @@
 	});
 
 	function apply(next: { pending?: boolean; from?: Date | undefined; to?: Date | undefined }) {
-		const url = new URL(page.url);
+		const url = new URL(page.url.href);
 		const pending = next.pending ?? filters.pendingOnly;
 		if (pending) url.searchParams.delete('pending');
 		else url.searchParams.set('pending', '0');
@@ -42,7 +42,7 @@
 			if (iso) url.searchParams.set(key, iso);
 			else url.searchParams.delete(key);
 		}
-		goto(url, { keepFocus: true, noScroll: true });
+		goto(url, { reset: false });
 	}
 	const rangeError = $derived(from && to && toIsoDate(from) > toIsoDate(to) ? 'The start date is after the end date.' : '');
 	const hasRange = $derived(!!filters.from || !!filters.to);
@@ -84,7 +84,7 @@
 		if (!r.ok) return (error = r.message);
 		toast.success('Saved.');
 		target = null;
-		await invalidateAll();
+		await refreshAll();
 	}
 </script>
 

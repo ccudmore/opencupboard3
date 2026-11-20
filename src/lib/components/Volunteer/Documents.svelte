@@ -3,7 +3,7 @@
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { deserialize } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 
 	type DocumentRow = { id: string; name: string; size: number; contentType: string; createdAt: Date };
 
@@ -91,7 +91,7 @@
 		picked = null;
 		if (fileInput) fileInput.value = '';
 		toast('Document uploaded');
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	async function remove() {
@@ -109,7 +109,7 @@
 		}
 		toDelete = null;
 		toast('Document deleted');
-		await invalidateAll();
+		await refreshAll();
 	}
 </script>
 

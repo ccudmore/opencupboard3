@@ -1,5 +1,5 @@
 import prisma from "#lib/prisma.ts";
-import { UserStatus } from "$prisma/enums";
+import { UserStatus } from "#prisma/enums";
 
 /**
  * Notifications: short messages for one person, shown under the bell in the header.

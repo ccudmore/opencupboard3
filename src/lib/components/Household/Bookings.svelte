@@ -20,9 +20,9 @@
 	} from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { deserialize } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { appointmentBookingStatusOptions } from '#lib/labels.ts';
-	import { AppointmentBookingStatus } from '$prisma/browser';
+	import { AppointmentBookingStatus } from '#prisma/browser';
 	import type { BookingRow, AvailableService } from '#lib/types/bookings.ts';
 	import EmailPrompts, { type EmailKind } from '#lib/components/EmailPrompts.svelte';
 
@@ -258,13 +258,13 @@
 
 		if (!result.ok) {
 			newError = result.message;
-			if (result.code !== 'not-eligible') await invalidateAll(); // the slot may be gone: refresh the list
+			if (result.code !== 'not-eligible') await refreshAll(); // the slot may be gone: refresh the list
 			return;
 		}
 
 		newOpen = false;
 		syncSpecialRequest(result.data.datedRequest ?? null, null);
-		await invalidateAll();
+		await refreshAll();
 		toast('Booking created');
 		await emailPrompts?.start(result.data.bookingId, 'confirmation', true);
 	}
@@ -324,7 +324,7 @@
 		}
 		syncSpecialRequest(result.data.datedRequest ?? null, result.data.removedRequestId ?? null);
 		editOpen = false;
-		await invalidateAll();
+		await refreshAll();
 		toast('Booking updated');
 		// Cancelled: offer to tell the household
 		if (cancelling) await emailPrompts?.start(bookingId, 'cancellation', true);
@@ -345,7 +345,7 @@
 		syncSpecialRequest(null, result.data.removedRequestId ?? null);
 		confirmDeleteOpen = false;
 		editOpen = false;
-		await invalidateAll();
+		await refreshAll();
 		toast('Booking deleted');
 	}
 

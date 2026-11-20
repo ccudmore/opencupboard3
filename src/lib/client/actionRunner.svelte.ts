@@ -1,6 +1,6 @@
 import { getContext, setContext } from "svelte";
 import { toast } from "svelte-sonner";
-import { invalidateAll } from "$app/navigation";
+import { refreshAll } from "$app/navigation";
 import { callAction } from "#lib/client/callAction.ts";
 
 /**
@@ -22,11 +22,11 @@ export class ActionRunner {
     this.busy = "";
     if (!r.ok) {
       toast(r.message);
-      await invalidateAll();
+      await refreshAll();
       return null;
     }
     if (done) toast(done);
-    await invalidateAll();
+    await refreshAll();
     return r.data;
   };
 }

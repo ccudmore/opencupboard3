@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge, Button } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
@@ -21,10 +21,10 @@
 		busy = '';
 		if (!r.ok) {
 			toast(r.message);
-			await invalidateAll();
+			await refreshAll();
 			return null;
 		}
-		await invalidateAll();
+		await refreshAll();
 		return r.data;
 	}
 

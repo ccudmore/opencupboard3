@@ -1,7 +1,7 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
-import { EventStatus, VolunteerAssignmentsStatus } from "$prisma/enums";
+import { EventStatus, VolunteerAssignmentsStatus } from "#prisma/enums";
 import { rolesFor } from "#lib/volunteerRoles.ts";
 import {
   buildAssignmentEmail,

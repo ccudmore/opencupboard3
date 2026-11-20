@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { error, fail, redirect } from "@sveltejs/kit";
 import { superValidate, message } from "sveltekit-superforms";
 import { zod4 } from "sveltekit-superforms/adapters";
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import prisma from "#lib/prisma.ts";
 import { requirePermission } from "#lib/utils.ts";
 import {
@@ -17,7 +17,7 @@ import {
   cleanFileName,
   maxUploadBytes,
 } from "#lib/server/documentTypes.ts";
-import { EventStatus } from "$prisma/enums";
+import { EventStatus } from "#prisma/enums";
 import {
   accountInfo,
   syncUserName,

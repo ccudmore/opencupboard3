@@ -28,7 +28,7 @@
 	}
 
 	function go(page: number) {
-		goto(pageUrl(data.q, page), { keepFocus: true, noScroll: true });
+		goto(pageUrl(data.q, page), { reset: false});
 	}
 
 	// Search as the person types, after a short pause
@@ -36,7 +36,7 @@
 		const term = searchTerm.trim();
 		if (term === data.q) return;
 		const timer = setTimeout(() => {
-			goto(pageUrl(term, 1), { keepFocus: true, noScroll: true, replaceState: true });
+			goto(pageUrl(term, 1), { reset: false });
 		}, 300);
 		return () => clearTimeout(timer);
 	});
@@ -59,7 +59,7 @@
 					aria-label="Show"
 					items={statusItems}
 					value={data.status}
-					onchange={(e) => goto(pageUrl(data.q, 1, (e.currentTarget as HTMLSelectElement).value), { keepFocus: true, noScroll: true })}
+					onchange={(e) => goto(pageUrl(data.q, 1, (e.currentTarget as HTMLSelectElement).value), { reset: false })}
 				/>
 			</div>
 			<div class="flex flex-wrap gap-2 md:ml-auto">

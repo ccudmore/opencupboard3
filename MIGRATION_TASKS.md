@@ -18,8 +18,7 @@ Also search the project for `@migration-task` comments. They may describe additi
 
 ## Migration tasks
 
-### Remove `rewriteRelativeImportExtensions` from tsconfig.json
-
+### Remove `rewriteRelativeImportExtensions` from tsconfig.json - done
 `rewriteRelativeImportExtensions` only rewrites `.ts` extensions on relative imports. Subpath imports ending in `.ts` — such as the `#lib/*.ts` imports added by the `lib-alias` migration — are not rewritten, so TypeScript reports TS2877 for them.
 
 #### What to do
@@ -35,7 +34,7 @@ Remove `rewriteRelativeImportExtensions` from `compilerOptions` in tsconfig.json
 
 - [ ] `tsconfig.json`
 
-### Copy `page.url` before mutating it
+### Copy `page.url` before mutating it - done
 
 `page.url` and its search parameters are readonly in SvelteKit 3.
 
@@ -53,7 +52,7 @@ Create a mutable copy with `new URL(page.url.href)`, mutate that copy, and use i
 - [ ] `src/routes/(private)/(admin)/admin/+layout.svelte`
 - [ ] `src/routes/(private)/(inventory)/inventory/+page.svelte`
 
-### Review `goto` destinations
+### Review `goto` destinations - done
 
 `goto(...)` now rejects destinations that do not resolve to an application route.
 
@@ -67,11 +66,11 @@ Confirm each destination is an internal route. Use `window.location.href` for ex
 
 #### Files to review
 
-- [ ] `src/lib/client/callAction.ts`
-- [ ] `src/lib/components/Expenses/ManageExpenses.svelte`
-- [ ] `src/lib/components/Household/Bookings.svelte`
-- [ ] `src/lib/components/NotificationsMenu.svelte`
-- [ ] `src/lib/components/SearchBox.svelte`
+- [ ] `src/lib/client/callAction.ts` - done
+- [ ] `src/lib/components/Expenses/ManageExpenses.svelte` - done
+- [ ] `src/lib/components/Household/Bookings.svelte` - done
+- [ ] `src/lib/components/NotificationsMenu.svelte` - done
+- [ ] `src/lib/components/SearchBox.svelte` - done
 - [ ] `src/lib/components/UserMenu.svelte`
 - [ ] `src/lib/components/Volunteer/Documents.svelte`
 - [ ] `src/routes/(private)/(admin)/admin/roles/+page.svelte`
@@ -87,7 +86,7 @@ Confirm each destination is an internal route. Use `window.location.href` for ex
 - [ ] `src/routes/(public)/(auth)/reset-password/+page.svelte`
 - [ ] `src/routes/+layout.svelte`
 
-### Adjust noScroll/keepFocus usage
+### Adjust noScroll/keepFocus usage - done
 
 The options `noScroll` and `keepFocus` of `goto(...)` are merged into a single `reset` option.
 
@@ -109,7 +108,7 @@ replace the `noScroll` and `keepFocus` options of `goto` with a single `reset` o
 - [ ] `src/routes/(private)/(volunteers)/volunteers/+page.svelte`
 - [ ] `src/routes/(private)/servicedates/+page.svelte`
 
-### Replace `invalidateAll` with `refreshAll`
+### Replace `invalidateAll` with `refreshAll` - done
 
 `invalidateAll` is deprecated in favor of `refreshAll`
 
@@ -143,7 +142,7 @@ Replace `invalidateAll()` with `refreshAll()`. Note that `refreshAll()` will kee
 - [ ] `src/routes/(public)/(auth)/reset-password/+page.svelte`
 - [ ] `src/routes/+layout.svelte`
 
-### Review enhanced forms with explicit actions
+### Review enhanced forms with explicit actions - craig still to chec
 
 Enhanced forms that submit to another page now navigate to that page.
 
@@ -161,7 +160,7 @@ Determine whether each action resolves to another page and confirm navigation is
 - [ ] `src/routes/(private)/(clients)/households/[householdId]/+page.svelte`
 - [ ] `src/routes/(private)/(volunteers)/volunteers/[volunteerId]/+page.svelte`
 
-### CORS for static assets in development is handled by Vite
+### CORS for static assets in development is handled by Vite - craig to review
 
 SvelteKit no longer sets `access-control-allow-origin: *` on every static asset request in development. CORS is now delegated to Vite's built-in middleware.
 
@@ -173,7 +172,7 @@ If you rely on cross-origin access to static assets in dev, configure it in your
 
 - [Migrating to SvelteKit v3](https://svelte.dev/docs/kit/migrating-to-sveltekit-3#Security-CORS-for-static-assets-in-development-is-handled-by-Vite)
 
-### `json` and `text` are deprecated
+### `json` and `text` are deprecated - done
 
 The `json(...)` and `text(...)` helpers from `@sveltejs/kit` for generating responses are deprecated.
 
@@ -187,13 +186,13 @@ Use `Response.json(...)` and `new Response(text)` instead.
 
 #### Files to review
 
-- [ ] `src/lib/server/adminActions.ts`
-- [ ] `src/lib/server/sites.ts`
-- [ ] `src/routes/(private)/(api)/notifications/+server.ts`
-- [ ] `src/routes/(private)/(api)/search/+server.ts`
-- [ ] `src/routes/(private)/(volunteers)/volunteers/new/+page.server.ts`
+- [ ] `src/lib/server/adminActions.ts` - no
+- [ ] `src/lib/server/sites.ts` - no
+- [ ] `src/routes/(private)/(api)/notifications/+server.ts` - done
+- [ ] `src/routes/(private)/(api)/search/+server.ts` - done
+- [ ] `src/routes/(private)/(volunteers)/volunteers/new/+page.server.ts` - done
 
-### Move adapter-node `ORIGIN` to `paths.origin`
+### Move adapter-node `ORIGIN` to `paths.origin` - check hooks.server.ts
 
 The adapter-node `ORIGIN` environment variable is removed.
 
@@ -205,7 +204,7 @@ Find where `ORIGIN` is set (`.env` files, scripts, hosting dashboard, ...) and m
 
 - [Migrating to SvelteKit v3](https://svelte.dev/docs/kit/migrating-to-sveltekit-3#Adapters-adapter-node)
 
-### Review `redirect(...)` destinations for external URLs
+### Review `redirect(...)` destinations for external URLs - not done, should be okay
 
 `redirect(...)` to an external URL now requires an `external` option.
 

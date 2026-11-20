@@ -5,7 +5,7 @@ import {
   AppointmentBookingStatus,
   DatedRequestStatus,
   EventStatus,
-} from "$prisma/enums";
+} from "#prisma/enums";
 import { calculateNextServiceDate } from "#lib/utils.ts";
 import {
   bookingInclude,

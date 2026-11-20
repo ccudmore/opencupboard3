@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import {
 		Badge,
@@ -46,7 +46,7 @@
 	}
 
 	function go(page: number) {
-		goto(pageUrl(data.q, page), { keepFocus: true, noScroll: true });
+		goto(pageUrl(data.q, page), { reset: false });
 	}
 
 	// Search as the person types, after a short pause
@@ -54,7 +54,7 @@
 		const term = searchTerm.trim();
 		if (term === data.q) return;
 		const timer = setTimeout(() => {
-			goto(pageUrl(term, 1), { keepFocus: true, noScroll: true, replaceState: true });
+			goto(pageUrl(term, 1), { reset: false });	
 		}, 300);
 		return () => clearTimeout(timer);
 	});
@@ -108,7 +108,7 @@
 		}
 		newOpen = false;
 		toast('User added');
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// ------------------------------------------------------------------ edit a user
@@ -156,7 +156,7 @@
 			return false;
 		}
 		toast(done);
-		await invalidateAll();
+		await refreshAll();
 		return true;
 	}
 

@@ -1,6 +1,6 @@
 import prisma from "#lib/prisma.ts";
-import type { Prisma } from "$prisma/client";
-import { AppointmentBookingStatus, EventStatus } from "$prisma/enums";
+import type { Prisma } from "#prisma/client";
+import { AppointmentBookingStatus, EventStatus } from "#prisma/enums";
 
 /** Everything the bookings list needs for one booking. */
 export const bookingInclude = {

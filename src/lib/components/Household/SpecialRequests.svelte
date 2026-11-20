@@ -6,7 +6,7 @@
 	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
 	import { datedRequestStatusOptions, datedRequestLabels } from '#lib/labels.ts'
-    import { DatedRequestStatus } from "$prisma/enums";
+    import { DatedRequestStatus } from "#prisma/enums";
   	
 	let openComfirmDeleteModal = $state(false);
 

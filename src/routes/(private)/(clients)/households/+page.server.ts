@@ -12,7 +12,7 @@ import { newHouseholdSchema } from "#lib/formschemas/household.ts";
 import { redirect } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
 import { randomInt } from "node:crypto";
-import { ClientRelationship } from "$prisma/enums";
+import { ClientRelationship } from "#prisma/enums";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   requirePermission(locals?.user?.permissions, url, ["manage-households"]);

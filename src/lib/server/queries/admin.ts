@@ -1,4 +1,4 @@
-import type { Prisma } from "$prisma/client";
+import type { Prisma } from "#prisma/client";
 import prisma from "#lib/prisma.ts";
 
 export const ADMIN_PAGE_SIZE = 25;

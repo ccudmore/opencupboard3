@@ -1,7 +1,7 @@
 import { PUBLIC_ID_RENEWAL_PERIOD_MONTHS } from "$app/env/public";
 import type { BookingWithAppointment, HouseholdMember } from "./types/household";
 import { error, redirect } from "@sveltejs/kit";
-import { AppointmentBookingStatus } from "$prisma/enums";
+import { AppointmentBookingStatus } from "#prisma/enums";
 
 export function formattedDate(date: Date | undefined | null) {
   return date?.toLocaleDateString("en-CA"); // get from environment variable
@@ -13,7 +13,7 @@ export function formattedDateTime(date: Date | undefined | null) {
 }
 
 export function formattedTime(date: Date | undefined | null) {
-  return date?.toLocaleTimeString("en-CA"); // get from environment variable
+  return date?.toLocaleTimeString("en-CA"); // craig - ironment variable
 }
 
 export function calculateFamilySize(
@@ -40,12 +40,8 @@ export function calculateChildCount(
 }
 
 function getIdValidityMillis() {
-  let idCheckIntervalMonths: number = 12;
-  if ("PUBLIC_ID_RENEWAL_PERIOD_MONTHS" in env) {
-    idCheckIntervalMonths = +(PUBLIC_ID_RENEWAL_PERIOD_MONTHS ?? "12");
-  }
   const idCheckIntervalMillis =
-    1000 * 60 * 60 * 24 * 30.4 * idCheckIntervalMonths;
+    1000 * 60 * 60 * 24 * 30.4 * PUBLIC_ID_RENEWAL_PERIOD_MONTHS;
   return idCheckIntervalMillis;
 } // default 12 months
 

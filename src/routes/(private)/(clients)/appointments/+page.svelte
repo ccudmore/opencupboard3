@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-	import type { Prisma } from '$prisma/client';
+	import type { Prisma } from '#prisma/client';
 	let { data } = $props();
 	type AppointmentWithBookings = Prisma.AppointmentGetPayload<{
 		include: { bookings: { include: { household: true } } };

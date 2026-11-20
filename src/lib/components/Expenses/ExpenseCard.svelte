@@ -3,7 +3,7 @@
 	import { Badge, Button } from 'flowbite-svelte';
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { categoryLabel, dateOnly, money, paymentLabel, reimbursementLabel, statusInfo } from '#lib/expenses.ts';
 	import type { ExpenseRow } from '#lib/server/expenses.ts';
@@ -52,7 +52,7 @@
 			if (!r.ok) toast.error(r.message);
 		}
 		busy = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	async function removeReceipt(id: string) {
@@ -60,7 +60,7 @@
 		const r = await callAction('deleteReceipt', { receiptId: id });
 		busy = false;
 		if (!r.ok) return toast.error(r.message);
-		await invalidateAll();
+		await refreshAll();
 	}
 </script>
 
