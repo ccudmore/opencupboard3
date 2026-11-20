@@ -1,11 +1,11 @@
-import { eventPlace } from "$lib/eventLocation";
+import { eventPlace } from "#lib/eventLocation.ts";
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
+import { TIMEZONE } from "$app/env/private";
 import { EventStatus } from "$prisma/enums";
-import prisma from "$lib/prisma";
-import { requirePermission } from "$lib/utils";
-import { openShiftsFor, signUp, withdrawSignup } from "$lib/server/shifts";
+import prisma from "#lib/prisma.ts";
+import { requirePermission } from "#lib/utils.ts";
+import { openShiftsFor, signUp, withdrawSignup } from "#lib/server/shifts.ts";
 
 const PAST_LIMIT = 10;
 
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     },
   });
 
-  const timeZone = privateEnv.TIMEZONE || "America/Toronto";
+  const timeZone = TIMEZONE || "America/Toronto";
   if (!volunteer) {
     return {
       volunteer: null,
@@ -82,14 +82,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 /** The volunteer record tied to the signed-in login. */
 async function myVolunteerId(userId: string) {
-  return (
-    (
-      await prisma.volunteer.findUnique({
-        where: { userId },
-        select: { id: true },
-      })
-    )?.id ?? null
-  );
+  return (await prisma.volunteer.findUnique({ where: { userId }, select: { id: true } }))?.id ?? null;
 }
 
 export const actions: Actions = {

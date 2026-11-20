@@ -1,10 +1,10 @@
-import { streetWithUnit } from "$lib/address";
+import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
 import { VolunteerAssignmentsStatus } from "$prisma/enums";
-import { env as privateEnv } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
+import { TIMEZONE } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { fill, renderTemplate } from "./templates";
 import type { Recipient } from "./bookingEmail";
@@ -83,8 +83,8 @@ function peopleOf(event: EmailEvent, includeGuests: boolean): Person[] {
 
 function settings() {
   return {
-    organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    timeZone: TIMEZONE || "America/Toronto"
   };
 }
 
@@ -98,11 +98,11 @@ function times(event: EmailEvent, occurrence?: string) {
   return { start, end: new Date(+start + duration) };
 }
 
-export type EventDraft =
-  | {
-      ok: true;
-      draft: { to: Recipient[]; subject: string; body: string };
-      people: Person[];
+export type EventDraft = 
+  { 
+    ok: true;
+    draft: { to: Recipient[]; subject: string; body: string };
+    people: Person[];
       event: EmailEvent;
     }
   | { ok: false; status: number; message: string };
@@ -116,26 +116,27 @@ export async function buildEventEmail(
   kind: EventEmailKind,
   opts: { occurrence?: string; includeGuests: boolean },
 ): Promise<EventDraft> {
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
-    include: eventInclude,
-  });
-  if (!event || event.status !== "ACTIVE")
-    return { ok: false, status: 404, message: "That event no longer exists." };
-  if (event.type === "Service Date")
-    return {
-      ok: false,
-      status: 400,
+  const event = await prisma.event.findUnique({ where: { id: eventId }, include: eventInclude });
+
+  if (!event || event.status !== "ACTIVE") return {
+    ok: false,
+    status: 404,
+    message: "That event no longer exists."
+  };
+
+  if (event.type === "Service Date") return {
+    ok: false,
+    status: 400,
       message: "Service date emails are sent from the Service Dates page.",
-    };
+  };
 
   const people = peopleOf(event, opts.includeGuests);
   if (people.length === 0)
     return {
-      ok: false,
-      status: 400,
+    ok: false,
+    status: 400,
       message: "None of the attendees has an email address.",
-    };
+  };
 
   const { organization, timeZone } = settings();
   const { start, end } = times(event, opts.occurrence);
@@ -176,9 +177,9 @@ export async function buildEventEmail(
   return { ok: true, draft: { to, subject, body }, people, event };
 }
 
-export type EventSendResult =
-  | { ok: true; to: Recipient[]; failed: string[] }
-  | { ok: false; status: number; message: string };
+export type EventSendResult = 
+  { ok: true; to: Recipient[]; failed: string[] } |
+  { ok: false; status: number; message: string };
 
 const MAX_SUBJECT = 200;
 const MAX_BODY = 10_000;
@@ -245,11 +246,8 @@ export async function sendEventEmail(args: {
       await prisma.volunteerAssignments.update({
         where: { id: p.id },
         data: {
-          [column]: [
-            ...(Array.isArray(current) ? current : []),
-            entry,
-          ] as Prisma.InputJsonValue,
-        },
+          [column]: [...Array.isArray(current) ? current : [], entry] as Prisma.InputJsonValue
+        }
       });
     } else {
       const row = await prisma.eventGuest.findUnique({
@@ -260,11 +258,8 @@ export async function sendEventEmail(args: {
       await prisma.eventGuest.update({
         where: { id: p.id },
         data: {
-          [column]: [
-            ...(Array.isArray(current) ? current : []),
-            entry,
-          ] as Prisma.InputJsonValue,
-        },
+          [column]: [...Array.isArray(current) ? current : [], entry] as Prisma.InputJsonValue
+        }
       });
     }
   }

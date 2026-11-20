@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import type { LicenceInfo } from '$lib/idScan/aamva';
-	import { scanFile, scanImageData, type ScanOutcome } from '$lib/idScan/reader';
+	import type { LicenceInfo } from '#lib/idScan/aamva.ts';
+	import { scanFile, scanImageData, type ScanOutcome } from '#lib/idScan/reader.ts';
 
 	let { onscan, onother }: { onscan: (licence: LicenceInfo) => void; onother?: () => void } = $props();
 

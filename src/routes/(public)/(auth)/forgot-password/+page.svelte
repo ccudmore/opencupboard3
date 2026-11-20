@@ -2,7 +2,7 @@
 	import type { PageProps } from './$types';
 	import { Alert, Button, Input, Label } from 'flowbite-svelte';
 	import { EnvelopeSolid } from 'flowbite-svelte-icons';
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.ts';
 	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();

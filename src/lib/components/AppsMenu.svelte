@@ -2,7 +2,7 @@
   import { MegaMenu, ToolbarButton } from 'flowbite-svelte';
   import { GridSolid } from 'flowbite-svelte-icons';
   import { page } from "$app/state";
-  import { getPermittedApps } from "$lib/components/NavPermissions";
+  import { getPermittedApps } from "#lib/components/NavPermissions.ts";
   const apps = getPermittedApps(page?.data?.user?.permissions)
 </script>
 

@@ -1,16 +1,16 @@
-import { eventPlace } from "$lib/eventLocation";
-import { streetWithUnit } from "$lib/address";
+import { eventPlace } from "#lib/eventLocation.ts";
+import { streetWithUnit } from "#lib/address.ts";
 import { error, json } from "@sveltejs/kit";
-import { requirePermission } from "$lib/utils";
+import { requirePermission } from "#lib/utils.ts";
 import {
   searchHousehold,
   parseHouseholdSearchParams,
-} from "$lib/server/queries/household";
-import { searchEvent, parseEventSearchParams } from "$lib/server/queries/event";
+} from "#lib/server/queries/household.ts";
+import { searchEvent, parseEventSearchParams } from "#lib/server/queries/event.ts";
 import {
   searchVolunteer,
   parseVolunteerSearchParams,
-} from "$lib/server/queries/volunteer";
+} from "#lib/server/queries/volunteer.ts";
 
 export async function GET({ url, locals }) {
   requirePermission(locals.user?.permissions, url, ["manage-households"]);

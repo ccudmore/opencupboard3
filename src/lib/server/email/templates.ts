@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { env } from "$env/dynamic/private";
+import { EMAIL_TEMPLATE_DIR } from "$app/env/private";
 
 // Email templates are plain text files in ./templates (one per message).
 //
@@ -40,24 +40,15 @@ export function parseTemplate(raw: string): { subject: string; body: string } {
 
 /** Collapses the blank lines left behind by placeholders that were empty. */
 function tidy(text: string): string {
-  return (
-    text
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim() + "\n"
-  );
+  return text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
 async function loadTemplate(name: string): Promise<string> {
-  if (!/^[a-z0-9-]+$/.test(name))
-    throw new Error(`Invalid email template name "${name}"`);
+  if (!(/^[a-z0-9-]+$/).test(name)) throw new Error(`Invalid email template name "${name}"`);
 
-  if (env.EMAIL_TEMPLATE_DIR) {
+  if (EMAIL_TEMPLATE_DIR) {
     try {
-      return await readFile(
-        join(env.EMAIL_TEMPLATE_DIR, `${name}.txt`),
-        "utf8",
-      );
+      return await readFile(join(EMAIL_TEMPLATE_DIR, `${name}.txt`), "utf8");
     } catch {
       // not in the override folder: use the built-in one
     }

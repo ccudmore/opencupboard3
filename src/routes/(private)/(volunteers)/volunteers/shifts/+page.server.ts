@@ -1,19 +1,19 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
-import { requirePermission } from "$lib/utils";
-import { isMailConfigured } from "$lib/server/email/mailer";
+import { TIMEZONE } from "$app/env/private";
+import { requirePermission } from "#lib/utils.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import {
   shiftBoard,
   setNeeds,
   approveSignup,
   declineSignup,
-} from "$lib/server/shifts";
+} from "#lib/server/shifts.ts";
 import {
   previewAssignmentEmail,
   sendAssignmentMessage,
-} from "$lib/server/assignmentActions";
-import prisma from "$lib/prisma";
+} from "#lib/server/assignmentActions.ts";
+import prisma from "#lib/prisma.ts";
 
 // Shift staffing for managers. The (volunteers) layout already requires manage-volunteers, but actions
 // run without the layout, so each one checks again.
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   return {
     board: await shiftBoard(),
     emailEnabled: isMailConfigured(),
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    timeZone: TIMEZONE || "America/Toronto"
   };
 };
 

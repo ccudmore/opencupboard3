@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
 import { hashPassword } from "better-auth/crypto";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
 import { RoleStatus, UserStatus } from "$prisma/enums";
 

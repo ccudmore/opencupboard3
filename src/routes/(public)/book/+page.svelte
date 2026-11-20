@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert, Badge, Button, Checkbox, Input, Label, Textarea } from 'flowbite-svelte';
-	import { callAction } from '$lib/client/callAction';
-	import Logo from '$lib/Logo.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
+	import Logo from '#lib/Logo.svelte';
 
 	let { data } = $props();
 

@@ -5,7 +5,7 @@ import {
   ProfileCardOutline,
   AwardOutline,
 } from "flowbite-svelte-icons";
-import { hasPermission } from "$lib/utils";
+import { hasPermission } from "#lib/utils.ts";
 
 const availableApps = {
   households: {

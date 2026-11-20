@@ -1,14 +1,14 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
-	import { streetWithUnit } from '$lib/address';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
+	import { streetWithUnit } from '#lib/address.ts';
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
-	import { householdStatusLabels } from '$lib/labels'
+	import { householdStatusLabels } from '#lib/labels.ts'
 	import { HouseholdStatus } from '$prisma/browser';
 	import { Button, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Table, Search, Toggle } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
-	import SearchPagination from '$lib/components/SearchPagination.svelte';
-	import NewHousehold from '$lib/components/Household/NewHousehold.svelte';
+	import SearchPagination from '#lib/components/SearchPagination.svelte';
+	import NewHousehold from '#lib/components/Household/NewHousehold.svelte';
 
 	let { data } = $props();
 

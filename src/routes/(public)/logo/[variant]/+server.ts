@@ -1,4 +1,4 @@
-import { env } from "$env/dynamic/private";
+import { LOGO_DARK_PATH, LOGO_PATH } from "$app/env/private";
 import { error, redirect } from "@sveltejs/kit";
 import { readFile, stat } from "node:fs/promises";
 import { extname } from "node:path";
@@ -19,12 +19,11 @@ export const GET: RequestHandler = async ({ params }) => {
   const dark = params.variant === "dark";
 
   // Dark uses LOGO_DARK_PATH if set, otherwise the normal logo
-  const path = (dark ? env.LOGO_DARK_PATH : undefined) || env.LOGO_PATH;
-  if (!path)
-    redirect(
-      302,
-      dark ? "/images/default-logo-dark.svg" : "/images/default-logo.svg",
-    );
+  const path = (dark ? LOGO_DARK_PATH : undefined) || LOGO_PATH;
+
+  if (!path) redirect(302, dark
+    ? "/images/default-logo-dark.svg"
+    : "/images/default-logo.svg");
 
   try {
     const [data, info] = await Promise.all([readFile(path), stat(path)]);

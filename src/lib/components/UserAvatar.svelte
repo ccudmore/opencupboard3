@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Avatar } from 'flowbite-svelte';
-	import { avatarFor } from '$lib/avatars';
+	import { avatarFor } from '#lib/avatars.ts';
 
 	let { image = '', size = 'sm' }: { image?: string | null; size?: 'sm' | 'lg' } = $props();
 

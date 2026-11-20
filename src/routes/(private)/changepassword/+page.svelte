@@ -1,11 +1,11 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
 	import { Alert, Button, Card, Helper, Input, Label, Spinner, Toggle } from 'flowbite-svelte';
 	
-	import { changePasswordSchema, MIN_PASSWORD_LENGTH } from '$lib/formschemas/password';
+	import { changePasswordSchema, MIN_PASSWORD_LENGTH } from '#lib/formschemas/password.ts';
 
 	let { data } = $props();
 

@@ -1,22 +1,22 @@
-import { eventPlace } from "$lib/eventLocation";
+import { eventPlace } from "#lib/eventLocation.ts";
 import type { Actions, PageServerLoad } from "./$types";
 import { error, fail, redirect } from "@sveltejs/kit";
 import { superValidate, message } from "sveltekit-superforms";
 import { zod4 } from "sveltekit-superforms/adapters";
 import type { Prisma } from "$prisma/client";
-import prisma from "$lib/prisma";
-import { requirePermission } from "$lib/utils";
+import prisma from "#lib/prisma.ts";
+import { requirePermission } from "#lib/utils.ts";
 import {
   volunteerSchema,
   readAvailability,
   readTrainingCourses,
-} from "$lib/formschemas/volunteer";
+} from "#lib/formschemas/volunteer.ts";
 import {
   ALLOWED_EXTENSIONS,
   identifyDocument,
   cleanFileName,
   maxUploadBytes,
-} from "$lib/server/documentTypes";
+} from "#lib/server/documentTypes.ts";
 import { EventStatus } from "$prisma/enums";
 import {
   accountInfo,
@@ -25,16 +25,16 @@ import {
   archiveVolunteer,
   unarchiveVolunteer,
   deleteVolunteer,
-} from "$lib/server/volunteerAccounts";
-import { sendAccountLink } from "$lib/server/accountLinks";
-import { isMailConfigured } from "$lib/server/email/mailer";
+} from "#lib/server/volunteerAccounts.ts";
+import { sendAccountLink } from "#lib/server/accountLinks.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import {
   createAssignment,
   updateAssignment,
   deleteAssignment,
   previewAssignmentEmail,
   sendAssignmentMessage,
-} from "$lib/server/assignmentActions";
+} from "#lib/server/assignmentActions.ts";
 
 /** Most documents one volunteer can have. */
 const MAX_DOCUMENTS = 25;

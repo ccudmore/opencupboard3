@@ -1,5 +1,5 @@
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
 import type {
   ExpenseCategory,
@@ -7,13 +7,13 @@ import type {
   ExpenseStatus,
   ReimbursementMethod,
 } from "$prisma/enums";
-import { notify, notifyPermission } from "$lib/server/notifications";
+import { notify, notifyPermission } from "#lib/server/notifications.ts";
 import {
   ALLOWED_EXTENSIONS,
   cleanFileName,
   identifyDocument,
   maxUploadBytes,
-} from "$lib/server/documentTypes";
+} from "#lib/server/documentTypes.ts";
 import {
   CATEGORIES,
   PAYMENT_METHODS,
@@ -21,7 +21,7 @@ import {
   STATUSES,
   money,
   dateOnly,
-} from "$lib/expenses";
+} from "#lib/expenses.ts";
 
 export type Fail = { ok: false; status: number; message: string };
 export type Result<T = object> = ({ ok: true } & T) | Fail;

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { Alert, Badge, TabItem, Tabs } from 'flowbite-svelte';
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
-	import ExpenseForm from '$lib/components/Expenses/ExpenseForm.svelte';
-	import MyExpenses from '$lib/components/Expenses/MyExpenses.svelte';
-	import ManageExpenses from '$lib/components/Expenses/ManageExpenses.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
+	import ExpenseForm from '#lib/components/Expenses/ExpenseForm.svelte';
+	import MyExpenses from '#lib/components/Expenses/MyExpenses.svelte';
+	import ManageExpenses from '#lib/components/Expenses/ManageExpenses.svelte';
 
 	let { data }: PageProps = $props();
 

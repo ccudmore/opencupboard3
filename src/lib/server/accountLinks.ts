@@ -1,13 +1,13 @@
 import { randomBytes } from "node:crypto";
-import prisma from "$lib/prisma";
-import { auth } from "$lib/server/auth";
+import prisma from "#lib/prisma.ts";
+import { auth } from "#lib/server/auth.ts";
 import {
   INVITE_DAYS,
   RESET_HOURS,
   resetPageUrl,
   sendResetPasswordEmail,
-} from "$lib/server/accountEmail";
-import { isMailConfigured } from "$lib/server/email/mailer";
+} from "#lib/server/accountEmail.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
 
 export type LinkResult =
   { ok: true } | { ok: false; status: number; message: string };

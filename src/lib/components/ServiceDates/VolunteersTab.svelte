@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { Service, Site } from './types';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 	import { Badge, Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
-	import { getActionRunner } from '$lib/client/actionRunner.svelte';
+	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
 
 	let {
 		service,

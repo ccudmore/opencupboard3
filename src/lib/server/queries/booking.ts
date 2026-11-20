@@ -1,4 +1,4 @@
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
 import { AppointmentBookingStatus, EventStatus } from "$prisma/enums";
 

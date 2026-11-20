@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Service, Site, Appointment } from './types';
 	import { Alert, Badge, Button, Helper, Input, Label, Modal } from 'flowbite-svelte';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
 	import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
-	import { getActionRunner } from '$lib/client/actionRunner.svelte';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
+	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
 
 	let {
 		service,

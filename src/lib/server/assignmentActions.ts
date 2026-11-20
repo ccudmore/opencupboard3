@@ -1,13 +1,13 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import { EventStatus, VolunteerAssignmentsStatus } from "$prisma/enums";
-import { rolesFor } from "$lib/volunteerRoles";
+import { rolesFor } from "#lib/volunteerRoles.ts";
 import {
   buildAssignmentEmail,
   sendAssignmentEmail,
-} from "$lib/server/email/volunteerEmail";
-import { notifyAssignment } from "$lib/server/shifts";
+} from "#lib/server/email/volunteerEmail.ts";
+import { notifyAssignment } from "#lib/server/shifts.ts";
 
 // Everything here belongs to one volunteer's page; the caller has already checked manage-volunteers.
 

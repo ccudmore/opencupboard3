@@ -3,9 +3,9 @@
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { callAction } from '$lib/client/callAction';
-	import { REIMBURSEMENT_METHODS, fromIsoDate, money, toIsoDate } from '$lib/expenses';
-	import type { ExpenseRow } from '$lib/server/expenses';
+	import { callAction } from '#lib/client/callAction.ts';
+	import { REIMBURSEMENT_METHODS, fromIsoDate, money, toIsoDate } from '#lib/expenses.ts';
+	import type { ExpenseRow } from '#lib/server/expenses.ts';
 	import ExpenseCard from './ExpenseCard.svelte';
 
 	let {

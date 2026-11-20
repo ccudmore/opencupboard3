@@ -1,8 +1,8 @@
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import { ClientRelationship } from "$prisma/enums";
-import { env as privateEnv } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
+import { BETTER_AUTH_URL } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { renderTemplate } from "./templates";
 
@@ -36,14 +36,14 @@ export async function sendApprovalEmail(
     .filter(Boolean);
   const firstNames =
     names.length > 1
-      ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
-      : (names[0] ?? "");
-  const base = (privateEnv.BETTER_AUTH_URL ?? "").replace(/\/$/, "");
+    ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+    : names[0] ?? "";
+  const base = (BETTER_AUTH_URL ?? "").replace(/\/$/, "");
   const { subject, body } = await renderTemplate("household-approved", {
     firstNames,
     uniqueId: household.uniqueId,
     bookingUrl: `${base}/book`,
-    organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard"
   });
   try {
     await sendMail({ to, subject, text: body });

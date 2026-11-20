@@ -1,8 +1,8 @@
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { hasPermission, requirePermission } from "$lib/utils";
-import { isInline } from "$lib/server/documentTypes";
-import { receiptFor } from "$lib/server/expenses";
+import { hasPermission, requirePermission } from "#lib/utils.ts";
+import { isInline } from "#lib/server/documentTypes.ts";
+import { receiptFor } from "#lib/server/expenses.ts";
 
 /** Opens (or with ?download=1 downloads) a receipt. Only for who submitted the expense and expense managers. */
 export const GET: RequestHandler = async ({ params, locals, url }) => {

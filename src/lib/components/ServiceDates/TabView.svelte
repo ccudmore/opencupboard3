@@ -5,7 +5,7 @@
 	import DetailsTab from './DetailsTab.svelte';
 	import AppointmentsTab from './AppointmentsTab.svelte';
 	import VolunteersTab from './VolunteersTab.svelte';
-	import { setActionRunner } from '$lib/client/actionRunner.svelte';
+	import { setActionRunner } from '#lib/client/actionRunner.svelte.ts';
 
 	let {
 		service,

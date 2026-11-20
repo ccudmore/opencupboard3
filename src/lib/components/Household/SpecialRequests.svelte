@@ -2,10 +2,10 @@
 	
 	import { Select, } from "flowbite-svelte";
 	import { Modal, ButtonGroup, Textarea, Checkbox, Button, Label, Drawer, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, } from "flowbite-svelte";
-	import {formattedDate} from "$lib/utils"
+	import {formattedDate} from "#lib/utils.ts"
 	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
-	import { datedRequestStatusOptions, datedRequestLabels } from '$lib/labels'
+	import { datedRequestStatusOptions, datedRequestLabels } from '#lib/labels.ts'
     import { DatedRequestStatus } from "$prisma/enums";
   	
 	let openComfirmDeleteModal = $state(false);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Label, Textarea } from 'flowbite-svelte';
-	import { PERIODS, WEEKDAYS, slotKey } from '$lib/formschemas/volunteer';
-	import FieldError from '$lib/components/FieldError.svelte';
+	import { PERIODS, WEEKDAYS, slotKey } from '#lib/formschemas/volunteer.ts';
+	import FieldError from '#lib/components/FieldError.svelte';
 
 	let { form, errors }: { form: any; errors: any } = $props();
 

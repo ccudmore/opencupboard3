@@ -1,5 +1,5 @@
 import type { Prisma } from "$prisma/client";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import { HouseholdStatus, ClientRelationship } from "$prisma/browser";
 
 export const GUEST_PAGE_SIZE = 10;

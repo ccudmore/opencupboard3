@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Input, Label } from 'flowbite-svelte';
 	import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
-	import FieldError from '$lib/components/FieldError.svelte';
+	import FieldError from '#lib/components/FieldError.svelte';
 
 	let { form, errors }: { form: any; errors: any } = $props();
 

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import HouseholdAddress from "$lib/components/Household/Address.svelte";
-	import HouseholdNotes from "$lib/components/Household/Notes.svelte";
-	import HouseholdSpecialRequests from "$lib/components/Household/SpecialRequests.svelte";
-	import HouseholdMembers from "$lib/components/Household/Members.svelte";
-	import Bookings from "$lib/components/Household/Bookings.svelte";
+	import HouseholdAddress from "#lib/components/Household/Address.svelte";
+	import HouseholdNotes from "#lib/components/Household/Notes.svelte";
+	import HouseholdSpecialRequests from "#lib/components/Household/SpecialRequests.svelte";
+	import HouseholdMembers from "#lib/components/Household/Members.svelte";
+	import Bookings from "#lib/components/Household/Bookings.svelte";
 	import { Tabs, TabItem } from "flowbite-svelte";
-	import AddressMap from "$lib/components/Household/AddressMap.svelte";
+	import AddressMap from "#lib/components/Household/AddressMap.svelte";
   import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
 
 	let { form, errors, constraints, validateForm, bookings, services, sites, eligibleDate, emailEnabled, enhance} = $props()

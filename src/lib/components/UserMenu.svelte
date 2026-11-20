@@ -2,9 +2,9 @@
     import { Dropdown, DropdownHeader, DropdownItem, DropdownDivider,  } from 'flowbite-svelte';
     import { ShieldCheckOutline, LockOutline, UserSettingsOutline } from "flowbite-svelte-icons";
     import { page } from "$app/state";
-	import { signOut } from '$lib/auth-client';
+	import { signOut } from '#lib/auth-client.ts';
     import { goto, invalidateAll } from '$app/navigation';
-    import UserAvatar from '$lib/components/UserAvatar.svelte';
+    import UserAvatar from '#lib/components/UserAvatar.svelte';
 
    const user = $derived({
         name: page?.data?.user?.name ?? "",

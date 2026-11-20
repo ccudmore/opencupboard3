@@ -1,8 +1,8 @@
-import { env } from "$env/dynamic/private";
+import { MAX_UPLOAD_MB } from "$app/env/private";
 
 /** Largest accepted upload, in bytes (MAX_UPLOAD_MB, default 10). */
 export function maxUploadBytes(): number {
-  const mb = Number(env.MAX_UPLOAD_MB);
+  const mb = Number(MAX_UPLOAD_MB);
   return (Number.isFinite(mb) && mb > 0 ? mb : 10) * 1024 * 1024;
 }
 

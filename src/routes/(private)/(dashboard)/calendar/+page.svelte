@@ -3,14 +3,14 @@
 	import Calendar, {
 		type CalendarChanges,
 		type CalendarEvent
-	} from '$lib/components/Calendar.svelte';
+	} from '#lib/components/Calendar.svelte';
 	
 	import { invalidateAll } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 
 	import type { PageProps } from './$types';
-	import CalendarSubscribe from '$lib/components/CalendarSubscribe.svelte';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import CalendarSubscribe from '#lib/components/CalendarSubscribe.svelte';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 
 	// categories, volunteers and events come from +page.server.ts
 	let { data }: PageProps = $props();

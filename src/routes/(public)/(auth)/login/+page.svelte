@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Button, Input, Label, Alert, DarkMode } from 'flowbite-svelte';
 	import { EnvelopeSolid, LockSolid } from 'flowbite-svelte-icons';
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.ts';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public'
-	import Logo from '$lib/Logo.svelte'
-	import { safeRedirectPath } from '$lib/utils';
+	import { PUBLIC_ORGANIZATION_NAME } from '$app/env/public';
+	import Logo from '#lib/Logo.svelte';
+	import { safeRedirectPath } from '#lib/utils.ts';
 
 	let email = $state('');
 	let password = $state('');
@@ -14,7 +14,7 @@
 	let loading = $state(false);
 
 	const redirectTo = safeRedirectPath(page.url.searchParams.get('redirectTo'));
-  	const organizationName = env.PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard'
+	const organizationName = PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard';
 
 	async function handleEmailLogin(e: SubmitEvent) {
 		e.preventDefault();
@@ -125,22 +125,53 @@
 				<div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
 			</div>
 			<div class="space-y-3">
-				<Button color="alternative" class="w-full" onclick={() => handleSocialLogin('google')}>
-					<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-						<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.89c2.27-2.09 3.53-5.17 3.53-8.66z"/>
-						<path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.94-2.91l-3.89-3c-1.08.72-2.45 1.15-4.05 1.15-3.12 0-5.76-2.1-6.7-4.93H1.3v3.1A12 12 0 0 0 12 24z"/>
-						<path fill="#FBBC05" d="M5.3 14.31A7.2 7.2 0 0 1 4.92 12c0-.8.14-1.58.38-2.31v-3.1H1.3A12 12 0 0 0 0 12c0 1.94.46 3.77 1.3 5.4l4-3.1z"/>
-						<path fill="#EA4335" d="M12 4.76c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.23 0 12 0 7.31 0 3.26 2.69 1.3 6.6l4 3.1c.94-2.83 3.58-4.93 6.7-4.93z"/>
+				<Button
+					color="alternative"
+					class="w-full"
+					onclick={() => handleSocialLogin('google')}
+				>
+					<svg
+						class="mr-2 h-4 w-4"
+						viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							fill="#4285F4"
+							d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.89c2.27-2.09 3.53-5.17 3.53-8.66z"
+						></path>
+
+						<path
+							fill="#34A853"
+							d="M12 24c3.24 0 5.95-1.08 7.94-2.91l-3.89-3c-1.08.72-2.45 1.15-4.05 1.15-3.12 0-5.76-2.1-6.7-4.93H1.3v3.1A12 12 0 0 0 12 24z"
+						></path>
+
+						<path
+							fill="#FBBC05"
+							d="M5.3 14.31A7.2 7.2 0 0 1 4.92 12c0-.8.14-1.58.38-2.31v-3.1H1.3A12 12 0 0 0 0 12c0 1.94.46 3.77 1.3 5.4l4-3.1z"
+						></path>
+
+						<path
+							fill="#EA4335"
+							d="M12 4.76c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.23 0 12 0 7.31 0 3.26 2.69 1.3 6.6l4 3.1c.94-2.83 3.58-4.93 6.7-4.93z"
+						></path>
 					</svg>
 					Continue with Google
 				</Button>
 
-				<Button color="alternative" class="w-full" onclick={() => handleSocialLogin('microsoft')}>
-					<svg class="mr-2 h-4 w-4" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
-						<path fill="#F25022" d="M1 1h10v10H1z"/>
-						<path fill="#7FBA00" d="M12 1h10v10H12z"/>
-						<path fill="#00A4EF" d="M1 12h10v10H1z"/>
-						<path fill="#FFB900" d="M12 12h10v10H12z"/>
+				<Button
+					color="alternative"
+					class="w-full"
+					onclick={() => handleSocialLogin('microsoft')}
+				>
+					<svg
+						class="mr-2 h-4 w-4"
+						viewBox="0 0 23 23"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path fill="#F25022" d="M1 1h10v10H1z"></path>
+						<path fill="#7FBA00" d="M12 1h10v10H12z"></path>
+						<path fill="#00A4EF" d="M1 12h10v10H1z"></path>
+						<path fill="#FFB900" d="M12 12h10v10H12z"></path>
 					</svg>
 					Continue with Microsoft
 				</Button>

@@ -2,7 +2,7 @@
 	import { Alert, Badge, Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 
 	type Account = { id: string; email: string; active: boolean; hasPassword: boolean; onlyVolunteer: boolean; emailEnabled: boolean };
 

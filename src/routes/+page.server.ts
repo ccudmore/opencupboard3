@@ -1,29 +1,24 @@
 import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
-import { hasPermission } from "$lib/utils";
+import { TIMEZONE } from "$app/env/private";
+import { hasPermission } from "#lib/utils.ts";
 import {
   myUpcomingShifts,
   pendingAppointmentCount,
   pendingExpenseCount,
   pendingSignupCount,
   upcomingServiceDates,
-} from "$lib/server/dashboard";
+} from "#lib/server/dashboard.ts";
 
 // The home page: only for people who are signed in. Each tile is included only when the person
 // has its permission, so nothing is counted (or sent to the browser) for anyone else.
 export const load: PageServerLoad = async ({ locals, url }) => {
   const user = locals.user;
-  if (!user)
-    throw redirect(
-      303,
-      `/login?redirectTo=${encodeURIComponent(url.pathname)}`,
-    );
 
-  const can = (permissions: string[]) =>
-    !!hasPermission(user.permissions, permissions);
-  const timeZone = privateEnv.TIMEZONE || "America/Toronto";
+  if (!user) throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`);
 
+  const can = (permissions: string[]) => !!hasPermission(user.permissions, permissions);
+  const timeZone = TIMEZONE || "America/Toronto";
   const wantsAppointments = can(["manage-appointments"]);
   const wantsExpenses = can(["manage-expenses"]);
   const wantsVolunteers = can(["manage-volunteers"]);

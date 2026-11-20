@@ -1,25 +1,25 @@
 import type { Actions, PageServerLoad } from "./$types";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import { error, fail } from "@sveltejs/kit";
 import { superValidate, message } from "sveltekit-superforms/server";
 import { zod4 } from "sveltekit-superforms/adapters";
-import { householdSchema } from "$lib/formschemas/household";
-import type { HouseholdWithRelations } from "$lib/types/household";
-import { householdInclude } from "$lib/server/household";
-import { requirePermission, calculateNextServiceDate } from "$lib/utils";
+import { householdSchema } from "#lib/formschemas/household.ts";
+import type { HouseholdWithRelations } from "#lib/types/household.ts";
+import { householdInclude } from "#lib/server/household.ts";
+import { requirePermission, calculateNextServiceDate } from "#lib/utils.ts";
 import {
   getHouseholdBookings,
   getAvailableServices,
   getSites,
-} from "$lib/server/queries/booking";
-import { isMailConfigured } from "$lib/server/email/mailer";
+} from "#lib/server/queries/booking.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import {
   createBooking,
   updateBooking,
   deleteBooking,
   previewEmail,
   sendEmail,
-} from "$lib/server/bookingActions";
+} from "#lib/server/bookingActions.ts";
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
   requirePermission(locals?.user?.permissions, url, ["manage-households"]);

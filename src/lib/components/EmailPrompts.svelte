@@ -6,7 +6,7 @@
 	import { Button, Input, Label, Modal, Textarea } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 
 	// The prompts for sending a confirmation, reminder or cancellation email:
 	//   (optional) "Send it?"  ->  "Customize it?"  ->  editor  ->  send.

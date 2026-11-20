@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { page } from '$app/state';
@@ -7,8 +7,8 @@
 	import { toast } from 'svelte-sonner';
 	import { Alert, Button, ButtonGroup } from 'flowbite-svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
-	import { volunteerSchema } from '$lib/formschemas/volunteer';
-	import TabView from '$lib/components/Volunteer/TabView.svelte';
+	import { volunteerSchema } from '#lib/formschemas/volunteer.ts';
+	import TabView from '#lib/components/Volunteer/TabView.svelte';
 
 	let { data } = $props();
 

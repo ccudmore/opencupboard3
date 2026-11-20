@@ -1,17 +1,17 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import {
   AppointmentBookingStatus,
   DatedRequestStatus,
   EventStatus,
 } from "$prisma/enums";
-import { calculateNextServiceDate } from "$lib/utils";
+import { calculateNextServiceDate } from "#lib/utils.ts";
 import {
   bookingInclude,
   getHouseholdBookings,
-} from "$lib/server/queries/booking";
-import { buildEmail, sendBookingEmail } from "$lib/server/email/bookingEmail";
+} from "#lib/server/queries/booking.ts";
+import { buildEmail, sendBookingEmail } from "#lib/server/email/bookingEmail.ts";
 
 /** A booking in one of these statuses holds its appointment, so nobody else can book it. */
 export const HOLDS_APPOINTMENT: AppointmentBookingStatus[] = [

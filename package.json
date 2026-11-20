@@ -22,8 +22,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^5.5.8",
-    "@sveltejs/kit": "^2.70.4",
+    "@sveltejs/adapter-node": "^6.0.0",
+    "@sveltejs/kit": "^3.0.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/vite": "^4.3.3",
     "@types/leaflet": "^1.9.22",
@@ -32,8 +32,8 @@
     "flowbite": "^4.0.2",
     "flowbite-svelte": "^1.33.1",
     "flowbite-svelte-icons": "^3.1.0",
-    "svelte": "^5.56.1",
-    "svelte-check": "^4.6.0",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.5",
     "sveltekit-superforms": "^3.0.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
@@ -54,5 +54,9 @@
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
     "zxing-wasm": "^3.1.6"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
   }
 }

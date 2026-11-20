@@ -21,10 +21,10 @@
 	import { toast } from 'svelte-sonner';
 	import { deserialize } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { appointmentBookingStatusOptions } from '$lib/labels';
+	import { appointmentBookingStatusOptions } from '#lib/labels.ts';
 	import { AppointmentBookingStatus } from '$prisma/browser';
-	import type { BookingRow, AvailableService } from '$lib/types/bookings';
-	import EmailPrompts, { type EmailKind } from '$lib/components/EmailPrompts.svelte';
+	import type { BookingRow, AvailableService } from '#lib/types/bookings.ts';
+	import EmailPrompts, { type EmailKind } from '#lib/components/EmailPrompts.svelte';
 
 	let {
 		bookings,

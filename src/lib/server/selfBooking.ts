@@ -1,16 +1,16 @@
 import { randomInt } from "node:crypto";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import {
   AppointmentBookingStatus,
   ClientRelationship,
   EventStatus,
   HouseholdStatus,
 } from "$prisma/enums";
-import { calculateNextServiceDate } from "$lib/utils";
-import { getHouseholdBookings } from "$lib/server/queries/booking";
-import { notifyPermission } from "$lib/server/notifications";
-import { HOLDS_APPOINTMENT } from "$lib/server/bookingActions";
+import { calculateNextServiceDate } from "#lib/utils.ts";
+import { getHouseholdBookings } from "#lib/server/queries/booking.ts";
+import { notifyPermission } from "#lib/server/notifications.ts";
+import { HOLDS_APPOINTMENT } from "#lib/server/bookingActions.ts";
 
 // What a household can do for itself on the public /book page. Nothing here is signed in: the
 // household's unique ID is the only key, so every function checks it again, limits how often it

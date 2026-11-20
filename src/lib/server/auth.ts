@@ -1,13 +1,23 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { env } from "$env/dynamic/private";
-import prisma from "$lib/prisma";
+
+import {
+  BETTER_AUTH_URL,
+  BETTER_AUTH_SECRET,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  MICROSOFT_CLIENT_ID,
+  MICROSOFT_CLIENT_SECRET,
+  MICROSOFT_TENANT_ID
+} from "$app/env/private";
+
+import prisma from "#lib/prisma.ts";
 import { error, redirect } from "@sveltejs/kit";
-import { sendResetPasswordEmail, RESET_HOURS } from "$lib/server/accountEmail";
+import { sendResetPasswordEmail, RESET_HOURS } from "#lib/server/accountEmail.ts";
 
 export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  secret: env.BETTER_AUTH_SECRET,
+  baseURL: BETTER_AUTH_URL,
+  secret: BETTER_AUTH_SECRET,
 
   account: {
     accountLinking: {
@@ -49,8 +59,8 @@ export const auth = betterAuth({
   socialProviders: {
     google: {
       prompt: "select_account",
-      clientId: env.GOOGLE_CLIENT_ID as string,
-      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+      clientId: GOOGLE_CLIENT_ID as string,
+      clientSecret: GOOGLE_CLIENT_SECRET as string,
       scope: ["openid", "email", "profile"],
       disableImplicitSignUp: true,
       disableSignUp: true,
@@ -62,18 +72,18 @@ export const auth = betterAuth({
     },
     microsoft: {
       prompt: "select_account",
-      clientId: env.MICROSOFT_CLIENT_ID as string,
-      clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
+      clientId: MICROSOFT_CLIENT_ID as string,
+      clientSecret: MICROSOFT_CLIENT_SECRET as string,
       disableImplicitSignUp: true,
       disableSignUp: true,
       // "common" allows both personal and work/school Microsoft accounts.
       // Set MICROSOFT_TENANT_ID to a specific tenant GUID to restrict it.
-      tenantId: env.MICROSOFT_TENANT_ID || "common",
-    },
+      tenantId: MICROSOFT_TENANT_ID || "common"
+    }
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // refresh once per day of activity
+    updateAge: 60 * 60 * 24 // refresh once per day of activity
   },
 
   // Lets the app see user.status (ACTIVE or INACTIVE) on the session

@@ -1,20 +1,20 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
-import prisma from "$lib/prisma";
-import { requirePermission } from "$lib/utils";
-import { isMailConfigured } from "$lib/server/email/mailer";
-import { getSites } from "$lib/server/queries/booking";
+import { TIMEZONE } from "$app/env/private";
+import prisma from "#lib/prisma.ts";
+import { requirePermission } from "#lib/utils.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
+import { getSites } from "#lib/server/queries/booking.ts";
 import {
   createBooking,
   previewEmail as previewBookingEmail,
   sendEmail as sendBookingEmail,
-} from "$lib/server/bookingActions";
+} from "#lib/server/bookingActions.ts";
 import {
   previewAssignmentEmail,
   sendAssignmentMessage,
-} from "$lib/server/assignmentActions";
-import { setNeeds } from "$lib/server/shifts";
+} from "#lib/server/assignmentActions.ts";
+import { setNeeds } from "#lib/server/shifts.ts";
 import {
   loadServiceDates,
   createServiceDate,
@@ -30,13 +30,13 @@ import {
   removeVolunteerFromService,
   duplicateServiceDate,
   type Fail,
-} from "$lib/server/serviceDates";
+} from "#lib/server/serviceDates.ts";
 
 // Service dates: who may do what. Actions run without the page's load, so each one checks again.
 const APPOINTMENTS = ["manage-appointments"];
 const VOLUNTEERS = ["manage-appointments", "manage-volunteers"];
 
-const timeZone = () => privateEnv.TIMEZONE || "America/Toronto";
+const timeZone = () => TIMEZONE || "America/Toronto";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   requirePermission(locals?.user?.permissions, url, APPOINTMENTS);
@@ -64,12 +64,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   };
 };
 
-const fields = (data: FormData) =>
-  Object.fromEntries(
-    [...data.entries()].filter(([, v]) => typeof v === "string"),
-  ) as Record<string, string>;
-const bad = (r: Fail) =>
-  fail(r.status, { message: r.message, code: r.code, ...(r.data ?? {}) });
+const fields = (data: FormData) => Object.fromEntries([...data.entries()].filter(([, v]) => typeof v === "string")) as Record<string, string>;
+const bad = (r: Fail) => fail(r.status, { message: r.message, code: r.code, ...r.data ?? {} });
 
 export const actions: Actions = {
   // ------------------------------------------------ service dates
@@ -146,15 +142,12 @@ export const actions: Actions = {
     const f = fields(await request.formData());
     const appointmentId = f.appointmentId ?? "";
     const householdId = f.householdId ?? "";
-    if (!appointmentId || !householdId)
-      return fail(400, { message: "Choose a client." });
 
-    const household = await prisma.household.findUnique({
-      where: { id: householdId },
-      select: { status: true },
-    });
-    if (!household || household.status !== "ACTIVE")
-      return fail(409, { message: "That household is not active." });
+    if (!appointmentId || !householdId) return fail(400, { message: "Choose a client." });
+
+    const household = await prisma.household.findUnique({ where: { id: householdId }, select: { status: true } });
+
+    if (!household || household.status !== "ACTIVE") return fail(409, { message: "That household is not active." });
 
     const body = new FormData();
     body.set("appointmentId", appointmentId); // no acknowledgement: only eligible households may be booked here

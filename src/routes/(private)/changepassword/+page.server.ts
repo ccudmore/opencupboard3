@@ -3,9 +3,9 @@ import { fail } from "@sveltejs/kit";
 import { superValidate, message, setError } from "sveltekit-superforms";
 import { zod4 } from "sveltekit-superforms/adapters";
 import { APIError } from "better-auth/api";
-import { auth } from "$lib/server/auth";
-import prisma from "$lib/prisma";
-import { changePasswordSchema } from "$lib/formschemas/password";
+import { auth } from "#lib/server/auth.ts";
+import prisma from "#lib/prisma.ts";
+import { changePasswordSchema } from "#lib/formschemas/password.ts";
 
 // Anyone who is signed in may change their own password (the (private) layout requires a sign-in).
 

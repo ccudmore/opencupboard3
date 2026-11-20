@@ -2,9 +2,9 @@
 	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { Modal, Label, Input, Textarea, MultiSelect, Button, ButtonGroup, Helper, Alert } from 'flowbite-svelte';
-	import { newHouseholdSchema } from '$lib/formschemas/household';
+	import { newHouseholdSchema } from '#lib/formschemas/household.ts';
 	import IdScanner from './IdScanner.svelte';
-	import { provinceName, type LicenceInfo } from '$lib/idScan/aamva';
+	import { provinceName, type LicenceInfo } from '#lib/idScan/aamva.ts';
     import { toast } from "svelte-sonner";
   	import SuperDebug from 'sveltekit-superforms/SuperDebug.svelte';
 

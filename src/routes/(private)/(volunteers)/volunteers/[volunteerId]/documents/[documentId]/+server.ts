@@ -1,8 +1,8 @@
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import prisma from "$lib/prisma";
-import { requirePermission } from "$lib/utils";
-import { isInline } from "$lib/server/documentTypes";
+import prisma from "#lib/prisma.ts";
+import { requirePermission } from "#lib/utils.ts";
+import { isInline } from "#lib/server/documentTypes.ts";
 
 /** Opens (or with ?download=1 downloads) a volunteer's document. Only for manage-volunteers. */
 export const GET: RequestHandler = async ({ params, locals, url }) => {

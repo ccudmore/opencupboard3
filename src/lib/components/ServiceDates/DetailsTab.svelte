@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Button, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
 	import type { Service, Site } from './types';
 	import { FileCopyOutline } from 'flowbite-svelte-icons';
-	import { getActionRunner } from '$lib/client/actionRunner.svelte';
+	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
 
 	let {
 		service,

@@ -8,7 +8,7 @@ import {
   remove,
   removeAll,
   removeAllRead,
-} from "$lib/server/notifications";
+} from "#lib/server/notifications.ts";
 
 // The bell in the header talks to this. Everything is about the signed-in user's own notifications.
 // (API routes don't go through the (private) layout, so the sign-in is checked here.)

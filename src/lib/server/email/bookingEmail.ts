@@ -1,10 +1,10 @@
-import { streetWithUnit } from "$lib/address";
+import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
 import { ClientRelationship } from "$prisma/enums";
-import { env as privateEnv } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
+import { TIMEZONE } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { renderTemplate, type TemplateVars } from "./templates";
 
@@ -81,20 +81,11 @@ export function buildVars(
   const appt = booking.appointment;
   // An unscheduled booking may still have a planned day, time and place
   const start = appt?.startTime ?? booking.plannedStart;
+
   const loc = appt?.event.location ?? booking.plannedSite;
-
-  const dateFormat = new Intl.DateTimeFormat("en-CA", {
-    dateStyle: "full",
-    timeZone: options.timeZone,
-  });
-  const timeFormat = new Intl.DateTimeFormat("en-CA", {
-    timeStyle: "short",
-    timeZone: options.timeZone,
-  });
-
-  const address = [streetWithUnit(loc?.street, loc?.unitNumber), loc?.city]
-    .filter(Boolean)
-    .join(", ");
+  const dateFormat = new Intl.DateTimeFormat("en-CA", { dateStyle: "full", timeZone: options.timeZone });
+  const timeFormat = new Intl.DateTimeFormat("en-CA", { timeStyle: "short", timeZone: options.timeZone });
+  const address = [streetWithUnit(loc?.street, loc?.unitNumber), loc?.city].filter(Boolean).join(", ");
   const request = booking.datedRequest?.requestText?.trim() ?? "";
 
   return {
@@ -116,8 +107,8 @@ export function buildVars(
 
 function settings() {
   return {
-    organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    timeZone: TIMEZONE || "America/Toronto"
   };
 }
 
@@ -129,9 +120,9 @@ async function loadBooking(householdId: string, bookingId: string) {
 }
 
 export type EmailDraft = { to: Recipient[]; subject: string; body: string };
-export type DraftResult =
-  | { ok: true; draft: EmailDraft }
-  | { ok: false; status: number; message: string };
+export type DraftResult = 
+  { ok: true; draft: EmailDraft } |
+  { ok: false; status: number; message: string };
 
 /** Builds the message from its template. Nothing is sent. */
 export async function buildEmail(
@@ -169,9 +160,9 @@ export async function buildEmail(
   return { ok: true, draft: { to, subject, body } };
 }
 
-export type SendResult =
-  | { ok: true; to: Recipient[] }
-  | { ok: false; status: number; message: string };
+export type SendResult = 
+  { ok: true; to: Recipient[] } |
+  { ok: false; status: number; message: string };
 
 /**
  * Sends the message to every primary member with an email address.

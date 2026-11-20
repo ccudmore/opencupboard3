@@ -2,7 +2,7 @@
   import { Drawer, Sidebar, SidebarGroup, SidebarItem } from "flowbite-svelte";
   import { BarsFromLeftOutline } from "flowbite-svelte-icons";
   import { page } from "$app/state";
-  import { getPermittedApps } from "$lib/components/NavPermissions";
+  import { getPermittedApps } from "#lib/components/NavPermissions.ts";
   const apps = getPermittedApps(page?.data?.user?.permissions)
   let drawerOpen = $state(false);
   let spanClass = "flex-1 ms-3 whitespace-nowrap";

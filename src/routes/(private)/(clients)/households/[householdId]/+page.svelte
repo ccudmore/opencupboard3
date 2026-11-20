@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import {superForm, type SuperFormErrors} from "sveltekit-superforms/client"
 	import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte"
  	import { goto } from '$app/navigation';
@@ -7,11 +7,11 @@
 
 	import { Button, Input, ButtonGroup, Breadcrumb, BreadcrumbItem} from "flowbite-svelte";
 	import { ExclamationCircleOutline, HomeOutline, ChevronDoubleRightOutline } from "flowbite-svelte-icons";
-	import TabView from "$lib/components/Household/TabView.svelte";
-	import Topper from "$lib/components/Household/Topper.svelte";
-	import {formattedDate} from "$lib/utils"
+	import TabView from "#lib/components/Household/TabView.svelte";
+	import Topper from "#lib/components/Household/Topper.svelte";
+	import {formattedDate} from "#lib/utils.ts"
 	import { zod4 } from 'sveltekit-superforms/adapters';
-	import { householdSchema } from '$lib/formschemas/household';
+	import { householdSchema } from '#lib/formschemas/household.ts';
 
 	let { data } = $props()
 	

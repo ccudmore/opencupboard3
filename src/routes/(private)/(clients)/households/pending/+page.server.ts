@@ -1,16 +1,16 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
-import prisma from "$lib/prisma";
-import { requirePermission } from "$lib/utils";
+import { TIMEZONE } from "$app/env/private";
+import prisma from "#lib/prisma.ts";
+import { requirePermission } from "#lib/utils.ts";
 import {
   AppointmentBookingStatus,
   ClientRelationship,
   HouseholdStatus,
 } from "$prisma/enums";
-import { isMailConfigured } from "$lib/server/email/mailer";
-import { sendApprovalEmail } from "$lib/server/email/householdEmail";
-import { previewEmail, sendEmail } from "$lib/server/bookingActions";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
+import { sendApprovalEmail } from "#lib/server/email/householdEmail.ts";
+import { previewEmail, sendEmail } from "#lib/server/bookingActions.ts";
 
 // Requests that came from the public booking page, waiting for a household manager.
 // The layout already needs manage-households; the actions check it again.
@@ -52,7 +52,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   });
 
   return {
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    timeZone: TIMEZONE || "America/Toronto",
     emailEnabled: isMailConfigured(),
     bookings: bookings.map((b) => ({
       id: b.id,

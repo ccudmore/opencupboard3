@@ -1,8 +1,5 @@
-import { env } from "$env/dynamic/public";
-import type {
-  BookingWithAppointment,
-  HouseholdMember,
-} from "./types/household";
+import { PUBLIC_ID_RENEWAL_PERIOD_MONTHS } from "$app/env/public";
+import type { BookingWithAppointment, HouseholdMember } from "./types/household";
 import { error, redirect } from "@sveltejs/kit";
 import { AppointmentBookingStatus } from "$prisma/enums";
 
@@ -45,7 +42,7 @@ export function calculateChildCount(
 function getIdValidityMillis() {
   let idCheckIntervalMonths: number = 12;
   if ("PUBLIC_ID_RENEWAL_PERIOD_MONTHS" in env) {
-    idCheckIntervalMonths = +(env.PUBLIC_ID_RENEWAL_PERIOD_MONTHS ?? "12");
+    idCheckIntervalMonths = +(PUBLIC_ID_RENEWAL_PERIOD_MONTHS ?? "12");
   }
   const idCheckIntervalMillis =
     1000 * 60 * 60 * 24 * 30.4 * idCheckIntervalMonths;
@@ -62,12 +59,8 @@ export function isIdVerificationNeeded(date: Date | undefined | null) {
 }
 
 export function calculateNextServiceDate(bookings: BookingWithAppointment[]) {
-  const times = (bookings as any[])
-    // unscheduled bookings have no appointment, so they don't count
-    .filter(
-      (b) => b.status !== AppointmentBookingStatus.CANCELLED && b.appointment,
-    )
-    .map((b) => new Date(b.appointment.startTime).getTime());
+  const times = (bookings as any[]).// unscheduled bookings have no appointment, so they don't count
+  filter((b) => b.status !== AppointmentBookingStatus.CANCELLED && b.appointment).map((b) => new Date(b.appointment.startTime).getTime());
 
   if (times.length === 0) {
     return null;
@@ -132,7 +125,7 @@ export function safeRedirectPath(
   if (!target.startsWith("/")) return fallback;
   if (target.startsWith("//") || target.startsWith("/\\")) return fallback;
   // Control characters (tabs, newlines) can be stripped by browsers and turn "/\t/evil.com" into "//evil.com"
-  if (/[\u0000-\u001f]/.test(target)) return fallback;
+  if ((/[\u0000-\u001f]/).test(target)) return fallback;
 
   // Final check: resolving it against our own origin must stay on that origin.
   try {

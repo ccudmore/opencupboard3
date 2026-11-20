@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { AppsMenu, UserMenu, NavDrawer } from '$lib'
-  import NotificationsMenu from '$lib/components/NotificationsMenu.svelte'
+  import { AppsMenu, UserMenu, NavDrawer } from '#lib'
+  import NotificationsMenu from '#lib/components/NotificationsMenu.svelte'
   import { DarkMode, NavBrand, Navbar } from 'flowbite-svelte';
   import { SearchOutline, CloseOutline } from 'flowbite-svelte-icons';
   import { tick } from 'svelte';
   import { page } from '$app/state';
-  import { env } from '$env/dynamic/public'
-  import SearchBox from '$lib/components/SearchBox.svelte';
-  import Logo from '$lib/Logo.svelte'
+  import { PUBLIC_ORGANIZATION_NAME } from '$app/env/public';
+  import SearchBox from '#lib/components/SearchBox.svelte';
+  import Logo from '#lib/Logo.svelte'
 
-  const organizationName = env.PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard'
+  const organizationName = PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard';
 
   // Below the large breakpoint the search box is a bar under the navbar, opened by the search button
   let searchOpen = $state(false)

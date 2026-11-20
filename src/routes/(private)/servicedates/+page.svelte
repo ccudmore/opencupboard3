@@ -1,13 +1,13 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { Badge, Button, Input, Label, Modal, Select, Textarea, Toggle } from 'flowbite-svelte';
 	import { PlusOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { tick } from 'svelte';
-	import { callAction } from '$lib/client/callAction';
-	import MonthPicker from '$lib/components/ServiceDates/MonthPicker.svelte';
-	import ServiceDateCard from '$lib/components/ServiceDates/ServiceDateCard.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
+	import MonthPicker from '#lib/components/ServiceDates/MonthPicker.svelte';
+	import ServiceDateCard from '#lib/components/ServiceDates/ServiceDateCard.svelte';
 
 	let { data } = $props();
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { Alert, Badge, Button, Card } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 	import { CalendarMonthOutline, MapPinOutline, ClockOutline } from 'flowbite-svelte-icons';
 
 	let { data } = $props();

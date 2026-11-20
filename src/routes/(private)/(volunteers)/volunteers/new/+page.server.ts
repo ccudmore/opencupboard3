@@ -1,8 +1,8 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { requirePermission } from "$lib/utils";
-import { isMailConfigured } from "$lib/server/email/mailer";
-import { addVolunteer, lookupEmail } from "$lib/server/volunteerAccounts";
+import { requirePermission } from "#lib/utils.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
+import { addVolunteer, lookupEmail } from "#lib/server/volunteerAccounts.ts";
 
 const PERMISSION = ["manage-volunteers"];
 

@@ -1,11 +1,9 @@
-import type { Handle } from "@sveltejs/kit";
-
-import { auth } from "$lib/server/auth";
+import { auth } from "#lib/server/auth.ts";
 import { svelteKitHandler } from "better-auth/svelte-kit";
-import { building } from "$app/environment";
-import prisma from "$lib/prisma";
-import { sequence } from "@sveltejs/kit/hooks";
-import { env } from "$env/dynamic/private";
+import { building } from "$app/env";
+import prisma from "#lib/prisma.ts";
+import { sequence, type Handle } from "@sveltejs/kit/hooks";
+import { CSP_ENFORCE, BETTER_AUTH_URL } from "$app/env/private";
 
 type RolePermission = { permissionId: string };
 type RoleEntry = { role: { permissions: RolePermission[] } };
@@ -18,10 +16,9 @@ function uniquePermissionIds(data: RoleEntry[]): string[] {
   ];
 }
 
-const CSP_HEADER =
-  env.CSP_ENFORCE === "true"
-    ? "Content-Security-Policy"
-    : "Content-Security-Policy-Report-Only";
+const CSP_HEADER = CSP_ENFORCE === "true"
+  ? "Content-Security-Policy"
+  : "Content-Security-Policy-Report-Only";
 
 async function handleAuthentication({ event, resolve }: Parameters<Handle>[0]) {
   // don't touch the database for public content
@@ -115,7 +112,7 @@ const handleSecurityHeadersOld: Handle = async ({ event, resolve }) => {
     }
 
     // Only meaningful over HTTPS. nginx terminates TLS, so key off the public URL.
-    if (env.BETTER_AUTH_URL?.startsWith("https://")) {
+    if (BETTER_AUTH_URL?.startsWith("https://")) {
       h.set("Strict-Transport-Security", "max-age=31536000");
     }
   } catch {

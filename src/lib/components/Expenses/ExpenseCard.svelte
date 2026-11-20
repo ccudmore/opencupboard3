@@ -4,9 +4,9 @@
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import { categoryLabel, dateOnly, money, paymentLabel, reimbursementLabel, statusInfo } from '$lib/expenses';
-	import type { ExpenseRow } from '$lib/server/expenses';
+	import { callAction } from '#lib/client/callAction.ts';
+	import { categoryLabel, dateOnly, money, paymentLabel, reimbursementLabel, statusInfo } from '#lib/expenses.ts';
+	import type { ExpenseRow } from '#lib/server/expenses.ts';
 
 	let {
 		expense,

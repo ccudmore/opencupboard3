@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { signOut } from '$lib/auth-client';
+	import { signOut } from '#lib/auth-client.ts';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import '../app.css';
-	import { Navbar } from '$lib'
+	import { Navbar } from '#lib'
     import { page } from "$app/state";
 	import { Toaster } from 'svelte-sonner';
 

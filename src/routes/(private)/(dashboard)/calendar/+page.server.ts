@@ -7,17 +7,17 @@ import type {
   EventVolunteer,
   EventGuest,
   Site,
-} from "$lib/components/Calendar.svelte";
-import { eventPlace } from "$lib/eventLocation";
-import { buildEventEmail, sendEventEmail } from "$lib/server/email/eventEmail";
-import { isMailConfigured } from "$lib/server/email/mailer";
-import { zonedParts } from "$lib/timezone";
-import { env as privateEnv } from "$env/dynamic/private";
+} from "#lib/components/Calendar.svelte";
+import { eventPlace } from "#lib/eventLocation.ts";
+import { buildEventEmail, sendEventEmail } from "#lib/server/email/eventEmail.ts";
+import { isMailConfigured } from "#lib/server/email/mailer.ts";
+import { zonedParts } from "#lib/timezone.ts";
+import { TIMEZONE } from "$app/env/private";
 import type { Prisma } from "$prisma/client";
-import { requirePermission, hasPermission } from "$lib/utils";
-import { rolesFor } from "$lib/volunteerRoles";
+import { requirePermission, hasPermission } from "#lib/utils.ts";
+import { rolesFor } from "#lib/volunteerRoles.ts";
 import { VolunteerAssignmentsStatus } from "$prisma/enums";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 //import getVoluteers from
@@ -43,8 +43,19 @@ async function getCategories(): Promise<CalendarCategory[]> {
       addHint:
         "Set up on the Service Dates page, with its volunteers and appointments",
     },
-    { name: "Meeting", color: "#7c3aed", roles: rolesFor("Meeting") },
-    { name: "Shopping", color: "#FFD580", roles: rolesFor("Shopping") },
+
+    {
+      name: "Meeting",
+      color: "#7c3aed",
+      roles: rolesFor("Meeting")
+    },
+
+    {
+      name: "Shopping",
+      color: "#FFD580",
+      roles: rolesFor("Shopping")
+    },
+
     {
       name: "Food Drives & Events",
       color: "#EDC8FF",
@@ -94,7 +105,7 @@ const dateOnly = (d: Date) => d.toISOString().slice(0, 10);
 
 /** The Service Dates page opened on one service date (and its Appointments tab, for an appointment). */
 function serviceDateLink(start: Date, appointments: boolean): string {
-  const tz = privateEnv.TIMEZONE || "America/Toronto";
+  const tz = TIMEZONE || "America/Toronto";
   const date = zonedParts(start, tz).date;
   const today = zonedParts(new Date(), tz).date;
   const q = new URLSearchParams();
@@ -141,28 +152,25 @@ async function getEvents(
     start: v.startTime,
     end: v.endTime,
     category: v.type,
-    ...(v.type === SERVICE_DATE
-      ? { href: serviceDateLink(v.startTime, false) }
-      : {}),
+    ...v.type === SERVICE_DATE ? { href: serviceDateLink(v.startTime, false) } : {},
     repeating: v.repeating,
-    ...(v.repeating
+    ...v.repeating
       ? {
-          repeatEvery: v.repeatEvery ?? 1,
-          repeatUnit:
-            v.repeatUnit === "day" ? ("day" as const) : ("week" as const),
-        }
-      : {}),
+        repeatEvery: v.repeatEvery ?? 1,
+        repeatUnit: v.repeatUnit === "day" ? "day" as const : "week" as const
+      }
+      : {},
     repeatUntil: v.repeatUntil ? dateOnly(v.repeatUntil) : undefined,
     exceptions: v.exceptions.length ? v.exceptions : undefined,
     // cancelled assignments aren't shown on the calendar
     volunteers: v.volunteers
       .filter((a) => a.status !== VolunteerAssignmentsStatus.CANCELLED)
       .map((a) => ({
-        id: a.volunteerId,
-        ...(a.eventRole === NO_ROLE ? {} : { role: a.eventRole }),
-        confirmed: wasSent(a.confirmations),
+      id: a.volunteerId,
+      ...a.eventRole === NO_ROLE ? {} : { role: a.eventRole },
+      confirmed: wasSent(a.confirmations),
         reminded: wasSent(a.reminders),
-      })),
+    })),
     guests: v.guests.map((g) => ({
       name: g.name,
       email: g.email ?? undefined,
@@ -314,12 +322,9 @@ function emailFields(fd: FormData) {
   const eventId = fd.get("eventId");
   const kind = fd.get("kind");
   const occurrence = fd.get("occurrence");
-  if (
-    typeof eventId !== "string" ||
-    !eventId ||
-    (kind !== "confirmation" && kind !== "reminder")
-  )
-    return null;
+
+  if (typeof eventId !== "string" || !eventId || kind !== "confirmation" && kind !== "reminder") return null;
+
   return {
     eventId,
     kind: kind as "confirmation" | "reminder",
@@ -354,8 +359,8 @@ async function eventData(
     locationId,
     locationText,
     repeating: ev.repeating === true,
-    repeatEvery: ev.repeating ? (ev.repeatEvery ?? 1) : null,
-    repeatUnit: ev.repeating ? (ev.repeatUnit ?? "week") : null,
+    repeatEvery: ev.repeating ? ev.repeatEvery ?? 1 : null,
+    repeatUnit: ev.repeating ? ev.repeatUnit ?? "week" : null,
     repeatUntil: ev.repeatUntil
       ? new Date(`${dateOnlyOf(ev.repeatUntil)}T00:00:00Z`)
       : null,
@@ -553,11 +558,12 @@ function cleanEvent(
       if (!isObject(g) || typeof g.name !== "string" || !g.name.trim())
         return { error: "Every guest needs a name." };
       const email = typeof g.email === "string" ? g.email.trim() : "";
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-        return { error: `"${email}" isn't a valid email address.` };
+
+      if (email && !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email)) return { error: `"${email}" isn't a valid email address.` };
+
       event.guests.push({
         name: g.name.trim().slice(0, 100),
-        ...(email ? { email: email.toLowerCase() } : {}),
+        ...email ? { email: email.toLowerCase() } : {}
       });
     }
   }
@@ -632,9 +638,10 @@ async function saveVolunteerAssignments(
     const wanted = new Map<string, string>(); // volunteerId -> role
     for (const v of ev.volunteers) {
       const id = typeof v === "string" ? v : v.id;
-      const role = typeof v === "string" ? NO_ROLE : (v.role ?? NO_ROLE);
-      if (role !== NO_ROLE && !allowedRoles.includes(role))
-        return `"${role}" isn't a role for ${dbEvent.type} events.`;
+      const role = typeof v === "string" ? NO_ROLE : v.role ?? NO_ROLE;
+
+      if (role !== NO_ROLE && !allowedRoles.includes(role)) return `"${role}" isn't a role for ${dbEvent.type} events.`;
+
       wanted.set(id, role);
     }
 

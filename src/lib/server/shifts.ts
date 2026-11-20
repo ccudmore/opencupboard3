@@ -1,10 +1,10 @@
-import { eventPlace } from "$lib/eventLocation";
+import { eventPlace } from "#lib/eventLocation.ts";
 import { Prisma } from "$prisma/client";
 import { EventStatus, VolunteerAssignmentsStatus } from "$prisma/enums";
-import prisma from "$lib/prisma";
-import { env as privateEnv } from "$env/dynamic/private";
-import { rolesFor } from "$lib/volunteerRoles";
-import { notifyPermission, notifyVolunteer } from "$lib/server/notifications";
+import prisma from "#lib/prisma.ts";
+import { TIMEZONE } from "$app/env/private";
+import { rolesFor } from "#lib/volunteerRoles.ts";
+import { notifyPermission, notifyVolunteer } from "#lib/server/notifications.ts";
 
 /**
  * Shift signups. An event can say how many volunteers it needs in each role (EventVolunteerNeed).
@@ -12,16 +12,11 @@ import { notifyPermission, notifyVolunteer } from "$lib/server/notifications";
  * manage-volunteers approves it (ACTIVE) and is then offered the confirmation email.
  */
 
-type Result<T = object> =
-  ({ ok: true } & T) | { ok: false; status: number; message: string };
-const fail = (
-  status: number,
-  message: string,
-): { ok: false; status: number; message: string } => ({
-  ok: false,
-  status,
-  message,
-});
+type Result<T = object> = 
+  ({ ok: true } & T) |
+  { ok: false; status: number; message: string };
+
+const fail = (status: number, message: string): { ok: false; status: number; message: string } => ({ ok: false, status, message });
 
 /** Assignments in these states hold a spot. */
 const HOLDS_SPOT: VolunteerAssignmentsStatus[] = [
@@ -54,7 +49,7 @@ export async function notifyAssignment(
   const when = new Intl.DateTimeFormat("en-CA", {
     dateStyle: "full",
     timeStyle: "short",
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    timeZone: TIMEZONE || "America/Toronto"
   }).format(a.event.startTime);
   const what = `${a.event.title ?? a.event.type}${a.eventRole ? ` as ${a.eventRole}` : ""}`;
   const name = `${a.volunteer.firstName} ${a.volunteer.lastName}`.trim();
@@ -67,7 +62,7 @@ export async function notifyAssignment(
     });
     return;
   }
-  const text = {
+  const text = ({
     approved: {
       subject: `Your signup was approved: ${what}`,
       body: `You are confirmed for ${what} on ${when}.`,
@@ -82,9 +77,9 @@ export async function notifyAssignment(
     },
     removed: {
       subject: `You were removed from ${what}`,
-      body: `You have been removed from ${what} on ${when}. Please contact your volunteer coordinator if you have questions.`,
-    },
-  }[kind];
+      body: `You have been removed from ${what} on ${when}. Please contact your volunteer coordinator if you have questions.`
+    }
+  })[kind];
   await notifyVolunteer(a.volunteer.id, { ...text, link: "/volunteer" });
 }
 
@@ -184,23 +179,16 @@ export async function signUp(
           return fail(409, "That shift is no longer available.");
         }
         const need = event.needs[0];
-        if (!need || need.count <= 0)
-          return fail(409, "That shift has no spots for that role.");
 
-        const existing = event.volunteers.find(
-          (a) => a.volunteerId === volunteerId,
-        );
-        if (existing && existing.status !== "CANCELLED")
-          return fail(409, "You are already signed up for this shift.");
+        if (!need || need.count <= 0) return fail(409, "That shift has no spots for that role.");
 
-        const taken = event.volunteers.filter(
-          (a) => a.eventRole === role && HOLDS_SPOT.includes(a.status),
-        ).length;
-        if (taken >= need.count)
-          return fail(
-            409,
-            "Sorry, all the spots for that role were just taken.",
-          );
+        const existing = event.volunteers.find((a) => a.volunteerId === volunteerId);
+
+        if (existing && existing.status !== "CANCELLED") return fail(409, "You are already signed up for this shift.");
+
+        const taken = event.volunteers.filter((a) => a.eventRole === role && HOLDS_SPOT.includes(a.status)).length;
+
+        if (taken >= need.count) return fail(409, "Sorry, all the spots for that role were just taken.");
 
         if (existing) {
           await tx.volunteerAssignments.update({

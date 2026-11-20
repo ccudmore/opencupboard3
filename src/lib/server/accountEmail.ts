@@ -1,5 +1,5 @@
-import { env } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
+import { BETTER_AUTH_URL } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./email/mailer";
 import { renderTemplate } from "./email/templates";
 
@@ -26,8 +26,8 @@ async function send(
     firstName: firstNameOf(person.name),
     name: person.name,
     link,
-    organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    ...extra,
+    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    ...extra
   });
   await sendMail({ to: [person.email], subject, text: body });
 }
@@ -44,5 +44,4 @@ export async function sendResetPasswordEmail(person: Person, url: string) {
 }
 
 /** Where the emailed link lands after Better Auth checks the token. */
-export const resetPageUrl = (invite: boolean) =>
-  `${(env.BETTER_AUTH_URL ?? "").replace(/\/$/, "")}/reset-password${invite ? `?${INVITE_MARKER}` : ""}`;
+export const resetPageUrl = (invite: boolean) => `${(BETTER_AUTH_URL ?? "").replace(/\/$/, "")}/reset-password${invite ? `?${INVITE_MARKER}` : ""}`;

@@ -18,8 +18,8 @@
 		TableHeadCell
 	} from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
-	import SearchPagination from '$lib/components/SearchPagination.svelte';
-	import { callAction } from '$lib/client/callAction';
+	import SearchPagination from '#lib/components/SearchPagination.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
 
 	let { data } = $props();
 

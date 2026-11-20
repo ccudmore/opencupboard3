@@ -1,4 +1,4 @@
-import { callAction } from "$lib/client/callAction";
+import { callAction } from "#lib/client/callAction.ts";
 import { toast } from "svelte-sonner";
 import { invalidateAll } from "$app/navigation";
 import { writable } from "svelte/store";

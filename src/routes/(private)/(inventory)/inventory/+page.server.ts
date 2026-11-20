@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { requirePermission } from "$lib/utils";
-import { getSites } from "$lib/server/queries/booking";
+import { requirePermission } from "#lib/utils.ts";
+import { getSites } from "#lib/server/queries/booking.ts";
 import {
   listCategories,
   listItems,
@@ -16,7 +16,7 @@ import {
   deleteItem,
   MAX_ITEMS_SHOWN,
   type Fail,
-} from "$lib/server/inventory";
+} from "#lib/server/inventory.ts";
 
 // The (inventory) layout requires manage-inventory, but actions run without it, so each one checks again.
 const PERMISSION = ["manage-inventory"];

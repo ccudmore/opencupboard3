@@ -1,15 +1,15 @@
 import type { Actions, PageServerLoad } from "./$types";
-import { requirePermission } from "$lib/utils";
+import { requirePermission } from "#lib/utils.ts";
 import {
   searchRoles,
   listPermissions,
   parseAdminSearchParams,
-} from "$lib/server/queries/admin";
+} from "#lib/server/queries/admin.ts";
 import {
   ADMIN_PERMISSION,
   createRole,
   updateRole,
-} from "$lib/server/adminActions";
+} from "#lib/server/adminActions.ts";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   requirePermission(locals?.user?.permissions, url, [ADMIN_PERMISSION]);

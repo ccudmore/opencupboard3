@@ -1,9 +1,9 @@
-import { streetWithUnit } from "$lib/address";
+import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
-import { env as privateEnv } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
+import { TIMEZONE } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { renderTemplate, type TemplateVars } from "./templates";
 import type { EmailKind, Recipient } from "./bookingEmail";
@@ -92,14 +92,17 @@ export function buildVars(
 
 function settings() {
   return {
-    organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    timeZone: privateEnv.TIMEZONE || "America/Toronto",
+    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    timeZone: TIMEZONE || "America/Toronto"
   };
 }
 
-export type DraftResult =
-  | { ok: true; draft: { to: Recipient[]; subject: string; body: string } }
-  | { ok: false; status: number; message: string };
+export type DraftResult = 
+  { 
+    ok: true;
+    draft: { to: Recipient[]; subject: string; body: string }
+   } |
+  { ok: false; status: number; message: string };
 
 /** Builds the message from its template. Nothing is sent. */
 export async function buildAssignmentEmail(
@@ -117,10 +120,10 @@ export async function buildAssignmentEmail(
   const to = recipientsFor(assignment);
   if (to.length === 0)
     return {
-      ok: false,
-      status: 400,
+    ok: false,
+    status: 400,
       message: "This volunteer has no email address.",
-    };
+  };
 
   const { subject, body } = await renderTemplate(
     KINDS[kind].template,
@@ -129,9 +132,9 @@ export async function buildAssignmentEmail(
   return { ok: true, draft: { to, subject, body } };
 }
 
-export type SendResult =
-  | { ok: true; to: Recipient[] }
-  | { ok: false; status: number; message: string };
+export type SendResult = 
+  { ok: true; to: Recipient[] } |
+  { ok: false; status: number; message: string };
 
 /**
  * Sends the message to the volunteer. The addresses always come from the database.

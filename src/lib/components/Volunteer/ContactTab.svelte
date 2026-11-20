@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Helper, Input, Label } from 'flowbite-svelte';
-	import FieldError from '$lib/components/FieldError.svelte';
+	import FieldError from '#lib/components/FieldError.svelte';
 
 	// form and errors are the volunteer page's Superforms stores
 	let { form, errors, loginEmail }: { form: any; errors: any; loginEmail: string } = $props();

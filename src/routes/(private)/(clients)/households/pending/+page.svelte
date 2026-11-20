@@ -2,9 +2,9 @@
 	import { Badge, Button } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 
 	let { data } = $props();
 

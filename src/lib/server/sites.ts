@@ -1,6 +1,6 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 
 // Add, edit and delete sites for the Admin pages. The caller has already checked the `admin` permission.
 

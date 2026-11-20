@@ -1,11 +1,11 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import type { PageProps } from './$types';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Alert, Button, Helper, Input, Label } from 'flowbite-svelte';
 	
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 
 	let { data }: PageProps = $props();
 

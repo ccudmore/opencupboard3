@@ -3,13 +3,13 @@
 	import { ButtonGroup, Button, Helper, Label, Drawer, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Modal } from "flowbite-svelte";
   	import { CloseCircleOutline, CheckCircleOutline, } from "flowbite-svelte-icons";
 	import { toast } from "svelte-sonner";
-	import {formattedDate} from "$lib/utils"
-	import {nextIdVerificationDate,isIdVerificationNeeded} from "$lib/utils"
+	import {formattedDate} from "#lib/utils.ts"
+	import {nextIdVerificationDate,isIdVerificationNeeded} from "#lib/utils.ts"
   	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
-	import { idTypeOptions, relationshipOptions, relationshipLabels } from '$lib/labels'
+	import { idTypeOptions, relationshipOptions, relationshipLabels } from '#lib/labels.ts'
 	import IdScanner from './IdScanner.svelte';
-	import { namesAgree, birthYearOf, todayIso, type LicenceInfo } from '$lib/idScan/aamva';
+	import { namesAgree, birthYearOf, todayIso, type LicenceInfo } from '#lib/idScan/aamva.ts';
 
 	// for opening and closing the member detail drawer
 	let openMemberRow: number | null | undefined = $state();

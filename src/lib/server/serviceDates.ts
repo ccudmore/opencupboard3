@@ -1,6 +1,6 @@
-import { streetWithUnit } from "$lib/address";
+import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 
 import {
   AppointmentBookingStatus,
@@ -9,10 +9,10 @@ import {
   HouseholdStatus,
   VolunteerAssignmentsStatus,
 } from "$prisma/enums";
-import { calculateNextServiceDate } from "$lib/utils";
-import { rolesFor } from "$lib/volunteerRoles";
-import { zonedParts, zonedToDate } from "$lib/timezone";
-import { notifyAssignment } from "$lib/server/shifts";
+import { calculateNextServiceDate } from "#lib/utils.ts";
+import { rolesFor } from "#lib/volunteerRoles.ts";
+import { zonedParts, zonedToDate } from "#lib/timezone.ts";
+import { notifyAssignment } from "#lib/server/shifts.ts";
 
 /** Managing service dates: the event, its appointments, who is booked and which volunteers help. */
 

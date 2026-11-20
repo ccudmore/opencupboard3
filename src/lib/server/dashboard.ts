@@ -1,11 +1,11 @@
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import {
   AppointmentBookingStatus,
   EventStatus,
   ExpenseStatus,
   VolunteerAssignmentsStatus,
 } from "$prisma/enums";
-import { zonedParts } from "$lib/timezone";
+import { zonedParts } from "#lib/timezone.ts";
 
 // The numbers on the home page tiles. The page decides who may see which; these only count.
 

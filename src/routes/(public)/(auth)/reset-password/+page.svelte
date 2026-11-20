@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert, Button, Input, Label } from 'flowbite-svelte';
 	import { LockSolid } from 'flowbite-svelte-icons';
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.ts';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 

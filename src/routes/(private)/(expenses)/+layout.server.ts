@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { requirePermission } from "$lib/utils";
+import { requirePermission } from "#lib/utils.ts";
 
 // Submitters and managers both use /expenses; what each sees is decided by the page.
 export const load: LayoutServerLoad = async ({ locals, url }) => {

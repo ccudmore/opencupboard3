@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { hasPermission, requirePermission } from "$lib/utils";
-import { maxUploadBytes, ALLOWED_EXTENSIONS } from "$lib/server/documentTypes";
+import { hasPermission, requirePermission } from "#lib/utils.ts";
+import { maxUploadBytes, ALLOWED_EXTENSIONS } from "#lib/server/documentTypes.ts";
 import {
   MAX_RECEIPTS,
   MAX_ROWS,
@@ -13,7 +13,7 @@ import {
   listMine,
   validDateParam,
   type Fail,
-} from "$lib/server/expenses";
+} from "#lib/server/expenses.ts";
 
 const bad = (r: Fail) => fail(r.status, { message: r.message });
 

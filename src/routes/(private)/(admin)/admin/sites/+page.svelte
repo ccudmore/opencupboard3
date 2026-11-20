@@ -3,8 +3,8 @@
 	import { toast } from 'svelte-sonner';
 	import { Button, Drawer, Input, Label, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
-	import { callAction } from '$lib/client/callAction';
-	import { streetWithUnit } from '$lib/address';
+	import { callAction } from '#lib/client/callAction.ts';
+	import { streetWithUnit } from '#lib/address.ts';
 
 	let { data } = $props();
 

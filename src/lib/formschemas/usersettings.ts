@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AVATAR_KEYS } from "$lib/avatars";
+import { AVATAR_KEYS } from "#lib/avatars.ts";
 
 export const emailSchema = z.object({
   email: z

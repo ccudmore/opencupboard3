@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { page } from '$app/state';
 	
 	import { UsersGroupSolid, AwardOutline, MapPinOutline } from 'flowbite-svelte-icons';

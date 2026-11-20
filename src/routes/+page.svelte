@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import AppointmentsTile from '$lib/components/Dashboard/AppointmentsTile.svelte';
-	import ExpensesTile from '$lib/components/Dashboard/ExpensesTile.svelte';
-	import MyShiftsTile from '$lib/components/Dashboard/MyShiftsTile.svelte';
-	import VolunteersTile from '$lib/components/Dashboard/VolunteersTile.svelte';
+	import AppointmentsTile from '#lib/components/Dashboard/AppointmentsTile.svelte';
+	import ExpensesTile from '#lib/components/Dashboard/ExpensesTile.svelte';
+	import MyShiftsTile from '#lib/components/Dashboard/MyShiftsTile.svelte';
+	import VolunteersTile from '#lib/components/Dashboard/VolunteersTile.svelte';
 
 	let { data }: { data: PageData } = $props();
 	const hasTiles = $derived(!!(data.myShifts || data.appointments || data.expenses || data.volunteers));

@@ -3,8 +3,8 @@
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import { CATEGORIES, PAYMENT_METHODS, toIsoDate } from '$lib/expenses';
+	import { callAction } from '#lib/client/callAction.ts';
+	import { CATEGORIES, PAYMENT_METHODS, toIsoDate } from '#lib/expenses.ts';
 
 	let {
 		maxReceipts,

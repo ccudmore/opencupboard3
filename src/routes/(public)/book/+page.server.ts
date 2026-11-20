@@ -1,13 +1,13 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { env as privateEnv } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
-import { book, lookup, register } from "$lib/server/selfBooking";
+import { TIMEZONE } from "$app/env/private";
+import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
+import { book, lookup, register } from "#lib/server/selfBooking.ts";
 
 // A public page: no sign-in. Everything a visitor can do is in $lib/server/selfBooking.ts.
 export const load: PageServerLoad = async () => ({
-  organization: publicEnv.PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-  timeZone: privateEnv.TIMEZONE || "America/Toronto",
+  organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+  timeZone: TIMEZONE || "America/Toronto"
 });
 
 const clientIp = (e: { getClientAddress: () => string }) => {

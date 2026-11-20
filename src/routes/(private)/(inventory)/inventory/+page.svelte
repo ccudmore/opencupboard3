@@ -1,12 +1,12 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import type { PageProps } from './$types';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Alert, Badge, Button, Helper, Input, Label, Modal, Select, Textarea } from 'flowbite-svelte';
 	import { EditOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { callAction } from '$lib/client/callAction';
+	import { callAction } from '#lib/client/callAction.ts';
 
 	let { data }: PageProps = $props();
 	type Item = PageProps['data']['items'][number];

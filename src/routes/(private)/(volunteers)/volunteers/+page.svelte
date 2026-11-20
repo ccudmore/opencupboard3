@@ -1,10 +1,10 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import { Badge, Button, Search, Select, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
-	import SearchPagination from '$lib/components/SearchPagination.svelte';
+	import SearchPagination from '#lib/components/SearchPagination.svelte';
 
 	let { data } = $props();
 

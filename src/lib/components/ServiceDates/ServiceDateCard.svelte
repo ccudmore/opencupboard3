@@ -3,10 +3,10 @@
 	import { PlusOutline, TrashBinOutline, FileCopyOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 	import type { Service, Site, Appointment } from './types';
-	import TabView from "$lib/components/ServiceDates/TabView.svelte";
+	import TabView from "#lib/components/ServiceDates/TabView.svelte";
 
 	let {
 		service,

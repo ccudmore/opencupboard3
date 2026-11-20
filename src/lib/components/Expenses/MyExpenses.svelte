@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert } from 'flowbite-svelte';
 	import ExpenseCard from './ExpenseCard.svelte';
-	import type { ExpenseRow } from '$lib/server/expenses';
+	import type { ExpenseRow } from '#lib/server/expenses.ts';
 
 	let { expenses, maxReceipts, maxMb, accept, maxRows }: { expenses: ExpenseRow[]; maxReceipts: number; maxMb: number; accept: string; maxRows: number } = $props();
 </script>

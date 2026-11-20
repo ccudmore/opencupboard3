@@ -1,5 +1,5 @@
 import type { Prisma } from "$prisma/client";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 
 export const EVENT_PAGE_SIZE = 100;
 

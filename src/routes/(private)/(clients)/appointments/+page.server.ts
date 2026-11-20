@@ -1,7 +1,7 @@
 import type { PageServerLoad } from "./$types";
-import prisma from "$lib/prisma";
+import prisma from "#lib/prisma.ts";
 import type { Prisma } from "$prisma/client";
-import { requirePermission } from "$lib/utils";
+import { requirePermission } from "#lib/utils.ts";
 import {
   EventStatus,
   AppointmentBookingStatus,

@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 import { toast } from "svelte-sonner";
 import { invalidateAll } from "$app/navigation";
-import { callAction } from "$lib/client/callAction";
+import { callAction } from "#lib/client/callAction.ts";
 
 /**
  * Shared "run a server action" helper for components that sit under one parent.

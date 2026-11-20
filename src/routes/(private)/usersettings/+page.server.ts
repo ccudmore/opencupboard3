@@ -3,9 +3,9 @@ import { fail } from "@sveltejs/kit";
 import { superValidate, message, setError } from "sveltekit-superforms";
 import { zod4 } from "sveltekit-superforms/adapters";
 import { verifyPassword } from "better-auth/crypto";
-import prisma from "$lib/prisma";
-import { emailSchema, iconSchema } from "$lib/formschemas/usersettings";
-import { avatarFor, avatarValue } from "$lib/avatars";
+import prisma from "#lib/prisma.ts";
+import { emailSchema, iconSchema } from "#lib/formschemas/usersettings.ts";
+import { avatarFor, avatarValue } from "#lib/avatars.ts";
 
 // Anyone who is signed in can change their own email address and icon (the (private) layout requires a sign-in).
 

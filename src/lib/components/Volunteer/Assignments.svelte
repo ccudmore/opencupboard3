@@ -17,11 +17,11 @@
 	} from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import { volunteerAssignmentStatusOptions } from '$lib/labels';
-	import { rolesFor } from '$lib/volunteerRoles';
+	import { callAction } from '#lib/client/callAction.ts';
+	import { volunteerAssignmentStatusOptions } from '#lib/labels.ts';
+	import { rolesFor } from '#lib/volunteerRoles.ts';
 	import { VolunteerAssignmentsStatus } from '$prisma/browser';
-	import EmailPrompts, { type EmailKind } from '$lib/components/EmailPrompts.svelte';
+	import EmailPrompts, { type EmailKind } from '#lib/components/EmailPrompts.svelte';
 
 	type Assignment = {
 		id: string;

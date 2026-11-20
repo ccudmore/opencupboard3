@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ALL_ROLES } from '$lib/volunteerRoles';
+	import { ALL_ROLES } from '#lib/volunteerRoles.ts';
 
 	let { form }: { form: any } = $props();
 

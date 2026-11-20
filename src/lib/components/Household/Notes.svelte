@@ -2,7 +2,7 @@
 	import {  } from "flowbite-svelte";
 	import { Label, Tags, Textarea,MultiSelect } from "flowbite-svelte";
 
-	import { deliveryTypeOptions, serviceTimeOptions } from '$lib/labels'
+	import { deliveryTypeOptions, serviceTimeOptions } from '#lib/labels.ts'
 
     let dietaryOptions= ['Halal', 'Kosher', 'Lactose Free', 'Gluten Free']
 

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import PageBreadcrumb from '$lib/components/PageBreadcrumb.svelte';
+	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { Alert, Badge, Button, Card, Input } from 'flowbite-svelte';
 	
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { callAction } from '$lib/client/callAction';
-	import EmailPrompts from '$lib/components/EmailPrompts.svelte';
+	import { callAction } from '#lib/client/callAction.ts';
+	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 
 	let { data } = $props();
 

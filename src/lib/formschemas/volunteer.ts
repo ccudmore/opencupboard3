@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ALL_ROLES } from "$lib/volunteerRoles";
+import { ALL_ROLES } from "#lib/volunteerRoles.ts";
 
 // Same rules as the household form: Canadian postal codes and North American phone numbers.
 const POSTAL_REGEX =
