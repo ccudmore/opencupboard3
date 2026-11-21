@@ -3,7 +3,8 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/env";
 import prisma from "#lib/prisma.ts";
 import { sequence, type Handle } from "@sveltejs/kit/hooks";
-import { CSP_ENFORCE, BETTER_AUTH_URL } from "$app/env/private";
+import { CSP_ENFORCE } from "$app/env/private";
+import { BETTER_AUTH_URL } from "$app/env/private";
 
 type RolePermission = { permissionId: string };
 type RoleEntry = { role: { permissions: RolePermission[] } };

@@ -11,7 +11,8 @@ export const variables = defineEnvVars({
 	ORGANIZATION_NAME: { public: true, 
 		schema: (input: string | undefined) => input?.trim() || 'Open Cupboard'
 	},
-	BETTER_AUTH_URL: { public: true,
+//	BETTER_AUTH_URL: { public: true,
+	BETTER_AUTH_URL: { public: false,
 		schema: (input: string | undefined) => input?.trim() || 'http://localhost:5173'
 	},
 	DATABASE_URL: { schema: (input) => input },

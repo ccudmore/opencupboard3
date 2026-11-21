@@ -45,7 +45,7 @@
 	function onToggle(checked: boolean) {
 		goto(pageUrl(searchTerm.trim(), 1, checked), {
 			reset: false,
-			replaceState: true
+			replace: true
 		});
 	}
 </script>
