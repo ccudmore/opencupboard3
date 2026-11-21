@@ -23,6 +23,7 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       BETTER_AUTH_SECRET: build-time-placeholder-build-time-placeholder
       BETTER_AUTH_URL: http://localhost:3000
+      DATABASE_URL: build-time-placeholder-build-time-placeholder
     steps:
       - name: Checkout
         uses: actions/checkout@v7

@@ -24,6 +24,7 @@ COPY --from=deps /app/prisma ./prisma
 COPY . .
 RUN BETTER_AUTH_SECRET=build-time-placeholder-build-time-placeholder \
     BETTER_AUTH_URL=http://localhost:3000 \
+    DATABASE_URL=build-time-placeholder-build-time-placeholder \
     npm run build
 
 # --- Runtime dependencies (devDependencies omitted; some tooling such as
