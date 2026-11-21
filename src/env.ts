@@ -54,7 +54,7 @@ export const variables = defineEnvVars({
 	MAIL_REPLY_TO: { schema: (input) => input },
 	EMAIL_TEMPLATE_DIR: { schema: (input) => input },
 	DATE_LOCALIZATION: {  public: true,
-		schema: required('DATE_LOCALIZATION', 'en-CA')
+		schema: (input: string | undefined) => input?.trim() || 'en-CA'
 	},
 	APPOINTMENT_FREQUENCY_DAYS: { public: true,
 		schema: (input: string | undefined) => {
