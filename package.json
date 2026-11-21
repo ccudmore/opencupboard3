@@ -61,5 +61,8 @@
     "#prisma/client": "./prisma/src/generated/prisma/client.ts",
     "#prisma/enums": "./prisma/src/generated/prisma/enums.ts",
     "#prisma/browser": "./prisma/src/generated/prisma/browser.ts"
+  },
+  "overrides": {
+	  "effect": "^3.22.1"
   }
 }
