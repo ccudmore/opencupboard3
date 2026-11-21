@@ -1,5 +1,5 @@
 import { BETTER_AUTH_URL } from "$app/env/private";
-import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
+import { ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./email/mailer";
 import { renderTemplate } from "./email/templates";
 
@@ -26,7 +26,7 @@ async function send(
     firstName: firstNameOf(person.name),
     name: person.name,
     link,
-    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
+    organization: ORGANIZATION_NAME,
     ...extra
   });
   await sendMail({ to: [person.email], subject, text: body });

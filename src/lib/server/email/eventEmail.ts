@@ -4,7 +4,7 @@ import prisma from "#lib/prisma.ts";
 import type { Prisma } from "#prisma/client";
 import { VolunteerAssignmentsStatus } from "#prisma/enums";
 import { TIMEZONE } from "$app/env/private";
-import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
+import { ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { fill, renderTemplate } from "./templates";
 import type { Recipient } from "./bookingEmail";
@@ -83,8 +83,8 @@ function peopleOf(event: EmailEvent, includeGuests: boolean): Person[] {
 
 function settings() {
   return {
-    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    timeZone: TIMEZONE || "America/Toronto"
+    organization: ORGANIZATION_NAME,
+    timeZone: TIMEZONE,
   };
 }
 

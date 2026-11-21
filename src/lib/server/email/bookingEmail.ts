@@ -4,7 +4,7 @@ import prisma from "#lib/prisma.ts";
 import type { Prisma } from "#prisma/client";
 import { ClientRelationship } from "#prisma/enums";
 import { TIMEZONE } from "$app/env/private";
-import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
+import { ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { renderTemplate, type TemplateVars } from "./templates";
 
@@ -107,8 +107,8 @@ export function buildVars(
 
 function settings() {
   return {
-    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard",
-    timeZone: TIMEZONE || "America/Toronto"
+    organization: ORGANIZATION_NAME,
+    timeZone: TIMEZONE,
   };
 }
 

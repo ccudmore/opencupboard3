@@ -1,4 +1,4 @@
-import { PUBLIC_ID_RENEWAL_PERIOD_MONTHS } from "$app/env/public";
+import { ID_RENEWAL_PERIOD_MONTHS } from "$app/env/public";
 import type { BookingWithAppointment, HouseholdMember } from "./types/household";
 import { error, redirect } from "@sveltejs/kit";
 import { AppointmentBookingStatus } from "#prisma/enums";
@@ -41,7 +41,7 @@ export function calculateChildCount(
 
 function getIdValidityMillis() {
   const idCheckIntervalMillis =
-    1000 * 60 * 60 * 24 * 30.4 * PUBLIC_ID_RENEWAL_PERIOD_MONTHS;
+    1000 * 60 * 60 * 24 * 30.4 * ID_RENEWAL_PERIOD_MONTHS;
   return idCheckIntervalMillis;
 } // default 12 months
 

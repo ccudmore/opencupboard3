@@ -4,7 +4,7 @@
 	import { authClient } from '#lib/auth-client.ts';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { PUBLIC_ORGANIZATION_NAME } from '$app/env/public';
+	import { ORGANIZATION_NAME } from '$app/env/public';
 	import Logo from '#lib/Logo.svelte';
 	import { safeRedirectPath } from '#lib/utils.ts';
 
@@ -14,7 +14,6 @@
 	let loading = $state(false);
 
 	const redirectTo = safeRedirectPath(page.url.searchParams.get('redirectTo'));
-	const organizationName = PUBLIC_ORGANIZATION_NAME ?? 'Open Cupboard';
 
 	async function handleEmailLogin(e: SubmitEvent) {
 		e.preventDefault();
@@ -58,7 +57,7 @@
 	<!-- Logo: compact strip on mobile, full left half from md up -->
 	<div class="flex h-24 w-full shrink-0 items-center justify-center bg-gray-50 p-4 dark:bg-gray-800 md:h-auto md:w-1/2 md:p-8">
 		<div class="w-full max-w-sm space-y-6 flex flex-col items-center">
-			<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{organizationName}</h1>
+			<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{ORGANIZATION_NAME}</h1>
 			<Logo class="h-full max-h-16 w-auto md:h-auto md:w-full md:max-h-none md:max-w-sm" />
 		</div>
 	</div>

@@ -2,7 +2,7 @@ import { z } from "zod";
 import prisma from "#lib/prisma.ts";
 import { ClientRelationship } from "#prisma/enums";
 import { BETTER_AUTH_URL } from "$app/env/private";
-import { PUBLIC_ORGANIZATION_NAME } from "$app/env/public";
+import { ORGANIZATION_NAME } from "$app/env/public";
 import { isMailConfigured, sendMail } from "./mailer";
 import { renderTemplate } from "./templates";
 
@@ -43,7 +43,7 @@ export async function sendApprovalEmail(
     firstNames,
     uniqueId: household.uniqueId,
     bookingUrl: `${base}/book`,
-    organization: PUBLIC_ORGANIZATION_NAME || "Open Cupboard"
+    organization: ORGANIZATION_NAME,
   });
   try {
     await sendMail({ to, subject, text: body });
