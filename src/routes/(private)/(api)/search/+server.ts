@@ -1,4 +1,9 @@
 import { eventPlace } from "#lib/eventLocation.ts";
+import {
+  SERVICE_DATE,
+  serviceDateLink,
+  calendarEventLink,
+} from "#lib/server/eventLinks.ts";
 import { streetWithUnit } from "#lib/address.ts";
 import { error } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
@@ -42,13 +47,19 @@ export async function GET({ url, locals }) {
       parseEventSearchParams(url.searchParams),
     );
     const transformedEvents = eventResults.events.map((event) => {
+      // service dates have their own page; any other event opens on the calendar
+      const isServiceDate = event.type === SERVICE_DATE;
       return {
         id: event.id,
-        URL: `${urlbase.origin}/event/${event.id}`,
-        desc1: event.title,
+        URL: `${urlbase.origin}${
+          isServiceDate
+            ? serviceDateLink(event.startTime, false, event.id)
+            : calendarEventLink(event.id, event.startTime)
+        }`,
+        desc1: event.title || (isServiceDate ? SERVICE_DATE : event.type),
         desc2: event.startTime.toLocaleString("en-CA"),
         desc3: eventPlace(event),
-        category: "Event",
+        category: isServiceDate ? "Service Date" : "Event",
       };
     });
 

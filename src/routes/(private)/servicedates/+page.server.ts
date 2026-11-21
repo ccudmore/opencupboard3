@@ -52,6 +52,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     sites: await getSites(),
     showPast,
     focus: url.searchParams.get("focus") ?? "",
+    focusId: url.searchParams.get("id") ?? "", // which one, when several service dates share the day
     tab:
       url.searchParams.get("tab") === "appointments"
         ? "appointments"

@@ -49,3 +49,27 @@ export function parseEventSearchParams(
       : EVENT_PAGE_SIZE,
   };
 }
+
+export function retrieveServiceDatesInThePastYear() {
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  return prisma.event.findMany({
+    where: {
+      type: "Service Date",
+      status: "ACTIVE",
+      startTime: { gt: oneYearAgo },
+    },
+    orderBy: { startTime: "asc" },
+    include: {
+      appointments: {
+        orderBy: { startTime: "asc" },
+        include: {
+          bookings: {
+            include: { household: true },
+          },
+        },
+      },
+    },
+  });
+} 

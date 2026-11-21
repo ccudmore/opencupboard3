@@ -1,4 +1,4 @@
-import { ID_RENEWAL_PERIOD_MONTHS } from "$app/env/public";
+import { ID_RENEWAL_PERIOD_MONTHS, DATE_LOCALIZATION, APPOINTMENT_FREQUENCY_DAYS } from "$app/env/public";
 import type { BookingWithAppointment, HouseholdMember } from "./types/household";
 import { error, redirect } from "@sveltejs/kit";
 import { AppointmentBookingStatus } from "#prisma/enums";
@@ -13,7 +13,7 @@ export function formattedDateTime(date: Date | undefined | null) {
 }
 
 export function formattedTime(date: Date | undefined | null) {
-  return date?.toLocaleTimeString("en-CA"); // craig - ironment variable
+  return date?.toLocaleTimeString(DATE_LOCALIZATION);
 }
 
 export function calculateFamilySize(
@@ -68,7 +68,7 @@ export function calculateNextServiceDate(bookings: BookingWithAppointment[]) {
   // Monday of that week (weeks run Mon-Sun), then + 4 weeks
   const result = new Date(latest);
   const daysSinceMonday = (result.getDay() + 6) % 7; // Mon=0 ... Sun=6
-  result.setDate(result.getDate() - daysSinceMonday + 4 * 7); // craig - make number of weeks configurable
+  result.setDate(result.getDate() - daysSinceMonday + APPOINTMENT_FREQUENCY_DAYS);
   result.setHours(0, 0, 0, 0); // midnight at the start of that Monday
 
   // Eligible date has already passed, so no waiting period applies

@@ -12,6 +12,7 @@ import { eventPlace } from "#lib/eventLocation.ts";
 import { buildEventEmail, sendEventEmail } from "#lib/server/email/eventEmail.ts";
 import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import { zonedParts } from "#lib/timezone.ts";
+import { serviceDateLink } from "#lib/server/eventLinks.ts";
 import { TIMEZONE } from "$app/env/private";
 import type { Prisma } from "#prisma/client";
 import { requirePermission, hasPermission } from "#lib/utils.ts";
@@ -103,18 +104,6 @@ const wasSent = (json: unknown) => Array.isArray(json) && json.length > 0;
 
 const dateOnly = (d: Date) => d.toISOString().slice(0, 10);
 
-/** The Service Dates page opened on one service date (and its Appointments tab, for an appointment). */
-function serviceDateLink(start: Date, appointments: boolean): string {
-  const tz = TIMEZONE || "America/Toronto";
-  const date = zonedParts(start, tz).date;
-  const today = zonedParts(new Date(), tz).date;
-  const q = new URLSearchParams();
-  if (date < today) q.set("past", "1"); // earlier service dates are only listed with this
-  q.set("focus", date);
-  if (appointments) q.set("tab", "appointments");
-  return `/servicedates?${q}`;
-}
-
 async function getEvents(
   canSeeAppointments: boolean,
 ): Promise<CalendarEvent[]> {
@@ -152,7 +141,7 @@ async function getEvents(
     start: v.startTime,
     end: v.endTime,
     category: v.type,
-    ...v.type === SERVICE_DATE ? { href: serviceDateLink(v.startTime, false) } : {},
+    ...v.type === SERVICE_DATE ? { href: serviceDateLink(v.startTime, false, v.id) } : {},
     repeating: v.repeating,
     ...v.repeating
       ? {
@@ -188,7 +177,7 @@ async function getEvents(
       start: a.startTime,
       end: a.endTime,
       category: APPOINTMENT,
-      href: serviceDateLink(a.event.startTime, true),
+      href: serviceDateLink(a.event.startTime, true, a.event.id),
       repeating: false,
       readonly: true,
     });
@@ -218,12 +207,20 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const categories = canSeeAppointments
     ? allCategories
     : allCategories.filter((c) => c.name !== APPOINTMENT);
+  // /calendar?event=<id>&date=YYYY-MM-DD opens that event (the search results link here)
+  const focusId = url.searchParams.get("event");
+  const focusDate = url.searchParams.get("date");
+  const focusEvent =
+    focusId && focusDate && /^\d{4}-\d{2}-\d{2}$/.test(focusDate)
+      ? { id: focusId, date: focusDate }
+      : null;
   return {
     categories,
     volunteers,
     events,
     sites,
     mode,
+    focusEvent,
     emailEnabled: isMailConfigured(),
   };
 };

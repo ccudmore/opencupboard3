@@ -276,7 +276,7 @@
 	const headingClass = 'mb-3 text-base font-semibold text-gray-900 dark:text-white';
 </script>
 
-<div class="space-y-4"> <!-- craig - has been moved over to the tabview-->
+<div class="space-y-4">
 
 
 <TabView {service} {sites} {timeZone} {emailEnabled} {onopen} {canManageVolunteers} {initialTab} />

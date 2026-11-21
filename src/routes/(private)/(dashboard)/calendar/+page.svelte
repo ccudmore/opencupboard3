@@ -74,6 +74,7 @@ let prompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 		sites={data.sites}
 		bind:hiddenCategories={hidden}
 		mode={data.mode}
+		focusEvent={data.focusEvent}
 		emailEnabled={data.emailEnabled}
 		onemail={(ev, kind, occurrence) => {
 			if (ev.id) void prompts?.start(ev.id, kind, false, { occurrence });

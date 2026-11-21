@@ -82,7 +82,6 @@
 
 	function select(r: Result) {
 		open = false;
-//		goto(`${r.URL}`); // craig - Need the base URL
 		goto(r.URL);
 	}
 

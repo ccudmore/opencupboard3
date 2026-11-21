@@ -52,5 +52,14 @@ export const variables = defineEnvVars({
 	SMTP_USER: { schema: (input) => input },
 	SMTP_PASSWORD: { schema: (input) => input },
 	MAIL_REPLY_TO: { schema: (input) => input },
-	EMAIL_TEMPLATE_DIR: { schema: (input) => input }
+	EMAIL_TEMPLATE_DIR: { schema: (input) => input },
+	DATE_LOCALIZATION: {  public: true,
+		schema: required('DATE_LOCALIZATION', 'en-CA')
+	},
+	APPOINTMENT_FREQUENCY_DAYS: { public: true,
+		schema: (input: string | undefined) => {
+			const days = Number(input);
+			return Number.isFinite(days) && days > 0 ? days : 28; // 28 when unset or invalid
+		}
+	},
 });

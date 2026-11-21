@@ -137,6 +137,8 @@
 		onemail?: (event: CalendarEvent, kind: 'confirmation' | 'reminder', occurrence: string) => void;
 		/** false hides the email buttons (the server isn't set up to send email) */
 		emailEnabled?: boolean;
+		/** Opens this event's details, on this day ('YYYY-MM-DD'), when the calendar first loads. */
+		focusEvent?: { id: string; date: string } | null;
 	}
 
 	type RepeatScope = 'this' | 'following' | 'all';
@@ -157,7 +159,8 @@
 		onedit,
 		ondelete,
 		onemail,
-		emailEnabled = false
+		emailEnabled = false,
+		focusEvent = null
 	}: Props = $props();
 
 	interface Occurrence {
@@ -903,6 +906,21 @@
 		deleteScope = 'this';
 		detailOpen = true;
 	}
+
+	// A link such as /calendar?event=ID&date=2026-11-21 opens that event, once, when it is found.
+	let focusHandled = false;
+	$effect(() => {
+		if (!focusEvent || focusHandled) return;
+		const ev = events.find((e) => e.id === focusEvent.id);
+		if (!ev) return;
+		focusHandled = true;
+		const [y, m, d] = focusEvent.date.split('-').map(Number);
+		const day = new Date(y, m - 1, d);
+		date = day; // shows the right month (or week or day)
+		const known = new Set(categories.map((c) => c.name));
+		const occ = expand([ev], day, addDays(day, 1), known)[0] ?? expand([ev], addDays(day, -366), addDays(day, 366), known)[0];
+		if (occ) openDetail(occ);
+	});
 
 	function doDelete() {
 		if (!viewing || !canDelete) return;

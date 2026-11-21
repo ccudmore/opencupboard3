@@ -1,39 +1,17 @@
 import type { PageServerLoad } from "./$types";
-import prisma from "#lib/prisma.ts";
-import type { Prisma } from "#prisma/client";
 import { requirePermission } from "#lib/utils.ts";
+import { retrieveServiceDatesInThePastYear } from "#lib/server/queries/event.ts";
 import {
-  EventStatus,
   AppointmentBookingStatus,
   HouseholdStatus,
 } from "#prisma/enums";
 
 export const load: PageServerLoad = async ({ url, locals }) => {
-  //    const result = await searchHousehold(parseHouseholdSearchParams(url.searchParams));
   requirePermission(locals?.user?.permissions, url, ["manage-appointments"]);
 
-  // craig - move to a query
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const events = await retrieveServiceDatesInThePastYear();
+// CRAIG - this could be a dead code path, but I don't want to delete it yet.  It is used in the appointments page to show the number of booked and available appointments for each service date.  I think this is a good idea, but it is not currently used in the UI.  I will leave it here for now, but we may want to remove it later if we don't use it.
 
-  const events = await prisma.event.findMany({
-    where: {
-      type: "Service Date",
-      status: EventStatus.ACTIVE,
-      startTime: { gt: oneYearAgo },
-    },
-    orderBy: { startTime: "asc" },
-    include: {
-      appointments: {
-        orderBy: { startTime: "asc" },
-        include: {
-          bookings: {
-            include: { household: true },
-          },
-        },
-      },
-    },
-  });
   const services = events.map((event) => {
     let booked = 0;
     let available = 0;

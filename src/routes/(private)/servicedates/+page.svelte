@@ -26,8 +26,11 @@
 	}
 
 	// Arriving with ?focus=YYYY-MM-DD (from the date picker, for a day that wasn't loaded)
+	// With ?id=<event id> as well, that exact service date is opened (several can share one day).
 	$effect(() => {
-		const s = data.focus && data.services.find((x: { date: string }) => x.date === data.focus);
+		const s =
+			(data.focusId && data.services.find((x: { id: string }) => x.id === data.focusId)) ||
+			(data.focus && data.services.find((x: { date: string }) => x.date === data.focus));
 		if (s) void reveal(s.id);
 	});
 
@@ -143,7 +146,7 @@
 									timeZone={data.timeZone}
 									emailEnabled={data.emailEnabled}
 									canManageVolunteers={data.canManageVolunteers}
-									initialTab={data.focus && s.date === data.focus ? data.tab : 'details'}
+									initialTab={(data.focusId ? s.id === data.focusId : data.focus && s.date === data.focus) ? data.tab : 'details'}
 									onopen={openAfterDuplicate}
 								/>
 							</div>
