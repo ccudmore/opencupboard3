@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	
 	import { Select, } from "flowbite-svelte";
 	import { Modal, ButtonGroup, Textarea, Checkbox, Button, Label, Drawer, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, } from "flowbite-svelte";
@@ -106,7 +107,7 @@ class="bg-gray-100 border-gray-300 text-grey-600
 				<Select class="mb-2 w-full sm:w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
 			<div>
-				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by { $form.datedRequests[openSpecialRequestRow].createdBy}
+				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by {page.data.userNames?.[$form.datedRequests[openSpecialRequestRow].createdBy ?? ''] ?? $form.datedRequests[openSpecialRequestRow].createdBy}
 			</div>
 		</div>
 

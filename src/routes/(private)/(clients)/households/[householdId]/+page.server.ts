@@ -45,8 +45,25 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     getSites(),
   ]);
 
+  // "created by" is stored as the user's id; show the name instead
+  const creatorIds = [
+    household.createdBy,
+    ...household.members.map((m) => m.createdBy),
+    ...household.datedRequests.map((d) => d.createdBy),
+  ].filter((id): id is string => !!id);
+  const creators = creatorIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: [...new Set(creatorIds)] } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const userNames: Record<string, string> = Object.fromEntries(
+    creators.map((u) => [u.id, u.name]),
+  );
+
   return {
     form,
+    userNames, // user id -> name, for the "created by" lines
     bookings, // newest first, including "unscheduled" ones
     services, // future service dates with open appointments
     sites, // locations for unscheduled bookings

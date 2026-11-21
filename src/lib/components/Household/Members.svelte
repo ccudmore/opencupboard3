@@ -7,32 +7,29 @@
 	import {nextIdVerificationDate,isIdVerificationNeeded} from "#lib/utils.ts"
   	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
   	import { slide } from "svelte/transition";
-	import { idTypeOptions, relationshipOptions, relationshipLabels } from '#lib/labels.ts'
+	import { idTypeOptions, idTypeLabels, relationshipOptions, relationshipLabels } from '#lib/labels.ts'
 	import IdScanner from './IdScanner.svelte';
-	import { namesAgree, birthYearOf, todayIso, type LicenceInfo } from '#lib/idScan/aamva.ts';
+	import { page } from '$app/state';
+	import { birthYearOf, type LicenceInfo } from '#lib/idScan/aamva.ts';
 
 	// for opening and closing the member detail drawer
 	let openMemberRow: number | null | undefined = $state();
 	let openMemberDrawer = $state(false);
   	let openComfirmDeleteModal = $state(false);
 
+  	// Opens the drawer on row i, or closes it if it is already open on that row. It looks at whether the
+  	// drawer is actually open, not just the row number, because closing with the X, Esc or a click outside
+  	// leaves the row number behind, and the next click on the same row must open it again.
   	const toggleMemberDrawer = (i: number) => {
-    	openMemberRow = openMemberRow === i ? null : i;
-		openMemberDrawer = (openMemberRow != null)
+		const closing = openMemberDrawer && openMemberRow === i;
+    	openMemberRow = closing ? null : i;
+		openMemberDrawer = !closing
   	};
 
     // for opening and closing the id confirmation modal
 	let idVerificationRow: number | null | undefined = $state();
 	let idVerificationModal = $state(false);
-	let idType = $state(String(idTypeOptions[0]?.value ?? ''));
-	let scanning = $state(false);
-	let licence = $state<LicenceInfo | null>(null);
-	let otherBarcode = $state(false);
-
-	// closing the dialog any way at all switches the camera off
-	$effect(() => {
-		if (!idVerificationModal) scanning = false;
-	});
+	let idType = $state(''); // nothing is pre-selected: the person says which ID they were shown
 
 	// scanning a licence from the member drawer fills in this member's name and birth year
 	let drawerScanning = $state(false);
@@ -49,41 +46,15 @@
 		if (year) member.birthYear = year;
 		member.idChecked = 'DRIVERS_LICENSE';
 		member.idCheckDate = new Date();
+		form.set($form); // the member was changed in place, so tell the form
 		drawerScanning = false;
 		drawerOther = false;
 		toast('Filled in from the licence');
 	}
 
-	function onScan(found: LicenceInfo) {
-		licence = found;
-		otherBarcode = false;
-		scanning = false;
-		idType = 'DRIVERS_LICENSE';
-	}
-
-	/** How the scanned licence compares with the member being checked. */
-	const checks = $derived.by(() => {
-		if (!licence || idVerificationRow == null) return [];
-		const m = $form.members[idVerificationRow];
-		const name = namesAgree(m, licence);
-		const year = birthYearOf(licence);
-		const out: { ok: boolean; text: string }[] = [
-			name.first && name.last
-				? { ok: true, text: 'The name matches.' }
-				: { ok: false, text: `The name on the card does not match ${m.firstName} ${m.lastName}.` }
-		];
-		if (year && m.birthYear) out.push(m.birthYear === year ? { ok: true, text: 'The birth year matches.' } : { ok: false, text: `The birth year on the card (${year}) is not ${m.birthYear}.` });
-		else if (year) out.push({ ok: true, text: `The birth year (${year}) will be filled in.` });
-		if (licence.expiryDate && licence.expiryDate < todayIso()) out.push({ ok: false, text: `The card expired on ${licence.expiryDate}.` });
-		return out;
-	});
-
     function toggleIdConfirmation(i: number, event: MouseEvent) {
     	idVerificationRow = openMemberRow === i ? null : i;
-		idType = idTypeOptions[0]?.value ?? '';
-		licence = null;
-		otherBarcode = false;
-		scanning = false;
+		idType = '';
 		idVerificationModal=true
 		event.stopPropagation()
 
@@ -108,12 +79,9 @@
 			const member = $form.members[idVerificationRow]
 			member.idChecked = idType
 			member.idCheckDate = new Date()
-			// the birth year is the one thing kept from the scan, and only when it was blank
-			if (licence && !member.birthYear) member.birthYear = birthYearOf(licence)
+			form.set($form) // the member was changed in place, so tell the form (this turns the ID status green)
 			toast("Id updated")
 		}
-		scanning = false
-		licence = null
 	}
 
 	function confirmDelete() {
@@ -137,11 +105,28 @@
 		}
 	}
 
+	// the member just added with "New Member", until it has been filled in
+	let newMemberRow: number | null = null;
+
 	function addHouseholdMember() {
 		$form.members.push({firstName: '', lastName: '',});
+		newMemberRow = $form.members.length-1
 		toggleMemberDrawer($form.members.length-1)
 		form.set($form) // trigger reactivation
 	}
+
+	// Closing the drawer (the X, Esc, or clicking outside it) on a new member that is still blank
+	// throws that member away, so cancelling does not leave an empty row behind.
+	$effect(() => {
+		if (openMemberDrawer || newMemberRow == null) return;
+		const row = newMemberRow;
+		newMemberRow = null;
+		const m = $form.members[row];
+		if (m && !m.firstName?.trim() && !m.lastName?.trim() && !m.phone && !m.email) {
+			$form.members.splice(row, 1);
+			form.set($form);
+		}
+	});
     let { form, errors, constraints, validateForm} = $props()
 
 </script>
@@ -226,42 +211,11 @@
 {/if}
 
 <Modal title="Identification Check" form size="md" bind:open={idVerificationModal} onaction={({ action,data }) => updateId({action,data})}>
-	<div class="space-y-3">
-		{#if scanning}
-			<IdScanner onscan={onScan} onother={() => (otherBarcode = true)} />
-			<Button type="button" outline color="dark" onclick={() => (scanning = false)}>Stop scanning</Button>
-		{:else}
-			<Button type="button" outline color="blue" onclick={() => { otherBarcode = false; scanning = true; }}>
-				{licence ? 'Scan again' : 'Scan ID with the camera'}
-			</Button>
-		{/if}
-
-		{#if otherBarcode}
-			<p class="text-sm text-yellow-700 dark:text-yellow-400">A barcode was read, but it is not a driver's licence or provincial ID barcode, so nothing could be filled in. Choose the ID type yourself.</p>
-		{/if}
-
-		{#if licence}
-			<div class="rounded-lg border border-gray-200 p-3 text-sm text-gray-900 dark:border-gray-600 dark:text-white">
-				<p class="font-semibold">{licence.givenNames} {licence.familyName}</p>
-				<p class="hint">
-					{licence.birthDate ? `Born ${licence.birthDate}` : ''}{licence.expiryDate ? ` · Expires ${licence.expiryDate}` : ''}{licence.issuer ? ` · ${licence.issuer}` : ''}
-				</p>
-				<ul class="mt-2 space-y-1">
-					{#each checks as c}
-						<li class={c.ok ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>{c.ok ? '✓' : '✗'} {c.text}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		<div>
-			<Label for="idtype" class="mb-1">ID type presented</Label>
-			<Select id="idtype" class="mb-2" items={idTypeOptions} name="idtype" bind:value={idType} />
-		</div>
-	</div>
+	<Label for="idtype" class="mb-1">ID type presented</Label>
+	<Select id="idtype" class="mb-2" items={idTypeOptions} name="idtype" placeholder="Select the ID type" required bind:value={idType} />
 	{#snippet footer()}
     	<Button outline type="submit" value="confirm" color="dark">Confirm</Button>
-    	<Button outline type="submit" value="cancel" color="dark">Cancel</Button>
+    	<Button outline type="submit" value="cancel" color="dark" formnovalidate>Cancel</Button>
   	{/snippet}
 </Modal>
 
@@ -334,7 +288,7 @@
 		<div class="mt-0 px-4 pb-5 pt-5 sm:pl-10">
 			{#if $form.members[openMemberRow].idChecked}
 				<p class="text-gray-500 dark:text-gray-400">
-					ID type {$form.members[openMemberRow].idChecked} checked on {formattedDate($form.members?.[openMemberRow]?.idCheckDate)}
+					ID type {idTypeLabels[$form.members[openMemberRow].idChecked as keyof typeof idTypeLabels] ?? $form.members[openMemberRow].idChecked} checked on {formattedDate($form.members?.[openMemberRow]?.idCheckDate)}
 				</p>
 			{:else}
 				<p class="text-red-600 dark:text-red-500">No ID Provided</p>
@@ -342,7 +296,7 @@
 		</div>
 
 		<p class="px-4 text-sm text-gray-500 sm:pl-10 dark:text-gray-400">
-			Added on {formattedDate($form.members[openMemberRow].createdAt)} by {$form.members[openMemberRow].createdBy}
+			Added on {formattedDate($form.members[openMemberRow].createdAt)} by {page.data.userNames?.[$form.members[openMemberRow].createdBy ?? ''] ?? $form.members[openMemberRow].createdBy}
 		</p>
 
 		<div class="mt-0 px-4 pb-10 sm:pl-10">

@@ -41,7 +41,7 @@ export const volunteerAssignmentStatusOptions = Object.entries(
   volunteerAssignmentStatusLabels,
 ).map(([value, name]) => ({ value, name }));
 
-const idTypeLabels = {
+export const idTypeLabels = {
   DRIVERS_LICENSE: "Drivers License",
   ID_CARD: "ID Card",
   HEALTH_CARD: "Health Card",

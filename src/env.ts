@@ -1,6 +1,15 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
+// A setting the app cannot safely run without. In development a fallback is allowed,
+// in a production build or run it must be set.
+const required =
+	(name: string, devFallback?: string) =>
+	(input: string | undefined): string => {
+		const value = input?.trim();
+		if (value) return value;
+		if (devFallback !== undefined && process.env.NODE_ENV !== 'production') return devFallback;
+		throw new Error(`${name} must be set`);
+	};
 
-// @migration-task Review dynamic environment variables. They accept missing values (`undefined`), add stricter validation where a value is required.
 export const variables = defineEnvVars({
 	CSP_ENFORCE: { schema: (input) => input },
 	TIMEZONE: { 
@@ -11,9 +20,17 @@ export const variables = defineEnvVars({
 	ORGANIZATION_NAME: { public: true, 
 		schema: (input: string | undefined) => input?.trim() || 'Open Cupboard'
 	},
-//	BETTER_AUTH_URL: { public: true,
 	BETTER_AUTH_URL: { public: false,
-		schema: (input: string | undefined) => input?.trim() || 'http://localhost:5173'
+		 schema: required('BETTER_AUTH_URL', 'http://localhost:5173')
+	},
+	BETTER_AUTH_SECRET: {
+		schema: (input: string | undefined): string => {
+			const value = required('BETTER_AUTH_SECRET', 'dev-only-secret-not-for-production-use-0000')(input);
+			if (process.env.NODE_ENV === 'production' && value.length < 32) {
+				throw new Error('BETTER_AUTH_SECRET must be at least 32 characters');
+			}
+			return value;
+		}
 	},
 	DATABASE_URL: { schema: (input) => input },
 	ID_RENEWAL_PERIOD_MONTHS: { public: true, 
@@ -22,7 +39,6 @@ export const variables = defineEnvVars({
 			return Number.isFinite(months) && months > 0 ? months : 12; // 12 when unset or invalid
 		}
  	},
-	BETTER_AUTH_SECRET: { schema: (input) => input },
 	GOOGLE_CLIENT_ID: { schema: (input) => input },
 	GOOGLE_CLIENT_SECRET: { schema: (input) => input },
 	MICROSOFT_CLIENT_ID: { schema: (input) => input },

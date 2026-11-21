@@ -31,11 +31,11 @@
 </script>
 <Navbar class="relative mx-10 sm:mx-0">
   <!--NavDrawer/-->
+  <AppsMenu />
   <NavBrand href="/" class="mx-10">
   	<Logo class="h-8" />
     <span class="ml-px self-center text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">{organizationName}</span>
   </NavBrand>
-  <AppsMenu />
   <!-- one search box: a bar under the navbar on small screens (when opened), inline from lg up -->
   <div
     class="{searchOpen ? 'block' : 'hidden'} absolute inset-x-0 top-full z-40 border-y border-gray-200 bg-white p-3 shadow-md lg:static lg:block lg:border-0 lg:bg-transparent lg:p-0 lg:ps-3 lg:shadow-none dark:border-gray-600 dark:bg-gray-800 dark:lg:bg-transparent"

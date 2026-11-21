@@ -136,5 +136,5 @@ function toastFormErrors(errors: FormErrors) {
 </form>
 
 <p class="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">
-	Created by: {$form.createdBy} on {formattedDate($form.createdAt)}
+	Created by: {data.userNames?.[$form.createdBy ?? ''] ?? $form.createdBy} on {formattedDate($form.createdAt)}
 </p>
