@@ -22,7 +22,7 @@ FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .
-RUN BETTER_AUTH_SECRET=build-time-placeholder-build-time \
+RUN BETTER_AUTH_SECRET=build-time-placeholder-build-time-placeholder \
     BETTER_AUTH_URL=http://localhost:3000 \
     npm run build
 
