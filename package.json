@@ -25,35 +25,35 @@
     "@sveltejs/adapter-node": "^6.0.0",
     "@sveltejs/kit": "^3.0.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/leaflet": "^1.9.22",
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "flowbite": "^4.0.2",
     "flowbite-svelte": "^1.33.1",
     "flowbite-svelte-icons": "^3.1.0",
-    "svelte": "^5.57.2",
-    "svelte-check": "^4.7.5",
-    "sveltekit-superforms": "^3.0.0",
+    "svelte": "^5.59.1",
+    "svelte-check": "^4.7.8",
+    "sveltekit-superforms": "^3.1.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16",
+    "vite": "^8.3.8",
     "zod": "^4.6.7"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
-    "better-auth": "^1.7.5",
-    "dotenv": "^18.0.3",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "better-auth": "^1.7.27",
+    "dotenv": "^18.0.10",
     "flowbite-svelte-blocks": "^1.1.4",
     "leaflet": "^1.9.4",
-    "maplibre-gl": "^6.11.2",
-    "nodemailer": "^10.2.1",
+    "maplibre-gl": "^6.19.0",
+    "nodemailer": "^10.6.1",
     "pg": "^8.23.0",
     "prisma": "^7.10.1",
-    "svelte-sonner": "^1.2.1",
-    "tailwindcss": "^4.3.3",
+    "svelte-sonner": "^1.2.3",
+    "tailwindcss": "^4.3.5",
     "tsx": "^4.23.15",
-    "zxing-wasm": "^3.1.6"
+    "zxing-wasm": "^3.1.7"
   },
   "imports": {
     "#lib": "./src/lib/index.js",
@@ -63,6 +63,6 @@
     "#prisma/browser": "./prisma/src/generated/prisma/browser.ts"
   },
   "overrides": {
-	  "effect": "^3.22.1"
+    "effect": "^3.22.1"
   }
 }
