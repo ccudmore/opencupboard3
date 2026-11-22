@@ -4,16 +4,21 @@
 	import HouseholdSpecialRequests from "#lib/components/Household/SpecialRequests.svelte";
 	import HouseholdMembers from "#lib/components/Household/Members.svelte";
 	import Bookings from "#lib/components/Household/Bookings.svelte";
+	import { datedRequestTypes, DEFAULT_DATED_REQUEST_ICON } from "#lib/datedRequestTypes.ts";
 	import { Tabs, TabItem } from "flowbite-svelte";
 	import AddressMap from "#lib/components/Household/AddressMap.svelte";
-  import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, QuestionCircleSolid, } from "flowbite-svelte-icons";
+  import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, } from "flowbite-svelte-icons";
 
 	let { form, errors, constraints, validateForm, bookings, services, sites, eligibleDate, emailEnabled, enhance} = $props()
 
-  const requestsTypes = [
-    {name: 'Special', icon: QuestionCircleSolid},
-    {name: 'Prayer', icon: HeartSolid},
-  ]
+  // Tabs come from DATED_REQUEST_TYPES. Requests whose type is no longer configured
+  // still get a tab, so nothing saved earlier becomes invisible.
+  const requestsTypes = $derived([
+    ...datedRequestTypes,
+    ...[...new Set(($form.datedRequests ?? []).map((r: { type?: string | null }) => r.type))]
+      .filter((t): t is string => !!t && !datedRequestTypes.some((c) => c.name === t))
+      .map((name) => ({ name, icon: DEFAULT_DATED_REQUEST_ICON }))
+  ])
 </script>
 
 <div class="tabs-scroll p-1">

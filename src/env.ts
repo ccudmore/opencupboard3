@@ -11,6 +11,24 @@ const required =
 	};
 
 export const variables = defineEnvVars({
+	DATED_REQUEST_TYPES: { public: true,
+		schema: (input: string | undefined) => input?.trim() || 'Special Requests'
+	},
+	DEFAULT_COUNTRY: { public: true,
+		schema: (input: string | undefined) => input?.trim() || 'Canada'
+	},
+	SHOW_HOUSEHOLD_SIZE: { public: true,
+		schema: (input: string | undefined) => !['false', '0', 'no', 'off'].includes((input ?? '').trim().toLowerCase())
+	},
+	ALLOW_VOLUNTEER_OVERBOOKING: {
+		schema: (input: string | undefined) => ['true', '1', 'yes', 'on'].includes((input ?? '').trim().toLowerCase())
+	},
+	AUTH_SESSION_DAYS: {
+		schema: (input: string | undefined) => {
+			const days = Number(input);
+			return Number.isFinite(days) && days > 0 ? days : 7; // 7 when unset or invalid
+		}
+	},
 	CSP_ENFORCE: { schema: (input) => input },
 	TIMEZONE: { 
 		schema: (input: string | undefined) => input?.trim() || 'America/Toronto'

@@ -1,3 +1,4 @@
+import { DEFAULT_COUNTRY } from "$app/env/public";
 import { z } from "zod";
 import {
   HouseholdStatus,
@@ -33,7 +34,7 @@ export const householdSchema = z.object({
   street2: z.string().nullish(),
   city: z.string().nullable(),
   province: z.string().default("Ontario"),
-  country: z.string().default("Canada"),
+  country: z.string().default(DEFAULT_COUNTRY),
   postalCode: z
     .string()
     .trim()

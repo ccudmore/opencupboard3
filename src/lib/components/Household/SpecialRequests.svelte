@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	
 	import { Select, } from "flowbite-svelte";
 	import { Modal, ButtonGroup, Textarea, Checkbox, Button, Label, Drawer, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, } from "flowbite-svelte";
@@ -91,11 +90,10 @@
 class="bg-gray-100 border-gray-300 text-grey-600 
          dark:bg-gray-800 dark:border-gray-600 dark:text-blue-500"
  bind:checked={hideClosedDatedRequests}>Hide closed</Checkbox>
-<!--Button outline color="dark" onclick={addSpecialRequest}>New {type}</Button><br-->
 
 <Drawer placement="bottom" bind:open={openSpecialRequestDrawer} class="max-h-[85vh] overflow-y-auto backdrop:bg-black/50 bg-white p-1 text-gray-900 dark:bg-gray-800 dark:text-white">
 
-	<div class="mb-2 text-lg font-semibol">{type} Requests</div>
+	<div class="mb-2 text-lg font-semibold">{type} Request</div>
     {#if openSpecialRequestRow != null}
   		<div class="mt-0.5 gap-4 px-4 pt-5 mb-0.5">
 			<div>
@@ -107,7 +105,7 @@ class="bg-gray-100 border-gray-300 text-grey-600
 				<Select class="mb-2 w-full sm:w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
 			<div>
-				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by {page.data.userNames?.[$form.datedRequests[openSpecialRequestRow].createdBy ?? ''] ?? $form.datedRequests[openSpecialRequestRow].createdBy}
+				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by { $form.datedRequests[openSpecialRequestRow].createdBy}
 			</div>
 		</div>
 
@@ -123,7 +121,7 @@ class="bg-gray-100 border-gray-300 text-grey-600
 <Modal form bind:open={openComfirmDeleteModal} size="xs" transition={slide} permanent onaction={({ action }) => actionDelete({action})}>
   <div class="text-center">
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this {type} Request?</h3>
+    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this request?</h3>
     <div class="space-x-2">
 		<ButtonGroup class="*:ring-primary-700!">
       		<Button type="submit" value="yes" color="red"id="confirm-action" data-modal-hide="confirmation-modal">Yes, I'm sure</Button>

@@ -2,7 +2,7 @@ import { eventPlace } from "#lib/eventLocation.ts";
 import { Prisma } from "#prisma/client";
 import { EventStatus, VolunteerAssignmentsStatus } from "#prisma/enums";
 import prisma from "#lib/prisma.ts";
-import { TIMEZONE } from "$app/env/private";
+import { TIMEZONE, ALLOW_VOLUNTEER_OVERBOOKING } from "$app/env/private";
 import { rolesFor } from "#lib/volunteerRoles.ts";
 import { notifyPermission, notifyVolunteer } from "#lib/server/notifications.ts";
 
@@ -124,7 +124,8 @@ export async function openShiftsFor(volunteer: {
         ).length;
         return { role: n.role, required: n.count, remaining: n.count - taken };
       })
-      .filter((s) => s.remaining > 0);
+      // with overbooking allowed, a role with a need stays open however many have signed up
+      .filter((s) => ALLOW_VOLUNTEER_OVERBOOKING || s.remaining > 0);
     if (spots.length === 0) continue;
 
     out.push({
@@ -188,7 +189,7 @@ export async function signUp(
 
         const taken = event.volunteers.filter((a) => a.eventRole === role && HOLDS_SPOT.includes(a.status)).length;
 
-        if (taken >= need.count) return fail(409, "Sorry, all the spots for that role were just taken.");
+        if (!ALLOW_VOLUNTEER_OVERBOOKING && taken >= need.count) return fail(409, "Sorry, all the spots for that role were just taken.");
 
         if (existing) {
           await tx.volunteerAssignments.update({

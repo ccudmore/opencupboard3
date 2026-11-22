@@ -8,7 +8,8 @@ import {
   GOOGLE_CLIENT_SECRET,
   MICROSOFT_CLIENT_ID,
   MICROSOFT_CLIENT_SECRET,
-  MICROSOFT_TENANT_ID
+  MICROSOFT_TENANT_ID,
+  AUTH_SESSION_DAYS
 } from "$app/env/private";
 
 import prisma from "#lib/prisma.ts";
@@ -82,8 +83,9 @@ export const auth = betterAuth({
     }
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24 // refresh once per day of activity
+    expiresIn: Math.round(60 * 60 * 24 * AUTH_SESSION_DAYS), // AUTH_SESSION_DAYS, default 7
+    // refresh once per day of activity (or more often if the lifetime is under a day)
+    updateAge: Math.min(60 * 60 * 24, Math.round(60 * 60 * 24 * AUTH_SESSION_DAYS))
   },
 
   // Lets the app see user.status (ACTIVE or INACTIVE) on the session

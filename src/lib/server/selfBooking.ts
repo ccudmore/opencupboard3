@@ -1,3 +1,4 @@
+import { DEFAULT_COUNTRY } from "$app/env/public";
 import { randomInt } from "node:crypto";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
@@ -375,7 +376,7 @@ export async function register(ip: string, data: Record<string, unknown>) {
           city: d.city,
           postalCode: d.postalCode,
           province: "Ontario",
-          country: "Canada",
+          country: DEFAULT_COUNTRY,
           adultCount: d.adults,
           childCount: d.children,
           dietaryRestrictions: d.dietaryRestrictions,

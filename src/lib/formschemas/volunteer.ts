@@ -1,3 +1,4 @@
+import { DEFAULT_COUNTRY } from "$app/env/public";
 import { z } from "zod";
 import { ALL_ROLES } from "#lib/volunteerRoles.ts";
 
@@ -97,7 +98,7 @@ export const volunteerSchema = z.object({
   city: optionalText(100),
   postalCode: optionalPostal,
   province: z.string().trim().min(1).max(100).default("Ontario"),
-  country: z.string().trim().min(1).max(100).default("Canada"),
+  country: z.string().trim().min(1).max(100).default(DEFAULT_COUNTRY),
   email2: optionalEmail,
   phone1: optionalPhone,
   phone2: optionalPhone,

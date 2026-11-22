@@ -7,6 +7,7 @@ import {
   EventStatus,
 } from "#prisma/enums";
 import { calculateNextServiceDate } from "#lib/utils.ts";
+import { datedRequestTypes } from "#lib/datedRequestTypes.ts";
 import {
   bookingInclude,
   getHouseholdBookings,
@@ -19,8 +20,8 @@ export const HOLDS_APPOINTMENT: AppointmentBookingStatus[] = [
   AppointmentBookingStatus.ACTIVE,
 ];
 
-/** Matches the type used by the "Special Requests" tab on the household page. */
-const SPECIAL_REQUEST_TYPE = "Special";
+/** A booking's special request goes on the first tab in DATED_REQUEST_TYPES. */
+const SPECIAL_REQUEST_TYPE = datedRequestTypes[0].name;
 const MAX_REQUEST_LENGTH = 1000;
 
 class BookingError extends Error {
