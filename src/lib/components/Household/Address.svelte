@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { STATE_DISPLAY_NAME } from "$app/env/public";
     import { Input, Helper, Label } from "flowbite-svelte";
 
     let { form, errors, constraints } = $props();
@@ -32,22 +33,6 @@
     </div>
 
     <div>
-        <Label for="unitNumber">Unit number (optional)</Label>
-        <Input
-            type="text"
-            id="unitNumber"
-            name="unitNumber"
-            bind:value={$form.unitNumber}
-            {...$constraints.unitNumber}
-        />
-        {#if $errors.unitNumber}
-            <Helper class="field-error">
-                <span class="font-medium">{$errors.unitNumber}</span>
-            </Helper>
-        {/if}
-    </div>
-
-    <div>
         <Label for="city">City</Label>
         <Input
             type="text"
@@ -65,18 +50,18 @@
     </div>
 
     <div>
-        <Label for="province">Province</Label>
+        <Label for="state">{STATE_DISPLAY_NAME}</Label>
         <Input
             type="text"
-            id="province"
-            name="province"
-            bind:value={$form.province}
-            {...$constraints.province}
+            id="state"
+            name="state"
+            bind:value={$form.state}
+            {...$constraints.state}
             required
         />
-        {#if $errors.province}
+        {#if $errors.state}
             <Helper class="field-error">
-                <span class="font-medium">{$errors.province}</span>
+                <span class="font-medium">{$errors.state}</span>
             </Helper>
         {/if}
     </div>

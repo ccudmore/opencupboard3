@@ -1,6 +1,7 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
+import { STATE_DISPLAY_NAME } from "$app/env/public";
 
 // Add, edit and delete sites for the Admin pages. The caller has already checked the `admin` permission.
 
@@ -25,11 +26,10 @@ const postal = z
 
 const siteFields = {
   name: z.string().trim().min(1, "Enter a name for the site").max(100),
-  unitNumber: optional(30),
   street: optional(200),
   city: optional(100),
   postalCode: postal,
-  province: z.string().trim().min(1, "Enter a province").max(100),
+  state: z.string().trim().min(1, `Enter a ${STATE_DISPLAY_NAME.toLowerCase()}`).max(100),
   country: z.string().trim().min(1, "Enter a country").max(100),
 };
 const createSchema = z.object(siteFields);
@@ -37,11 +37,10 @@ const updateSchema = z.object({ siteId: z.string().min(1), ...siteFields });
 
 const read = (fd: FormData) => ({
   name: text(fd, "name"),
-  unitNumber: text(fd, "unitNumber"),
   street: text(fd, "street"),
   city: text(fd, "city"),
   postalCode: text(fd, "postalCode"),
-  province: text(fd, "province"),
+  state: text(fd, "state"),
   country: text(fd, "country"),
 });
 

@@ -1,4 +1,4 @@
-import { DEFAULT_COUNTRY } from "$app/env/public";
+import { DEFAULT_COUNTRY, DEFAULT_STATE } from "$app/env/public";
 import { randomInt } from "node:crypto";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
@@ -290,7 +290,6 @@ const registerSchema = z
     firstName: text(100).min(1, "Enter your first name"),
     lastName: text(100).min(1, "Enter your last name"),
     street: text(200).min(1, "Enter your street address"),
-    unitNumber: text(30),
     city: text(100).min(1, "Enter your city"),
     postalCode: z
       .string()
@@ -371,11 +370,10 @@ export async function register(ip: string, data: Record<string, unknown>) {
           status: HouseholdStatus.PENDING,
           uniqueId: newId(),
           createdBy: "public-signup",
-          unitNumber: d.unitNumber || null,
           street: d.street,
           city: d.city,
           postalCode: d.postalCode,
-          province: "Ontario",
+          state: DEFAULT_STATE,
           country: DEFAULT_COUNTRY,
           adultCount: d.adults,
           childCount: d.children,

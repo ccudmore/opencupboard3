@@ -1,4 +1,3 @@
-import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
 import type { Prisma } from "#prisma/client";
@@ -150,7 +149,7 @@ export async function buildEventEmail(
   });
   const loc = event.location;
   const address = loc
-    ? [streetWithUnit(loc.street, loc.unitNumber), loc.city]
+    ? [loc.street, loc.city]
         .filter(Boolean)
         .join(", ")
     : "";

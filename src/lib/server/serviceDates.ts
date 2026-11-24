@@ -1,4 +1,3 @@
-import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
 
@@ -489,7 +488,7 @@ export async function searchEligibleClients(
     .map((h) => ({
       householdId: h.id,
       name: primaryNames(h.members) || "Unnamed household",
-      detail: [streetWithUnit(h.street, h.unitNumber), h.city]
+      detail: [h.street, h.city]
         .filter(Boolean)
         .join(", "),
     }))

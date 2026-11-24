@@ -10,7 +10,7 @@
     <AddressMap
       street="111 Wellington St"
       city="Ottawa"
-      province="ON"
+      region="ON"
       country="Canada"
     />
 -->
@@ -20,12 +20,10 @@
 
 	interface Props {
 		street?: string;
-		/** Apartment or suite number. Shown in the popup but not used for geocoding. */
-		unitNumber?: string;
 		/** Unit / suite / floor. Shown in the popup but not used for geocoding. */
 		street2?: string;
 		city?: string;
-		province?: string;
+		region?: string;
 		country?: string;
 		/** CSS height of the map. */
 		height?: string;
@@ -35,10 +33,9 @@
 
 	let {
 		street = '',
-		unitNumber = '',
 		street2 = '',
 		city = '',
-		province = '',
+		region = '',
 		country = '',
 		height = '400px',
 		onlocate
@@ -58,17 +55,17 @@
 	let markerIcon: import('leaflet').Icon;
 	let controller: AbortController | undefined;
 
-	// Geocoding query. Unit numbers (street2) tend to confuse Nominatim, so they're left out.
+	// Geocoding query. Street 2 (apartment, suite) tends to confuse Nominatim, so it's left out.
 	const geocodeQuery = $derived(
-		[street, city, province, country]
+		[street, city, region, country]
 			.map((part) => part?.trim())
 			.filter(Boolean)
 			.join(', ')
 	);
 
-	// What the popup shows: the full address including the unit.
+	// What the popup shows: the full address.
 	const label = $derived(
-		[unitNumber ? `Unit ${unitNumber}` : '', street, street2, city, province, country]
+		[street, street2, city, region, country]
 			.map((part) => part?.trim())
 			.filter(Boolean)
 			.join(', ')

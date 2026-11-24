@@ -1,18 +1,17 @@
 <script lang="ts">
-	import { DEFAULT_COUNTRY } from '$app/env/public';
+	import { DEFAULT_COUNTRY, DEFAULT_STATE, STATE_DISPLAY_NAME } from '$app/env/public';
 	import { refreshAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Button, Drawer, Input, Label, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import { callAction } from '#lib/client/callAction.ts';
-	import { streetWithUnit } from '#lib/address.ts';
-
+	
 	let { data } = $props();
 
 	const drawerClass = 'max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white';
 	type Site = (typeof data.sites)[number];
 
-	const blank = () => ({ name: '', unitNumber: '', street: '', city: '', postalCode: '', province: 'Ontario', country: DEFAULT_COUNTRY });
+	const blank = () => ({ name: '', street: '', city: '', postalCode: '', state: DEFAULT_STATE, country: DEFAULT_COUNTRY });
 
 	let open = $state(false);
 	let editing = $state<Site | null>(null); // null means adding a new site
@@ -22,7 +21,7 @@
 	let confirmDelete = $state(false);
 
 	const inUse = (s: Site) => s._count.events + s._count.appointments + s._count.inventoryItems;
-	const address = (s: Site) => [streetWithUnit(s.street, s.unitNumber), s.city, s.postalCode].filter(Boolean).join(', ');
+	const address = (s: Site) => [s.street, s.city, s.postalCode].filter(Boolean).join(', ');
 
 	function openNew() {
 		editing = null;
@@ -35,11 +34,10 @@
 		editing = s;
 		f = {
 			name: s.name,
-			unitNumber: s.unitNumber ?? '',
 			street: s.street ?? '',
 			city: s.city ?? '',
 			postalCode: s.postalCode ?? '',
-			province: s.province,
+			state: s.state,
 			country: s.country
 		};
 		error = '';
@@ -133,16 +131,12 @@
 				<Input id="site-street" autocomplete="off" bind:value={f.street} onkeydown={ignoreEnter} />
 			</div>
 			<div class="min-w-0">
-				<Label for="site-unit">Unit number (optional)</Label>
-				<Input id="site-unit" autocomplete="off" bind:value={f.unitNumber} onkeydown={ignoreEnter} />
-			</div>
-			<div class="min-w-0">
 				<Label for="site-city">City</Label>
 				<Input id="site-city" autocomplete="off" bind:value={f.city} onkeydown={ignoreEnter} />
 			</div>
 			<div class="min-w-0">
-				<Label for="site-province">Province</Label>
-				<Input id="site-province" autocomplete="off" bind:value={f.province} onkeydown={ignoreEnter} />
+				<Label for="site-state">{STATE_DISPLAY_NAME}</Label>
+				<Input id="site-state" autocomplete="off" bind:value={f.state} onkeydown={ignoreEnter} />
 			</div>
 			<div class="min-w-0">
 				<Label for="site-postal">Postal code</Label>

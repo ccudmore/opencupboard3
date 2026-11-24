@@ -4,7 +4,6 @@ import {
   serviceDateLink,
   calendarEventLink,
 } from "#lib/server/eventLinks.ts";
-import { streetWithUnit } from "#lib/address.ts";
 import { error } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
 import {
@@ -36,7 +35,7 @@ export async function GET({ url, locals }) {
           desc1: household.members
             .map((m) => `${m.firstName} ${m.lastName}`)
             .join(", "),
-          desc2: streetWithUnit(household.street, household.unitNumber),
+          desc2: household.street,
           desc3: household.members.map((m) => `${m.phone}`).join(", "),
           category: "Household",
         };

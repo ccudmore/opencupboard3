@@ -109,7 +109,7 @@ const household: Prisma.HouseholdCreateInput = {
   street2: "",
   city: "Ottawa",
   postalCode: "K2P 1A1",
-  province: "Ontario",
+  state: "Ontario",
   country: "Canada",
   createdBy: "Seed",
   datedRequests: {

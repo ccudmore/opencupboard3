@@ -79,14 +79,12 @@ export async function getAvailableServices() {
             id: e.location.id,
             name: e.location.name,
             street: e.location.street,
-            unitNumber: e.location.unitNumber,
             city: e.location.city,
           }
         : {
             id: "",
             name: e.locationText ?? "",
             street: null,
-            unitNumber: null,
             city: null,
           },
       openCount: e.appointments.length,

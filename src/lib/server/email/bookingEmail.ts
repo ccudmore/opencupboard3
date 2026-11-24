@@ -1,4 +1,3 @@
-import { streetWithUnit } from "#lib/address.ts";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
 import type { Prisma } from "#prisma/client";
@@ -85,7 +84,7 @@ export function buildVars(
   const loc = appt?.event.location ?? booking.plannedSite;
   const dateFormat = new Intl.DateTimeFormat("en-CA", { dateStyle: "full", timeZone: options.timeZone });
   const timeFormat = new Intl.DateTimeFormat("en-CA", { timeStyle: "short", timeZone: options.timeZone });
-  const address = [streetWithUnit(loc?.street, loc?.unitNumber), loc?.city].filter(Boolean).join(", ");
+  const address = [loc?.street, loc?.city].filter(Boolean).join(", ");
   const request = booking.datedRequest?.requestText?.trim() ?? "";
 
   return {

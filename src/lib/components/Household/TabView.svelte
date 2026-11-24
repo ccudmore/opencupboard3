@@ -81,7 +81,7 @@
         <MapPinAltSolid size="md" />Map
       </div>
     {/snippet}
-    <AddressMap unitNumber={$form.unitNumber ?? ''} street={$form.street} street2={$form.street2} city={$form.city} province={$form.province} country={$form.country}/>
+    <AddressMap street={$form.street} street2={$form.street2} city={$form.city} region={$form.state} country={$form.country}/>
   </TabItem>
 </Tabs>
 </div>

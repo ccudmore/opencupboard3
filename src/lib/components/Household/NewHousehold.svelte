@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { STATE_DISPLAY_NAME } from "$app/env/public";
 	import { superForm, type SuperValidated, type Infer } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { Modal, Label, Input, Textarea, MultiSelect, Button, ButtonGroup, Helper, Alert } from 'flowbite-svelte';
@@ -39,7 +40,7 @@ let {
 		$form.street = fill($form.street, l.street);
 		$form.city = fill($form.city, l.city);
 		$form.postalCode = fill($form.postalCode, l.postalCode);
-		if (l.issuer) $form.province = provinceName(l.issuer);
+		if (l.issuer) $form.state = provinceName(l.issuer);
 		scanning = false;
 		scanned = true;
 		otherBarcode = false;
@@ -121,11 +122,6 @@ let {
 		</div>
 
 		<div>
-			<Label for="unitNumber">Unit number (optional)</Label>
-			<Input id="unitNumber" name="unitNumber" bind:value={$form.unitNumber} />
-		</div>
-
-		<div>
 			<Label for="city">City</Label>
 			<Input id="city" name="city" bind:value={$form.city}
 				color={$errors.city ? 'red' : undefined} />
@@ -133,8 +129,8 @@ let {
 		</div>
 
 		<div>
-			<Label for="province">Province</Label>
-			<Input id="province" name="province" bind:value={$form.province} />
+			<Label for="state">{STATE_DISPLAY_NAME}</Label>
+			<Input id="state" name="state" bind:value={$form.state} />
 		</div>
 
 		<div>

@@ -72,7 +72,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       uniqueId: h.uniqueId ?? "",
       ...person(h.members[0]),
       address: [
-        h.unitNumber ? `${h.unitNumber}-` : "",
         h.street ?? "",
         h.city ? `, ${h.city}` : "",
         h.postalCode ? ` ${h.postalCode}` : "",

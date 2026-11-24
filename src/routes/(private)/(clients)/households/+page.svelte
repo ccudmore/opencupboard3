@@ -1,7 +1,6 @@
 <script lang="ts">
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
-	import { streetWithUnit } from '#lib/address.ts';
-	import { goto } from '$app/navigation';
+		import { goto } from '$app/navigation';
 	import { Section } from 'flowbite-svelte-blocks';
 	import { householdStatusLabels } from '#lib/labels.ts'
 	import { HouseholdStatus } from '#prisma/browser';
@@ -104,7 +103,7 @@
                   {/each}
                 </TableBodyCell>
                 <TableBodyCell>
-                  {streetWithUnit(household.street, household.unitNumber)}
+                  {household.street}
                 </TableBodyCell>
                 <TableBodyCell>
                   {#each household.members as member (member.id)}
@@ -152,7 +151,7 @@
               </div>
 
               {#if household.street}
-                <div class="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{streetWithUnit(household.street, household.unitNumber)}</div>
+                <div class="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{household.street}</div>
               {/if}
 
               {#if household.members.some((m) => m.phone)}

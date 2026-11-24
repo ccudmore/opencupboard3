@@ -17,6 +17,12 @@ export const variables = defineEnvVars({
 	DEFAULT_COUNTRY: { public: true,
 		schema: (input: string | undefined) => input?.trim() || 'Canada'
 	},
+	STATE_DISPLAY_NAME: { public: true,
+		schema: (input: string | undefined) => input?.trim() || 'Province'
+	},
+	DEFAULT_STATE: { public: true,
+		schema: (input: string | undefined) => input?.trim() || 'Ontario'
+	},
 	SHOW_HOUSEHOLD_SIZE: { public: true,
 		schema: (input: string | undefined) => !['false', '0', 'no', 'off'].includes((input ?? '').trim().toLowerCase())
 	},

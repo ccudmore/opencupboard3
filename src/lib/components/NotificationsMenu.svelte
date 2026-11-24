@@ -128,7 +128,7 @@
 	<BellOutline size="lg" />
 	{#if unread > 0}
 		<span
-			class="absolute -inset-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-5 text-white"
+			class="pointer-events-none absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-none text-white ring-2 ring-white dark:ring-gray-800"
 			aria-hidden="true">{badge}</span>
 	{/if}
 </ToolbarButton>

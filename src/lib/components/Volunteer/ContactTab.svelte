@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { STATE_DISPLAY_NAME } from "$app/env/public";
 	import { Helper, Input, Label } from 'flowbite-svelte';
 	import FieldError from '#lib/components/FieldError.svelte';
 
@@ -51,11 +52,6 @@
 			<FieldError messages={$errors.street} />
 		</div>
 		<div class="min-w-0">
-			<Label for="unitNumber">Unit number (optional)</Label>
-			<Input id="unitNumber" autocomplete="off" bind:value={$form.unitNumber} />
-			<FieldError messages={$errors.unitNumber} />
-		</div>
-		<div class="min-w-0">
 			<Label for="city">City</Label>
 			<Input id="city" autocomplete="off" bind:value={$form.city} />
 			<FieldError messages={$errors.city} />
@@ -66,9 +62,9 @@
 			<FieldError messages={$errors.postalCode} />
 		</div>
 		<div class="min-w-0">
-			<Label for="province">Province</Label>
-			<Input id="province" autocomplete="off" bind:value={$form.province} />
-			<FieldError messages={$errors.province} />
+			<Label for="state">{STATE_DISPLAY_NAME}</Label>
+			<Input id="state" autocomplete="off" bind:value={$form.state} />
+			<FieldError messages={$errors.state} />
 		</div>
 		<div class="min-w-0">
 			<Label for="country">Country</Label>

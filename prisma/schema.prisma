@@ -158,11 +158,10 @@ model RolePermission {
 model Site {
   id           String        @id @default(cuid())
   name         String        @unique
-  unitNumber   String?
   street       String?
   city         String?
   postalCode   String?
-  province     String        @default("Ontario")
+  state        String        @default("Ontario")
   country      String        @default("Canada")
   createdTime  DateTime      @default(now())
   events       Event[]
@@ -370,12 +369,11 @@ model Household {
   preferredTimeOfDay    ServiceTime[]
   languagesSpoken       String[]
   howHeard              String?
-  unitNumber            String?
   street                String?
   street2               String?
   city                  String?
   postalCode            String?
-  province              String
+  state                 String
   country               String
   //  appointments          Appointment[]
   bookings              AppointmentBookings[]
@@ -396,11 +394,10 @@ model Volunteer {
   //personId        String  @unique
   firstName       String
   lastName        String
-  unitNumber      String?
   street          String?
   city            String?
   postalCode      String?
-  province        String                 @default("Ontario")
+  state           String                 @default("Ontario")
   country         String                 @default("Canada")
   email2          String? // a second address to reach them; the login email is user.email
   phone1          String?

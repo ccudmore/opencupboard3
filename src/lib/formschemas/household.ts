@@ -1,4 +1,4 @@
-import { DEFAULT_COUNTRY } from "$app/env/public";
+import { DEFAULT_COUNTRY, DEFAULT_STATE } from "$app/env/public";
 import { z } from "zod";
 import {
   HouseholdStatus,
@@ -29,11 +29,10 @@ const normalizePostal = (value: string): string =>
 
 export const householdSchema = z.object({
   id: z.string(),
-  unitNumber: z.string().trim().max(30).nullish(),
   street: z.string().min(1).nullish(),
   street2: z.string().nullish(),
   city: z.string().nullable(),
-  province: z.string().default("Ontario"),
+  state: z.string().default(DEFAULT_STATE),
   country: z.string().default(DEFAULT_COUNTRY),
   postalCode: z
     .string()
@@ -131,11 +130,10 @@ export const newHouseholdSchema = householdSchema
     howHeard: true,
     notes: true,
     languagesSpoken: true,
-    unitNumber: true,
     street: true,
     street2: true,
     city: true,
-    province: true,
+    state: true,
     country: true,
     postalCode: true,
     status: true,
