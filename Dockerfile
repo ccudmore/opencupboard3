@@ -50,6 +50,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 COPY --from=build     --chown=node:node /app/build ./build
 COPY --from=build     --chown=node:node /app/package.json ./
 COPY --from=build     --chown=node:node /app/prisma.config.ts ./
+COPY --from=build     --chown=node:node /app/src/lib/geocodeLookup.ts ./
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 # Schema, seed script and generated client (used by the db-push service)
 COPY --from=deps      --chown=node:node /app/prisma ./prisma
