@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DEFAULT_COUNTRY, DEFAULT_STATE, STATE_DISPLAY_NAME } from '$app/env/public';
+	import { DEFAULT_CITY, DEFAULT_COUNTRY, DEFAULT_STATE, STATE_DISPLAY_NAME } from '$app/env/public';
 	import { refreshAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Button, Drawer, Input, Label, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
@@ -11,7 +11,7 @@
 	const drawerClass = 'max-h-[90vh] overflow-y-auto bg-white p-1 text-gray-900 backdrop:bg-black/50 dark:bg-gray-800 dark:text-white';
 	type Site = (typeof data.sites)[number];
 
-	const blank = () => ({ name: '', street: '', city: '', postalCode: '', state: DEFAULT_STATE, country: DEFAULT_COUNTRY });
+	const blank = () => ({ name: '', street: '', city: DEFAULT_CITY, postalCode: '', state: DEFAULT_STATE, country: DEFAULT_COUNTRY });
 
 	let open = $state(false);
 	let editing = $state<Site | null>(null); // null means adding a new site

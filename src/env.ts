@@ -17,6 +17,10 @@ export const variables = defineEnvVars({
 	DEFAULT_COUNTRY: { public: true,
 		schema: (input: string | undefined) => input?.trim() || 'Canada'
 	},
+	DEFAULT_CITY: { public: true,
+		// no default: empty means the city is left blank on forms
+		schema: (input: string | undefined) => input?.trim() || ''
+	},
 	STATE_DISPLAY_NAME: { public: true,
 		schema: (input: string | undefined) => input?.trim() || 'Province'
 	},

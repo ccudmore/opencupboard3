@@ -1,4 +1,4 @@
-import { DEFAULT_COUNTRY, DEFAULT_STATE } from "$app/env/public";
+import { DEFAULT_CITY, DEFAULT_COUNTRY, DEFAULT_STATE } from "$app/env/public";
 import { z } from "zod";
 import {
   HouseholdStatus,
@@ -31,7 +31,7 @@ export const householdSchema = z.object({
   id: z.string(),
   street: z.string().min(1).nullish(),
   street2: z.string().nullish(),
-  city: z.string().nullable(),
+  city: z.string().nullable().default(DEFAULT_CITY || null),
   state: z.string().default(DEFAULT_STATE),
   country: z.string().default(DEFAULT_COUNTRY),
   postalCode: z

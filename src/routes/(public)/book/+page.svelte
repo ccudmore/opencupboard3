@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Alert, Badge, Button, Checkbox, Input, Label, Textarea } from 'flowbite-svelte';
+	import { DEFAULT_CITY } from '$app/env/public';
 	import { callAction } from '#lib/client/callAction.ts';
 	import Logo from '#lib/Logo.svelte';
 
@@ -88,7 +89,7 @@
 	// ------------------------------------------------ sign up
 	const dietary = ['Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-free', 'Dairy-free'];
 	let f = $state({
-		firstName: '', lastName: '', street: '', unitNumber: '', city: '', postalCode: '', email: '', phone: '',
+		firstName: '', lastName: '', street: '', city: DEFAULT_CITY, postalCode: '', email: '', phone: '',
 		adults: '1', children: '0', notes: '', website: ''
 	});
 	let diet = $state<string[]>([]);
@@ -232,7 +233,6 @@
 			<div><Label for="fn" class="mb-2">First name</Label><Input id="fn" required autocomplete="given-name" bind:value={f.firstName} onkeydown={ignoreEnter} /></div>
 			<div><Label for="ln" class="mb-2">Last name</Label><Input id="ln" required autocomplete="family-name" bind:value={f.lastName} onkeydown={ignoreEnter} /></div>
 			<div class="sm:col-span-2"><Label for="st" class="mb-2">Street address</Label><Input id="st" required autocomplete="address-line1" bind:value={f.street} onkeydown={ignoreEnter} /></div>
-			<div><Label for="un" class="mb-2">Unit number (optional)</Label><Input id="un" autocomplete="address-line2" bind:value={f.unitNumber} onkeydown={ignoreEnter} /></div>
 			<div><Label for="ci" class="mb-2">City</Label><Input id="ci" required autocomplete="address-level2" bind:value={f.city} onkeydown={ignoreEnter} /></div>
 			<div><Label for="pc" class="mb-2">Postal code</Label><Input id="pc" required autocomplete="postal-code" bind:value={f.postalCode} onkeydown={ignoreEnter} /></div>
 			<div><Label for="em" class="mb-2">Email address</Label><Input id="em" type="email" autocomplete="email" bind:value={f.email} onkeydown={ignoreEnter} /></div>

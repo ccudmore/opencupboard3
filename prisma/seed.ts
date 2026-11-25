@@ -175,6 +175,48 @@ async function main() {
   await prisma.household.create({ data: household });
   console.log(`Created household ${HOUSEHOLD_ID}`);
 
+  // Test notifications for the bell in the header (all unread)
+  const craig = await prisma.user.findUnique({
+    where: { email: "craig@cudmore.ca" },
+  });
+  if (craig) {
+    const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
+    await prisma.notification.createMany({
+      data: [
+        {
+          subject: "New volunteer sign-up",
+          body: "Sample Volunteer One signed up for the Wednesday sorting shift and is waiting for approval.",
+          link: "/volunteers",
+          createdAt: minutesAgo(5),
+        },
+        {
+          subject: "New household registered",
+          body: "A household registered online and needs review.",
+          link: "/households/pending",
+          createdAt: minutesAgo(30),
+        },
+        {
+          subject: "Appointment booked",
+          body: "Sample household booked an appointment for the next service date.",
+          link: "/households",
+          createdAt: minutesAgo(90),
+        },
+        {
+          subject: "Service date coming up",
+          body: "The next service date is this week. Check that volunteers are lined up.",
+          link: "/servicedates",
+          createdAt: minutesAgo(60 * 5),
+        },
+        {
+          subject: "Welcome to Open Cupboard",
+          body: "This is a sample notification created with the test data.",
+          createdAt: minutesAgo(60 * 26),
+        },
+      ].map((n) => ({ ...n, userId: craig.id, createdBy: "Seed" })),
+    });
+    console.log("Created 5 sample notifications for craig@cudmore.ca");
+  }
+
   // Every volunteer is a user: a login with the Volunteer role, plus a volunteer profile
   for (const [n, lastName] of [
     ["one", "Volunteer One"],
