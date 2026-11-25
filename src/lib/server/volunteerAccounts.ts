@@ -1,3 +1,4 @@
+import { noteVolunteerStatus } from "#lib/server/statusHistory.ts";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import prisma from "#lib/prisma.ts";
@@ -175,6 +176,9 @@ export async function addVolunteer(
               firstName,
               lastName,
               createdBy: actorId ?? "system",
+              statusHistory: {
+                create: { status: "ACTIVE", changedBy: actorId ?? "system" },
+              },
             },
             select: { id: true },
           })
@@ -265,6 +269,7 @@ export async function archiveVolunteer(
         where: { id: volunteerId },
         data: { status: "ARCHIVED", archivedAt: new Date() },
       });
+      await noteVolunteerStatus(tx, volunteerId, "ARCHIVED");
       await tx.volunteerAssignments.updateMany({
         where: {
           volunteerId,
@@ -300,6 +305,7 @@ export async function unarchiveVolunteer(volunteerId: string): Promise<Result> {
         where: { id: volunteerId },
         data: { status: "ACTIVE", archivedAt: null },
       });
+      await noteVolunteerStatus(tx, volunteerId, "ACTIVE");
       // Only a volunteer-only login was switched off by archiving, so only that one is switched back on
       if (await hasOnlyVolunteerRole(v.userId, tx))
         await tx.user.update({

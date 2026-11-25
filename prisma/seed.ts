@@ -190,9 +190,16 @@ async function main() {
       household.geocodedQuery = query;
     } catch (err) {
       console.warn("Could not look up the sample address:", err);
+      household.latitude = 45.2759065;
+      household.longitude = -75.925804;
     }
   }
-  await prisma.household.create({ data: household });
+  await prisma.household.create({
+    data: {
+      ...household,
+      statusHistory: { create: { status: household.status ?? HouseholdStatus.ACTIVE, changedBy: "Seed" } },
+    },
+  });
   console.log(`Created household ${HOUSEHOLD_ID}`);
 
   // Test notifications for the bell in the header (all unread)
@@ -249,7 +256,12 @@ async function main() {
       roleNames: ["Volunteer"],
     });
     await prisma.volunteer.create({
-      data: { userId: user.id, firstName: "Sample", lastName },
+      data: {
+        userId: user.id,
+        firstName: "Sample",
+        lastName,
+        statusHistory: { create: { status: "ACTIVE", changedBy: "Seed" } },
+      },
     });
   }
 

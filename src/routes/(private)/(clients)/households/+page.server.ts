@@ -13,7 +13,7 @@ import { redirect } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
 import { geocodeHouseholdLater } from "#lib/server/geocode.ts";
 import { randomInt } from "node:crypto";
-import { ClientRelationship } from "#prisma/enums";
+import { ClientRelationship, HouseholdStatus } from "#prisma/enums";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   requirePermission(locals?.user?.permissions, url, ["manage-households"]);
@@ -84,7 +84,15 @@ export const actions: Actions = {
           },
         };
         newHousehold = await prisma.household.create({
-          data: household,
+          data: {
+            ...household,
+            statusHistory: {
+              create: {
+                status: household.status ?? HouseholdStatus.ACTIVE,
+                changedBy: locals.user?.id ?? null,
+              },
+            },
+          },
         });
       } catch (err) {
         if ((err as { code?: string }).code === "P2002") continue; // ID collision, try another

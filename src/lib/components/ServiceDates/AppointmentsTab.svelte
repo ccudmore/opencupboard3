@@ -4,7 +4,7 @@
 	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
 	import { refreshAll } from '$app/navigation';
-	import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { PlusOutline, PrinterOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 	import EmailPrompts from '#lib/components/EmailPrompts.svelte';
 	import { getActionRunner } from '#lib/client/actionRunner.svelte.ts';
 
@@ -163,6 +163,9 @@
 		<Badge color="green">{service.counts.open} open</Badge>
 		<Badge color="blue">{service.counts.booked} booked</Badge>
 		<span class="hint">of {service.counts.total}</span>
+		<Button size="xs" outline color="dark" class="ms-auto" href={`/servicedates/chits/${service.id}`} target="_blank" rel="noopener">
+			<PrinterOutline class="me-1 h-3.5 w-3.5" />Create Chits
+		</Button>
 	</div>
 
 	{#if service.appointments.length === 0}

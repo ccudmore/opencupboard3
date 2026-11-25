@@ -368,6 +368,9 @@ export async function register(ip: string, data: Record<string, unknown>) {
       await prisma.household.create({
         data: {
           status: HouseholdStatus.PENDING,
+          statusHistory: {
+            create: { status: HouseholdStatus.PENDING, changedBy: "public-signup" },
+          },
           uniqueId: newId(),
           createdBy: "public-signup",
           street: d.street,

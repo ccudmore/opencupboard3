@@ -1,3 +1,4 @@
+import { noteHouseholdStatus } from "#lib/server/statusHistory.ts";
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
 import { TIMEZONE } from "$app/env/private";
@@ -156,6 +157,12 @@ export const actions: Actions = {
     });
     if (count === 0)
       return fail(409, { message: "That household was already handled." });
+    await noteHouseholdStatus(
+      prisma,
+      householdId,
+      HouseholdStatus.ACTIVE,
+      locals.user?.id,
+    );
     return { householdId, emailed: await sendApprovalEmail(householdId) };
   },
 
@@ -167,9 +174,15 @@ export const actions: Actions = {
       where: { id: householdId, status: HouseholdStatus.PENDING },
       data: { status: HouseholdStatus.ARCHIVED },
     });
-    return count === 0
-      ? fail(409, { message: "That household was already handled." })
-      : { householdId };
+    if (count === 0)
+      return fail(409, { message: "That household was already handled." });
+    await noteHouseholdStatus(
+      prisma,
+      householdId,
+      HouseholdStatus.ARCHIVED,
+      locals.user?.id,
+    );
+    return { householdId };
   },
 
   // the usual email prompts

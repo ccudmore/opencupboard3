@@ -288,11 +288,25 @@ export async function updateBooking(
           datedRequest = null;
         }
 
+        // Completing a visit saves the household's size at that moment (for the people served report)
+        const completing =
+          status === AppointmentBookingStatus.COMPLETE &&
+          booking.status !== AppointmentBookingStatus.COMPLETE;
+        const size = completing
+          ? await tx.household.findUnique({
+              where: { id: householdId },
+              select: { adultCount: true, childCount: true },
+            })
+          : null;
+
         const isUnscheduled = !booking.appointmentId;
         const updated = await tx.appointmentBookings.update({
           where: { id: booking.id },
           data: {
             status,
+            ...(completing
+              ? { adultCount: size?.adultCount ?? null, childCount: size?.childCount ?? null }
+              : {}),
             // Only unscheduled bookings have a planned time and place
             ...(isUnscheduled && parsed.data.plannedStart !== undefined
               ? { plannedStart: planned }

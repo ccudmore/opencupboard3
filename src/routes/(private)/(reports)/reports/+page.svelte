@@ -4,6 +4,21 @@
 
 	const reports = [
 		{
+			href: '/reports/current-counts',
+			title: 'Current counts',
+			text: 'Active households today, and the adults and children in them.'
+		},
+		{
+			href: '/reports/households-over-time',
+			title: 'Households and people served',
+			text: 'Active households, households served and people served by month. Adults and children can be shown separately.'
+		},
+		{
+			href: '/reports/volunteers-over-time',
+			title: 'Active volunteers',
+			text: 'The number of active volunteers at the end of each month.'
+		},
+		{
 			href: '/reports/household-heatmap',
 			title: 'Household heat map',
 			text: 'Where active households are concentrated, shown on a map. Locations are approximate (about 500 m).'

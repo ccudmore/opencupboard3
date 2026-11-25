@@ -12,6 +12,7 @@ import {
   getAvailableServices,
   getSites,
 } from "#lib/server/queries/booking.ts";
+import { noteHouseholdStatus } from "#lib/server/statusHistory.ts";
 import { geocodeHouseholdLater } from "#lib/server/geocode.ts";
 import { isMailConfigured } from "#lib/server/email/mailer.ts";
 import {
@@ -129,6 +130,12 @@ export const actions: Actions = {
       console.error(err);
       return fail(500, { message: "Could not update household" });
     }
+    await noteHouseholdStatus(
+      prisma,
+      params.householdId,
+      formData.data.status,
+      locals.user?.id,
+    );
     geocodeHouseholdLater(params.householdId); // only looks up again if the address changed
     return { formData };
   },

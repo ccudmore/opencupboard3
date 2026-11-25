@@ -384,9 +384,24 @@ model Household {
   //  appointments          Appointment[]
   bookings              AppointmentBookings[]
   members               Client[]              @relation("HouseholdMembership")
+  statusHistory         HouseholdStatusChange[]
   createdAt             DateTime              @default(now())
   createdBy             String?
   @@map("household")
+}
+
+// One row each time a household's status is set (including when it is created), so reports can
+// show how many households were active in any past month. See src/lib/server/statusHistory.ts.
+model HouseholdStatusChange {
+  id          String          @id @default(cuid())
+  household   Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+  status      HouseholdStatus
+  changedAt   DateTime        @default(now())
+  changedBy   String?
+
+  @@index([householdId, changedAt])
+  @@map("household_status_change")
 }
 
 enum VolunteerStatus {
@@ -421,7 +436,21 @@ model Volunteer {
   createdAt       DateTime               @default(now())
   createdBy       String?
   skills	  String[]	@default([])
+  statusHistory   VolunteerStatusChange[]
   @@map("volunteer")
+}
+
+// One row each time a volunteer is created, archived or restored (for the volunteers report).
+model VolunteerStatusChange {
+  id          String          @id @default(cuid())
+  volunteer   Volunteer       @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  volunteerId String
+  status      VolunteerStatus
+  changedAt   DateTime        @default(now())
+  changedBy   String?
+
+  @@index([volunteerId, changedAt])
+  @@map("volunteer_status_change")
 }
 
 // A file uploaded for a volunteer, stored in the database. Only load `content` to send the file.
@@ -495,6 +524,9 @@ model AppointmentBookings {
   createdBy     String?
   datedRequest   DatedRequest? @relation("BookingDatedRequest", fields: [datedRequestId], references: [id], onDelete: SetNull)
   datedRequestId String?       @unique
+  // The household's adult and child counts when the booking was marked COMPLETE (for the "people served" report)
+  adultCount     Int?
+  childCount     Int?
 
   // One ACTIVE booking per appointment is enforced in bookingActions.ts (Serializable transaction)
   @@index([householdId])
