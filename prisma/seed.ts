@@ -2,6 +2,7 @@ import { HouseholdStatus, type Prisma } from "./src/generated/prisma/client.js";
 import prisma from "./db.js";
 import { seedReferenceData } from "./reference-data.js";
 import { createUserWithPassword } from "./users.js";
+import { addressQuery, lookupAddress } from "../src/lib/geocodeLookup.ts";
 import {
   EventStatus,
   ClientIdentificationType,
@@ -172,6 +173,25 @@ async function main() {
     });
   }
 
+  // Look up the sample address for the heat map. If there is no internet, the household is
+  // still created, and the report page can look it up later.
+  const query = addressQuery({
+    street: household.street ?? null,
+    city: household.city ?? null,
+    state: household.state,
+    postalCode: household.postalCode ?? null,
+    country: household.country,
+  });
+  if (query) {
+    try {
+      const found = await lookupAddress(query);
+      household.latitude = found?.lat ?? null;
+      household.longitude = found?.lng ?? null;
+      household.geocodedQuery = query;
+    } catch (err) {
+      console.warn("Could not look up the sample address:", err);
+    }
+  }
   await prisma.household.create({ data: household });
   console.log(`Created household ${HOUSEHOLD_ID}`);
 

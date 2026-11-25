@@ -56,6 +56,11 @@ export const permissions: PermissionSeed[] = [
     name: "View dashboard",
     description: "View dashboard",
   },
+  {
+    id: "view-reports",
+    name: "View reports",
+    description: "View reports, such as the household heat map",
+  },
   { id: "access-volunteer", name: "Volunteer", description: "Volunteer" },
 ];
 

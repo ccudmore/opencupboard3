@@ -375,6 +375,12 @@ model Household {
   postalCode            String?
   state                 String
   country               String
+  // Looked up once from the address (see src/lib/server/geocode.ts) for the heat map report.
+  // geocodedQuery is the address text that was looked up; when the address changes it no longer
+  // matches, so the household is looked up again. latitude/longitude stay null if nothing was found.
+  latitude              Float?
+  longitude             Float?
+  geocodedQuery         String?
   //  appointments          Appointment[]
   bookings              AppointmentBookings[]
   members               Client[]              @relation("HouseholdMembership")

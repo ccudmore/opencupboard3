@@ -11,6 +11,7 @@ import { zod4 } from "sveltekit-superforms/adapters";
 import { newHouseholdSchema } from "#lib/formschemas/household.ts";
 import { redirect } from "@sveltejs/kit";
 import { requirePermission } from "#lib/utils.ts";
+import { geocodeHouseholdLater } from "#lib/server/geocode.ts";
 import { randomInt } from "node:crypto";
 import { ClientRelationship } from "#prisma/enums";
 
@@ -94,6 +95,7 @@ export const actions: Actions = {
           { status: 500 },
         );
       }
+      geocodeHouseholdLater(newHousehold.id);
       throw redirect(303, "/households/" + newHousehold.id);
     }
   },

@@ -116,6 +116,9 @@ export function getPermittedApps(permissions: string[] | null | undefined) {
   ) {
     apps.push(availableApps.calendar);
   }
+  if (hasPermission(permissions, ["view-reports"])) {
+    apps.push(availableApps.reports);
+  }
   if (hasPermission(permissions, ["manage-configuration"])) {
     apps.push(availableApps.admin);
   }
