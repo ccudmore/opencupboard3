@@ -9,17 +9,17 @@ x-app-env: &app-env
   LOGO_DARK_PATH: ${LOGO_DARK_PATH:-}
   ORGANIZATION_NAME: ${ORGANIZATION_NAME:-}
   CSP_ENFORCE: ${CSP_ENFORCE:-}
-  # Booking confirmation emails. Leave SMTP_HOST empty to turn email off.
-  SMTP_HOST: ${SMTP_HOST:-}
-  SMTP_PORT: ${SMTP_PORT:-587}
-  SMTP_SECURE: ${SMTP_SECURE:-false}
-  SMTP_USER: ${SMTP_USER:-}
-  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-  MAIL_FROM: ${MAIL_FROM:-}
-  MAIL_REPLY_TO: ${MAIL_REPLY_TO:-}
-  TIMEZONE: ${TIMEZONE:-America/Toronto}
+  ALLOW_SAMPLE_DATA: ${ALLOW_SAMPLE_DATA}
+  SMTP_HOST: ${SMTP_HOST}
+  SMTP_PORT: ${SMTP_PORT}
+  SMTP_SECURE: ${SMTP_SECURE}
+  SMTP_USER: ${SMTP_USER}
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+  MAIL_FROM: ${MAIL_FROM}
+  MAIL_REPLY_TO: ${MAIL_REPLY_TO}
+  TIMEZONE: ${TIMEZONE}
   ID_RENEWAL_PERIOD_MONTHS: ${ID_RENEWAL_PERIOD_MONTHS:-12}
-  DATED_REQUEST_TYPES: ${DATED_REQUEST_TYPES:-Special Requests}
+  DATED_REQUEST_TYPES: ${DATED_REQUEST_TYPES:-Special}
   DEFAULT_COUNTRY: ${DEFAULT_COUNTRY:-Canada}
   STATE_DISPLAY_NAME: ${STATE_DISPLAY_NAME:-Province}
   DEFAULT_CITY: ${DEFAULT_CITY:-}
@@ -28,6 +28,10 @@ x-app-env: &app-env
   ALLOW_VOLUNTEER_OVERBOOKING: ${ALLOW_VOLUNTEER_OVERBOOKING:-false}
   AUTH_SESSION_DAYS: ${AUTH_SESSION_DAYS:-7}
   EMAIL_TEMPLATE_DIR: ${EMAIL_TEMPLATE_DIR:-}
+# Uploaded volunteer documents are stored in the database.
+  MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+# adapter-node refuses larger request bodies (default 512K); must be above MAX_UPLOAD_MB
+  BODY_SIZE_LIMIT: 25M
 
 services:
   postgres:
@@ -50,8 +54,8 @@ services:
       retries: 10
       start_period: 10s
 
-  # One-shot job: applies the schema, then loads reference data (permissions and
-  # roles). Both steps are safe to repeat on every `up`.
+# One-shot job: applies the schema, then loads reference data (permissions and
+# roles). Both steps are safe to repeat on every `up`.
   db-push:
     image: craigcudmore/opencupboard3:latest
     pull_policy: always
@@ -78,12 +82,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
-      ID_RENEWAL_PERIOD_MONTHS: ${ID_RENEWAL_PERIOD_MONTHS:-12}
       PORT: 3000
-      # Uploaded volunteer documents are stored in the database.
-      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
-      # adapter-node refuses larger request bodies (default 512K); must be above MAX_UPLOAD_MB
-      BODY_SIZE_LIMIT: 25M
     networks:
       - backend
     volumes:
