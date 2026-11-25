@@ -64,7 +64,7 @@ export const variables = defineEnvVars({
 	ID_RENEWAL_PERIOD_MONTHS: { public: true, 
 		schema: (input: string | undefined) => {
 			const months = Number(input);
-			return Number.isFinite(months) && months > 0 ? months : 12; // 12 when unset or invalid
+			return Number.isFinite(months) && months > 0 ? months : 6; // 6 when unset or invalid
 		}
  	},
 	GOOGLE_CLIENT_ID: { schema: (input) => input },
