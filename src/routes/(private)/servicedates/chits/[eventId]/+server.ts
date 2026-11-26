@@ -159,7 +159,7 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   ${idRow}
   ${row("Dietary", esc(clip(diet, MAX_DIET)))}
   ${row("Pets", esc(clip(pets, MAX_PETS)))}
-  <div class="row"><span class="label">${esc(datedRequestTypes[0].name)}:</span> ${
+  <div class="row"><span class="label">${esc(datedRequestTypes[0].name)} Requests:</span> ${
     requests.length
       ? requests.map((t) => esc(clip(t, MAX_REQUEST))).join("; ")
       : '<span class="muted">none</span>'

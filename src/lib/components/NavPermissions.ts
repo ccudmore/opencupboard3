@@ -4,6 +4,11 @@ import {
   CalendarEditOutline,
   ProfileCardOutline,
   AwardOutline,
+  CartOutline,
+  ChartMixedDollarOutline,
+  StoreOutline,
+  MessagesOutline,
+  UserOutline,
 } from "flowbite-svelte-icons";
 import { hasPermission } from "#lib/utils.ts";
 
@@ -19,7 +24,7 @@ const availableApps = {
     name: "Service Dates",
     label: "Service Dates",
     href: "/servicedates",
-    icon: CalendarEditOutline,
+    icon: CartOutline,
     subContent: "",
   },
   calendar: {
@@ -33,7 +38,7 @@ const availableApps = {
     name: "Volunteers",
     label: "Volunteers",
     href: "/volunteers",
-    icon: AwardOutline,
+    icon: UserOutline,
     subContent: "",
   },
   reports: {
@@ -73,25 +78,25 @@ const availableApps = {
       },
     ],
   },
-  donors: {
-    name: "Donors",
-    label: "Donors",
-    href: "/donors",
-    icon: CogOutline,
+  contacts: {
+    name: "Contacts",
+    label: "Contacts",
+    href: "/contacts",
+    icon: MessagesOutline,
     subContent: "",
   },
   expenses: {
     name: "Expenses",
     label: "Expenses",
     href: "/expenses",
-    icon: CogOutline,
+    icon: ChartMixedDollarOutline,
     subContent: "",
   },
   inventory: {
     name: "Inventory",
     label: "Inventory",
     href: "/inventory",
-    icon: CogOutline,
+    icon: StoreOutline,
     subContent: "",
   },
   volunteer: {
@@ -132,7 +137,7 @@ export function getPermittedApps(permissions: string[] | null | undefined) {
     apps.push(availableApps.expenses);
   }
   if (hasPermission(permissions, ["manage-donors"])) {
-    apps.push(availableApps.donors);
+    apps.push(availableApps.contacts);
   }
   if (hasPermission(permissions, ["access-volunteer"])) {
     apps.push(availableApps.volunteer);
