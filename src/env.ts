@@ -61,6 +61,13 @@ export const variables = defineEnvVars({
 		}
 	},
 	DATABASE_URL: { schema: (input) => input },
+	CHILD_AGE_LIMIT: { public: true,
+		// A member younger than this counts as a child, everyone else as an adult
+		schema: (input: string | undefined) => {
+			const age = Number(input);
+			return Number.isInteger(age) && age > 0 ? age : 13; // 13 when unset or invalid
+		}
+	},
 	ID_RENEWAL_PERIOD_MONTHS: { public: true, 
 		schema: (input: string | undefined) => {
 			const months = Number(input);

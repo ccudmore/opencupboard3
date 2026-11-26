@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { CloseCircleOutline, CheckCircleOutline } from "flowbite-svelte-icons";
 	import { Select, Label } from "flowbite-svelte";
-	import { SHOW_HOUSEHOLD_SIZE } from "$app/env/public";
+	import { SHOW_HOUSEHOLD_SIZE, CHILD_AGE_LIMIT } from "$app/env/public";
 	import { isIdVerificationNeeded, formattedDate, calculateFamilySize, calculateChildCount, calculateNextServiceDate } from "#lib/utils.ts"; 
 	import {householdStatusOptions} from '#lib/labels.ts'
 	import { ClientRelationship } from '#prisma/enums';
@@ -92,7 +92,7 @@
 		<!-- Stat tiles -->
 		{#each [
 			...(SHOW_HOUSEHOLD_SIZE ? [{ label: "Family size", value: familySize }] : []),
-			{ label: "Children under 13", value: childCount },
+			{ label: `Children under ${CHILD_AGE_LIMIT}`, value: childCount },
 			{ label: "Next appointment", value: nextServiceDate?formattedDate(nextServiceDate):'Now', small: true, highlight: !nextServiceDate }
 		] as stat}
     	<dl

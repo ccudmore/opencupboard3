@@ -30,7 +30,8 @@
 /*
 	const timeFmt = $derived(new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit', timeZone }));
 	const time = (d: Date | string) => timeFmt.format(new Date(d));
-	const range = (a: { startTime: Date; endTime: Date }) => `${time(a.startTime)} to ${time(a.endTime)}`;
+	// appointments are shown by their start time only
+	const range = (a: { startTime: Date; endTime: Date }) => time(a.startTime);
 
 	let bookingPrompts: ReturnType<typeof EmailPrompts> | undefined = $state();
 	let volunteerPrompts: ReturnType<typeof EmailPrompts> | undefined = $state();

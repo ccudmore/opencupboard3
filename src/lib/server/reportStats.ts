@@ -1,6 +1,8 @@
 import prisma from "#lib/prisma.ts";
 import { TIMEZONE } from "$app/env/private";
+import { countPeople } from "#lib/householdSize.ts";
 import {
+  ExpenseStatus,
   AppointmentBookingStatus,
   HouseholdStatus,
 } from "#prisma/enums";
@@ -70,22 +72,23 @@ export const parseMonths = (raw: string | null) =>
 export async function currentCounts() {
   const active = await prisma.household.findMany({
     where: { status: HouseholdStatus.ACTIVE },
-    select: { adultCount: true, childCount: true },
+    select: { members: { select: { birthYear: true } } },
   });
   let adults = 0;
   let children = 0;
   let missing = 0;
   for (const h of active) {
-    adults += h.adultCount ?? 0;
-    children += h.childCount ?? 0;
-    if (h.adultCount == null && h.childCount == null) missing++;
+    const n = countPeople(h.members);
+    adults += n.adults;
+    children += n.children;
+    if (h.members.length === 0) missing++;
   }
   return {
     households: active.length,
     adults,
     children,
     people: adults + children,
-    /** Active households with no adult or child count entered */
+    /** Active households with no members entered */
     missing,
   };
 }
@@ -127,7 +130,7 @@ export type HouseholdTrend = {
   peopleServed: number[];
   adultsServed: number[];
   childrenServed: number[];
-  /** Households served in this period whose adult/child counts aren't entered */
+  /** Households served in this period that have no members entered */
   servedWithoutCounts: number;
   /** Households with no status history, whose past status is estimated */
   estimated: number;
@@ -150,8 +153,7 @@ export async function householdTrend(count: number): Promise<HouseholdTrend> {
       id: true,
       status: true,
       createdAt: true,
-      adultCount: true,
-      childCount: true,
+      members: { select: { birthYear: true } },
     },
   });
   const byId = new Map(households.map((h) => [h.id, h]));
@@ -232,14 +234,15 @@ export async function householdTrend(count: number): Promise<HouseholdTrend> {
     let adults = 0;
     let children = 0;
     for (const [id, v] of served) {
-      // visits completed before sizes were saved use the household's current size
+      // visits completed before sizes were saved use the household's current members
       const h = byId.get(id)!;
       const saved = v.adults != null || v.children != null;
-      const a = saved ? v.adults : h.adultCount;
-      const c = saved ? v.children : h.childCount;
-      adults += a ?? 0;
-      children += c ?? 0;
-      if (a == null && c == null) noCounts.add(id);
+      const n = saved
+        ? { adults: v.adults ?? 0, children: v.children ?? 0 }
+        : countPeople(h.members, new Date(v.at).getFullYear());
+      adults += n.adults;
+      children += n.children;
+      if (n.adults + n.children === 0) noCounts.add(id);
     }
     trend.activeHouseholds.push(active);
     trend.householdsServed.push(served.size);
@@ -279,5 +282,72 @@ export async function volunteerTrend(count: number) {
         }).length,
     ),
     estimated: volunteers.filter((v) => !history.has(v.id)).length,
+  };
+}
+
+// ---------------------------------------------------------------- expenses by month
+
+export type ExpenseMonth = {
+  label: string;
+  /** Approved and reimbursed expenses (plus those awaiting review, when asked for) */
+  count: number;
+  totalCents: number;
+  taxCents: number;
+  /** Still waiting to be approved or rejected */
+  pendingCount: number;
+  pendingCents: number;
+};
+
+/**
+ * Expenses by the month of the purchase date. Rejected expenses are never counted. Approved and
+ * reimbursed ones make up the totals; ones awaiting review are added to them when
+ * `includePending` is set, and are always shown on their own.
+ */
+export async function expensesByMonth(count: number, includePending: boolean) {
+  const months = lastMonths(count);
+  const first = months[0].key;
+  const rows = await prisma.expense.findMany({
+    where: {
+      status: { not: ExpenseStatus.REJECTED },
+      // purchaseDate is a plain date; fetch a day either side and match by month below
+      purchaseDate: {
+        gte: new Date(months[0].start.getTime() - 2 * 864e5),
+        lt: new Date(months[months.length - 1].end.getTime() + 2 * 864e5),
+      },
+    },
+    select: { purchaseDate: true, status: true, amountCents: true, taxCents: true },
+  });
+
+  const byKey = new Map<string, ExpenseMonth>(
+    months.map((m) => [
+      m.key,
+      { label: m.label, count: 0, totalCents: 0, taxCents: 0, pendingCount: 0, pendingCents: 0 },
+    ]),
+  );
+  for (const e of rows) {
+    const key = e.purchaseDate.toISOString().slice(0, 7); // a date, so UTC is the day entered
+    const m = byKey.get(key);
+    if (!m || key < first) continue;
+    if (e.status === ExpenseStatus.PENDING) {
+      m.pendingCount++;
+      m.pendingCents += e.amountCents;
+      if (!includePending) continue;
+    }
+    m.count++;
+    m.totalCents += e.amountCents;
+    m.taxCents += e.taxCents ?? 0;
+  }
+  const list = months.map((m) => byKey.get(m.key)!);
+  return {
+    months: list,
+    totals: list.reduce(
+      (t, m) => ({
+        count: t.count + m.count,
+        totalCents: t.totalCents + m.totalCents,
+        taxCents: t.taxCents + m.taxCents,
+        pendingCents: t.pendingCents + m.pendingCents,
+      }),
+      { count: 0, totalCents: 0, taxCents: 0, pendingCents: 0 },
+    ),
   };
 }

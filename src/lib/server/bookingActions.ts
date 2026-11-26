@@ -7,6 +7,7 @@ import {
   EventStatus,
 } from "#prisma/enums";
 import { calculateNextServiceDate } from "#lib/utils.ts";
+import { countPeople } from "#lib/householdSize.ts";
 import { datedRequestTypes } from "#lib/datedRequestTypes.ts";
 import {
   bookingInclude,
@@ -288,14 +289,14 @@ export async function updateBooking(
           datedRequest = null;
         }
 
-        // Completing a visit saves the household's size at that moment (for the people served report)
+        // Completing a visit saves the household's adults and children (from its members) at that moment (for the people served report)
         const completing =
           status === AppointmentBookingStatus.COMPLETE &&
           booking.status !== AppointmentBookingStatus.COMPLETE;
         const size = completing
           ? await tx.household.findUnique({
               where: { id: householdId },
-              select: { adultCount: true, childCount: true },
+              select: { members: { select: { birthYear: true } } },
             })
           : null;
 
@@ -305,7 +306,12 @@ export async function updateBooking(
           data: {
             status,
             ...(completing
-              ? { adultCount: size?.adultCount ?? null, childCount: size?.childCount ?? null }
+              ? size
+                ? (() => {
+                    const n = countPeople(size.members);
+                    return { adultCount: n.adults, childCount: n.children };
+                  })()
+                : {}
               : {}),
             // Only unscheduled bookings have a planned time and place
             ...(isUnscheduled && parsed.data.plannedStart !== undefined

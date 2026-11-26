@@ -1,6 +1,7 @@
 import { ID_RENEWAL_PERIOD_MONTHS, DATE_LOCALIZATION, APPOINTMENT_FREQUENCY_DAYS } from "$app/env/public";
 import type { BookingWithAppointment, HouseholdMember } from "./types/household";
 import { error, redirect } from "@sveltejs/kit";
+import { countPeople } from "./householdSize.ts";
 import { AppointmentBookingStatus } from "#prisma/enums";
 
 export function formattedDate(date: Date | undefined | null) {
@@ -31,12 +32,7 @@ export function calculateFamilySize(
 export function calculateChildCount(
   family: readonly HouseholdMember[],
 ): number {
-  const currentYear = new Date().getFullYear();
-  const now = new Date();
-  const year = now.getFullYear();
-
-  return family.filter((m) => m.birthYear != null && year - m.birthYear < 13)
-    .length;
+  return countPeople(family).children;
 }
 
 function getIdValidityMillis() {

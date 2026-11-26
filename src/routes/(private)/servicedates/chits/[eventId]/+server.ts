@@ -19,7 +19,11 @@ import type { HouseholdMember } from "#lib/types/household.ts";
 // app, so the menus don't print; the Print button (or Ctrl/Cmd+P) can also save it as a PDF.
 
 const PER_PAGE = 8;
-const MAX_REQUEST = 200;
+// Long text is shortened so a chit never runs past its box; the full text is on the household page
+const MAX_REQUEST = 120;
+const MAX_NOTES = 100;
+const MAX_PETS = 60;
+const MAX_DIET = 80;
 
 const esc = (s: string | null | undefined) =>
   (s ?? "").replace(
@@ -30,8 +34,11 @@ const esc = (s: string | null | undefined) =>
       ]!,
   );
 
-const clip = (s: string) =>
-  s.length > MAX_REQUEST ? s.slice(0, MAX_REQUEST).trimEnd() + "…" : s;
+const clip = (s: string, max: number) =>
+  s.length > max ? s.slice(0, max).trimEnd() + "…" : s;
+
+const oneLine = (s: string | null | undefined) =>
+  (s ?? "").replace(/\s+/g, " ").trim();
 
 export const GET: RequestHandler = async ({ locals, url, params }) => {
   requirePermission(locals?.user?.permissions, url, ["manage-appointments"]);
@@ -57,8 +64,14 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
             },
             take: 1,
             select: {
+              // a request made when the booking was made, even if it isn't an open special request
+              datedRequest: { select: { requestText: true } },
               household: {
                 select: {
+                  pets: true,
+                  dietaryRestrictions: true,
+                  languagesSpoken: true,
+                  notes: true,
                   members: {
                     select: {
                       firstName: true,
@@ -99,7 +112,8 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   const dateText = day.format(event.startTime);
 
   const chit = (a: (typeof event.appointments)[number]) => {
-    const when = `${esc(dateText)}<br><strong>${esc(time.format(a.startTime))} – ${esc(time.format(a.endTime))}</strong>`;
+    // appointments show their start time only
+    const when = `<strong>${esc(time.format(a.startTime))}</strong> <span class="date">${esc(dateText)}</span>`;
     const household = a.bookings[0]?.household;
     if (!household) {
       return `<div class="chit open"><div class="when">${when}</div><p class="none">No household booked</p></div>`;
@@ -115,24 +129,42 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
     const asMembers = members as unknown as HouseholdMember[];
     const size = `${members.length} (${calculateFamilySize(asMembers)})`;
     const children = calculateChildCount(asMembers);
+
+    // open special requests, plus the request made with this booking if it isn't among them
     const requests = household.datedRequests
-      .map((r) => r.requestText?.trim())
-      .filter((t): t is string => !!t);
+      .map((r) => oneLine(r.requestText))
+      .filter(Boolean);
+    const bookingRequest = oneLine(a.bookings[0]?.datedRequest?.requestText);
+    if (bookingRequest && !requests.includes(bookingRequest))
+      requests.push(bookingRequest);
+
+    const languages = household.languagesSpoken.filter(Boolean).join(", ");
+    const diet = household.dietaryRestrictions.filter(Boolean).join(", ");
+    const pets = oneLine(household.pets);
+    const notes = oneLine(household.notes);
+    const idRow = needsId.length
+      ? `<div class="row id"><span class="label">ID renewal due:</span> ${esc(clip(needsId.join(", "), 90))}</div>`
+      : "";
+    const row = (label: string, value: string) =>
+      value
+        ? `<div class="row"><span class="label">${esc(label)}:</span> ${value}</div>`
+        : "";
 
     return `<div class="chit">
   <div class="when">${when}</div>
   <div class="who">${esc(primary) || "Unnamed household"}</div>
-  <div class="facts">${SHOW_HOUSEHOLD_SIZE ? `<span>Family size: <strong>${esc(size)}</strong></span>` : ""}<span>Children: <strong>${children}</strong></span></div>
+  <div class="facts">${SHOW_HOUSEHOLD_SIZE ? `<span>Family size: <strong>${esc(size)}</strong></span>` : ""}<span>Children: <strong>${children}</strong></span>${
+    languages ? `<span>Languages spoken: <strong>${esc(languages)}</strong></span>` : ""
+  }</div>
+  ${idRow}
+  ${row("Dietary", esc(clip(diet, MAX_DIET)))}
+  ${row("Pets", esc(clip(pets, MAX_PETS)))}
   <div class="row"><span class="label">${esc(datedRequestTypes[0].name)}:</span> ${
     requests.length
-      ? requests.map((t) => esc(clip(t))).join("; ")
+      ? requests.map((t) => esc(clip(t, MAX_REQUEST))).join("; ")
       : '<span class="muted">none</span>'
   }</div>
-  ${
-    needsId.length
-      ? `<div class="row id"><span class="label">ID renewal due:</span> ${esc(needsId.join(", "))}</div>`
-      : ""
-  }
+  ${row("Notes", esc(clip(notes, MAX_NOTES)))}
 </div>`;
   };
 
@@ -160,17 +192,17 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
   .bar button { font: inherit; padding: 8px 16px; border: 0; border-radius: 6px; background: #1f2937; color: #fff; cursor: pointer; }
   .empty { padding: 24px 16px; }
   .sheet { width: 7.7in; height: 10.2in; margin: 16px auto; background: #fff;
-           display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 1fr); gap: 0.12in;
+           display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 0.12in;
            break-after: page; box-shadow: 0 1px 4px rgba(0,0,0,.15); padding: 0; }
-  .chit { border: 1.5px dashed #6b7280; border-radius: 6px; padding: 0.1in 0.14in; font-size: 11.5px; line-height: 1.35; overflow: hidden; display: flex; flex-direction: column; gap: 4px; }
-  .when { font-size: 12px; border-bottom: 1px solid #d1d5db; padding-bottom: 3px; }
-  .when strong { font-size: 15px; }
-  .who { font-size: 16px; font-weight: 700; }
-  .facts { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chit { border: 1.5px dashed #6b7280; border-radius: 6px; padding: 0.08in 0.12in; font-size: 10.5px; line-height: 1.28; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
+  .when { font-size: 11px; border-bottom: 1px solid #d1d5db; padding-bottom: 3px; }
+  .when strong { font-size: 16px; margin-right: 6px; }
+  .who { font-size: 15px; font-weight: 700; }
+  .facts { display: flex; gap: 4px 12px; flex-wrap: wrap; }
   .row { overflow-wrap: anywhere; }
   .label { font-weight: 600; }
   .muted { color: #6b7280; }
-  .row.id { margin-top: auto; padding: 3px 6px; border: 1.5px solid #111; border-radius: 4px; font-weight: 600; }
+  .row.id { padding: 2px 6px; border: 1.5px solid #111; border-radius: 4px; font-weight: 600; }
   .open { color: #6b7280; }
   .none { margin: auto 0; text-align: center; font-size: 13px; }
   @media print {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Label, Select, Toggle } from 'flowbite-svelte';
+	import { CHILD_AGE_LIMIT } from '$app/env/public';
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import LineChart from '#lib/components/Reports/LineChart.svelte';
 
@@ -75,12 +76,13 @@
 			{/if}
 		</li>
 		<li>
-			People served uses the adults and children saved when each visit was marked complete. Older
-			visits use the household's current counts.
+			Adults and children come from the household's members when each visit was marked complete
+			(under {CHILD_AGE_LIMIT} is a child, everyone else an adult). Older visits use the household's current
+			members.
 			{#if data.trend.servedWithoutCounts}
 				{data.trend.servedWithoutCounts}
 				{data.trend.servedWithoutCounts === 1 ? 'household served has' : 'households served have'} no
-				counts entered and add nothing to the people numbers.
+				members entered and add nothing to the people numbers.
 			{/if}
 		</li>
 	</ul>

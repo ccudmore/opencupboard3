@@ -38,8 +38,7 @@ export async function loadHeatPoints(opts: HeatmapOptions) {
     select: {
       latitude: true,
       longitude: true,
-      adultCount: true,
-      childCount: true,
+      _count: { select: { members: true } },
     },
   });
 
@@ -49,7 +48,7 @@ export async function loadHeatPoints(opts: HeatmapOptions) {
 
   for (const h of households) {
     const weight = opts.weightByPeople
-      ? Math.max(1, (h.adultCount ?? 0) + (h.childCount ?? 0))
+      ? Math.max(1, h._count.members)
       : 1;
     const row = Math.floor(h.latitude! / latStep);
     const lat = (row + 0.5) * latStep;

@@ -497,7 +497,7 @@
 						/>
 						<span class="flex-1">
 							<span class="block font-medium">
-								{fmtDate(s.startTime)}, {fmtTime(s.startTime)} &ndash; {fmtTime(s.endTime)}
+								{fmtDate(s.startTime)}, {fmtTime(s.startTime)}
 							</span>
 							<span class="block hint">
 								{[s.title, s.location.name].filter(Boolean).join(' · ')}

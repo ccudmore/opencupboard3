@@ -2,7 +2,9 @@
 	import PageBreadcrumb from '#lib/components/PageBreadcrumb.svelte';
 	import { Card } from 'flowbite-svelte';
 
-	const reports = [
+	let { data } = $props();
+
+	const reports = $derived([
 		{
 			href: '/reports/current-counts',
 			title: 'Current counts',
@@ -22,8 +24,18 @@
 			href: '/reports/household-heatmap',
 			title: 'Household heat map',
 			text: 'Where active households are concentrated, shown on a map. Locations are approximate (about 500 m).'
-		}
-	];
+		},
+		// listed only for people who may open it
+		...(data.canSeeExpenses
+			? [
+					{
+						href: '/reports/expenses-by-month',
+						title: 'Expenses by month',
+						text: 'Spending by month, as a graph and a table.'
+					}
+				]
+			: [])
+	]);
 </script>
 
 <div class="p-4">
