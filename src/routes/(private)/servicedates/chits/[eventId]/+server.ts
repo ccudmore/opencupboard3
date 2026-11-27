@@ -64,8 +64,11 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
             },
             take: 1,
             select: {
-              // a request made when the booking was made, even if it isn't an open special request
-              datedRequest: { select: { requestText: true } },
+              id: true,
+              // the request made with this booking
+              datedRequest: {
+                select: { id: true, requestText: true, status: true },
+              },
               household: {
                 select: {
                   pets: true,
@@ -88,7 +91,12 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
                       status: DatedRequestStatus.ACTIVE,
                     },
                     orderBy: { createdAt: "asc" },
-                    select: { requestText: true },
+                    select: {
+                      id: true,
+                      requestText: true,
+                      // the booking this request was made with (none: it applies to every booking)
+                      booking: { select: { id: true } },
+                    },
                   },
                 },
               },
@@ -130,13 +138,20 @@ export const GET: RequestHandler = async ({ locals, url, params }) => {
     const size = `${members.length} (${calculateFamilySize(asMembers)})`;
     const children = calculateChildCount(asMembers);
 
-    // open special requests, plus the request made with this booking if it isn't among them
+    // Active requests that belong to this booking or to no booking. A request made with another
+    // booking, or a closed one, is left off.
+    const booking = a.bookings[0]; // there is one: the household came from it
     const requests = household.datedRequests
+      .filter((r) => !r.booking || r.booking.id === booking?.id)
       .map((r) => oneLine(r.requestText))
       .filter(Boolean);
-    const bookingRequest = oneLine(a.bookings[0]?.datedRequest?.requestText);
-    if (bookingRequest && !requests.includes(bookingRequest))
-      requests.push(bookingRequest);
+    const own = booking?.datedRequest;
+    const ownText = own?.status === DatedRequestStatus.ACTIVE ? oneLine(own.requestText) : "";
+    if (
+      ownText &&
+      !household.datedRequests.some((r) => r.id === own?.id) // not already listed (e.g. another type)
+    )
+      requests.push(ownText);
 
     const languages = household.languagesSpoken.filter(Boolean).join(", ");
     const diet = household.dietaryRestrictions.filter(Boolean).join(", ");

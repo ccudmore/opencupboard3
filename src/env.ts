@@ -14,6 +14,10 @@ export const variables = defineEnvVars({
 	DATED_REQUEST_TYPES: { public: true,
 		schema: (input: string | undefined) => input?.trim() || 'Special Requests'
 	},
+	CONTACT_CATEGORIES: { public: true,
+		schema: (input: string | undefined) =>
+			input?.trim() || 'Supplier, Funder, Partner Agency, Government, Media, Other'
+	},
 	DEFAULT_COUNTRY: { public: true,
 		schema: (input: string | undefined) => input?.trim() || 'Canada'
 	},

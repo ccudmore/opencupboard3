@@ -338,6 +338,49 @@ async function main() {
     }
   }
   console.log("Created sample sites, events and appointments");
+
+  await prisma.contact.deleteMany({});
+  await prisma.contact.createMany({
+    data: [
+      {
+        name: "Maria Santos",
+        organization: "Valley Wholesale Foods",
+        jobTitle: "Account Manager",
+        category: "Supplier",
+        phone: "(613) 555-0142",
+        email: "maria.santos@example.com",
+        website: "https://www.example.com",
+        city: "Ottawa",
+        state: "Ontario",
+        country: "Canada",
+        notes: "Delivers on Tuesdays. Ask about the surplus produce list.",
+      },
+      {
+        name: "Community Foundation of Ottawa",
+        category: "Funder",
+        phone: "(613) 555-0188",
+        email: "grants@example.org",
+        website: "https://www.example.org",
+        notes: "Annual grant report due in March.",
+      },
+      {
+        name: "James Whitfield",
+        organization: "City of Ottawa",
+        jobTitle: "Social Services Liaison",
+        category: "Government",
+        phone: "(613) 555-0107",
+        email: "james.whitfield@example.ca",
+      },
+      {
+        name: "Eastside Family Shelter",
+        category: "Partner Agency",
+        status: "INACTIVE",
+        phone: "(613) 555-0166",
+        notes: "Referral partnership paused.",
+      },
+    ],
+  });
+  console.log("Created sample contacts");
 }
 
 main()

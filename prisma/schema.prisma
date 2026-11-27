@@ -359,6 +359,9 @@ model Household {
   id                    String                @id @default(cuid())
   status                HouseholdStatus       @default(ACTIVE)
   uniqueId              String?               @unique
+  // Set on a public sign-up whose email or phone number is already on file: the household it may repeat
+  possibleDuplicateOfId String?
+  duplicateMatch        String? // what matched: "email", "phone" or "email and phone"
   adultCount            Int?
   childCount            Int?
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")
@@ -516,6 +519,8 @@ model AppointmentBookings {
   confirmations Json?
   reminders     Json?
   cancellations Json?
+  // Why a pending request was declined. Shown to staff only, never on the public booking page.
+  declineReason String?
   // For "unscheduled" bookings (no appointment): the day, time and place the household is expected
   plannedStart  DateTime?
   plannedSite   Site?       @relation("BookingPlannedSite", fields: [plannedSiteId], references: [id], onDelete: SetNull)
@@ -648,4 +653,37 @@ model ExpenseReceipt {
 
   @@index([expenseId])
   @@map("expense_receipt")
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// An external contact: a supplier, funder, partner agency, government office, donor, and so on.
+/// The category is free text chosen from the CONTACT_CATEGORIES environment variable.
+model Contact {
+  id           String        @id @default(cuid())
+  name         String
+  organization String?
+  jobTitle     String?
+  category     String
+  status       ContactStatus @default(ACTIVE)
+  phone        String?
+  altPhone     String?
+  email        String?
+  website      String?
+  street       String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  createdBy    String?
+  updatedAt    DateTime      @updatedAt
+
+  @@index([name])
+  @@index([category])
+  @@map("contact")
 }

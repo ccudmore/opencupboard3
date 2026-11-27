@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Badge, Button } from 'flowbite-svelte';
+	import { Alert, Badge, Button, Label, Modal, Textarea } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { refreshAll } from '$app/navigation';
 	import { callAction } from '#lib/client/callAction.ts';
@@ -35,11 +35,22 @@
 		}
 	}
 
-	async function decline(id: string) {
-		if (await run(`d${id}`, 'declineBooking', 'bookingId', id)) {
-			toast('Request declined');
-			await prompts?.start(id, 'cancellation', true);
-		}
+	// Declining asks for a reason first (optional). It is kept for staff and never shown on the public booking page.
+	let declineTarget = $state<{ id: string; name: string } | null>(null);
+	let declineReason = $state('');
+
+	async function decline() {
+		const target = declineTarget;
+		if (!target) return;
+		busy = `d${target.id}`;
+		const r = await callAction('declineBooking', { bookingId: target.id, reason: declineReason.trim() });
+		busy = '';
+		declineTarget = null;
+		declineReason = '';
+		await refreshAll();
+		if (!r.ok) return void toast(r.message);
+		toast('Request declined');
+		await prompts?.start(target.id, 'cancellation', true);
 	}
 
 	async function approve(id: string) {
@@ -72,7 +83,7 @@
 					</div>
 					<div class="flex gap-2">
 						<Button size="sm" color="blue" disabled={!!busy} onclick={() => confirm(b.id)}>{busy === `c${b.id}` ? 'Confirming…' : 'Confirm'}</Button>
-						<Button size="sm" outline color="dark" disabled={!!busy} onclick={() => decline(b.id)}>Decline</Button>
+						<Button size="sm" outline color="dark" disabled={!!busy} onclick={() => { declineReason = ''; declineTarget = { id: b.id, name: b.name }; }}>Decline</Button>
 					</div>
 				</div>
 			</div>
@@ -85,7 +96,24 @@
 			<p class="muted">No new households are waiting.</p>
 		{/if}
 		{#each data.households as h (h.id)}
-			<div class="rounded-lg bg-white p-4 shadow-md dark:bg-gray-800">
+			<div class="rounded-lg bg-white p-4 shadow-md dark:bg-gray-800 {h.duplicate ? 'ring-2 ring-amber-400' : ''}">
+				{#if h.duplicate}
+					<Alert color="yellow" class="mb-3">
+						<div class="font-semibold">This may be a duplicate</div>
+						<div class="text-sm">Same {h.duplicate.matchedOn || 'details'} as a household already on file. Compare before approving; if it is the same family, reject this one.</div>
+						<div class="mt-2 space-y-0.5 text-sm">
+							<div>
+								<a class="font-semibold underline" href={`/households/${h.duplicate.id}`}>{h.duplicate.name}</a>
+								{#if h.duplicate.uniqueId}<span> · ID {h.duplicate.uniqueId}</span>{/if}
+								<Badge color={h.duplicate.status === 'ACTIVE' ? 'green' : 'gray'} class="ml-1">{h.duplicate.status.toLowerCase()}</Badge>
+							</div>
+							{#if h.duplicate.address}<div>{h.duplicate.address}</div>{/if}
+							<div>{[h.duplicate.email, h.duplicate.phone].filter(Boolean).join(' · ') || 'No contact details'}</div>
+							<div>Members: {h.duplicate.members.join(', ') || 'none'}</div>
+							<div>On file since {whenFmt.format(new Date(h.duplicate.since))}</div>
+						</div>
+					</Alert>
+				{/if}
 				<div class="flex flex-wrap items-start justify-between gap-3">
 					<div class="min-w-0 space-y-0.5">
 						<a class="font-semibold text-blue-700 underline dark:text-blue-400" href={`/households/${h.id}`}>{h.name}</a>
@@ -106,5 +134,17 @@
 		{/each}
 	</section>
 </div>
+
+<Modal title="Decline this request?" open={declineTarget !== null} onclose={() => (declineTarget = null)} size="sm">
+	<p>Decline the request from <strong>{declineTarget?.name}</strong>? The appointment opens up again.</p>
+	<div class="mt-3">
+		<Label for="decline-reason">Reason (optional)</Label>
+		<Textarea id="decline-reason" rows={3} maxlength={500} placeholder="" bind:value={declineReason} />
+	</div>
+	<div class="mt-4 flex gap-2">
+		<Button color="red" disabled={!!busy} onclick={decline}>{busy.startsWith('d') ? 'Declining…' : 'Decline request'}</Button>
+		<Button outline color="dark" onclick={() => (declineTarget = null)}>Cancel</Button>
+	</div>
+</Modal>
 
 <EmailPrompts bind:this={prompts} emailEnabled={data.emailEnabled} previewAction="previewEmail" sendAction="sendEmail" idField="bookingId" audience="household" />

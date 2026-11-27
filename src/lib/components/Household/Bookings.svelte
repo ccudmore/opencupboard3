@@ -275,6 +275,7 @@
 	let editing = $state<BookingRow | null>(null);
 	let editStatus = $state<string>(AppointmentBookingStatus.ACTIVE);
 	let editRequest = $state('');
+	let editReason = $state(''); // why it was cancelled (optional, staff only)
 	let editDate = $state<Date | undefined>(undefined); // unscheduled bookings only
 	let editTime = $state('');
 	let editSiteId = $state('');
@@ -286,6 +287,7 @@
 		editing = b;
 		editStatus = b.status;
 		editRequest = b.datedRequest?.requestText ?? '';
+		editReason = b.declineReason ?? '';
 		editDate = b.plannedStart ? new Date(b.plannedStart) : undefined;
 		editTime = b.plannedStart ? toTimeInput(b.plannedStart) : '';
 		editSiteId = b.plannedSiteId ?? '';
@@ -308,6 +310,7 @@
 			bookingId: editing.id,
 			status: editStatus,
 			specialRequest: editRequest.trim(),
+			declineReason: editReason.trim(),
 			// Only unscheduled bookings have a planned time and place
 			...(editing.appointment
 				? {}
@@ -622,6 +625,14 @@
 				<Label for="edit-status">Status</Label>
 				<Select id="edit-status" items={appointmentBookingStatusOptions} bind:value={editStatus} />
 			</div>
+
+			{#if editStatus === AppointmentBookingStatus.CANCELLED}
+				<div class="min-w-0">
+					<Label for="edit-reason">Reason for cancelling (optional)</Label>
+					<Textarea id="edit-reason" rows={2} maxlength={500} bind:value={editReason} />
+					<Helper class="field-help"></Helper>
+				</div>
+			{/if}
 
 			<!-- Unscheduled bookings can note a planned date, time and location -->
 			{#if !editing.appointment}

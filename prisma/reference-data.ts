@@ -61,6 +61,11 @@ export const permissions: PermissionSeed[] = [
     name: "View reports",
     description: "View reports, such as the household heat map",
   },
+  {
+    id: "manage-contacts",
+    name: "Manage contacts",
+    description: "Manage external contacts: suppliers, funders, partner agencies and so on",
+  },
   { id: "access-volunteer", name: "Volunteer", description: "Volunteer" },
 ];
 
@@ -77,6 +82,7 @@ export const roles: RoleSeed[] = [
   { name: "Volunteer Manager", permissionIds: ["login", "manage-volunteers"] },
   { name: "Volunteer", permissionIds: ["login", "access-volunteer"] },
   { name: "Donor Manager", permissionIds: ["login", "manage-donors"] },
+  { name: "Contact Manager", permissionIds: ["login", "manage-contacts"] },
   { name: "Inventory Manager", permissionIds: ["login", "manage-inventory"] },
   { name: "Expense Submitter", permissionIds: ["login", "submit-expenses"] },
   {

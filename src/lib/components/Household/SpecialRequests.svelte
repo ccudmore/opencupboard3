@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	
-	import { Select, } from "flowbite-svelte";
+	import { Select, Badge } from "flowbite-svelte";
 	import { Modal, ButtonGroup, Textarea, Checkbox, Button, Label, Drawer, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, } from "flowbite-svelte";
 	import {formattedDate} from "#lib/utils.ts"
 	import { ExclamationCircleOutline } from "flowbite-svelte-icons";
@@ -50,7 +50,15 @@
 
 */
 
-	let { form, errors, constraints, type} = $props()
+	let { form, errors, constraints, type, bookings = [] } = $props()
+
+	// The booking a request was made with, if any (a request made while booking is linked to that booking)
+	const bookingFor = (item: { id?: string }) => (item.id ? bookings.find((b: { datedRequestId?: string | null }) => b.datedRequestId === item.id) : undefined);
+	function bookingText(b: { appointment?: { startTime: Date } | null; plannedStart?: Date | null; status: string }) {
+		const d = b.appointment?.startTime ?? b.plannedStart;
+		const when = d ? new Date(d).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'unscheduled';
+		return `${when} (${b.status.toLowerCase().replace('_', ' ')})`;
+	}
 </script>
 <!--Label for="specialRequests" class="mb-2 text-lg font-semibold">{title}</Label-->
 
@@ -79,6 +87,13 @@
     	    		<TableBodyCell>
 						{$form.datedRequests[i].requestText.substring(0,20)}
 					</TableBodyCell>
+					<TableBodyCell>
+						{#if bookingFor(item)}
+							<Badge color="blue">{bookingText(bookingFor(item))}</Badge>
+						{:else}
+							<span class="text-gray-500 dark:text-gray-400">—</span>
+						{/if}
+					</TableBodyCell>
         			<TableBodyCell>
 						{datedRequestLabels[$form.datedRequests[i].status as keyof typeof datedRequestLabels]}
 					</TableBodyCell>
@@ -105,6 +120,11 @@ class="bg-gray-100 border-gray-300 text-grey-600
    				<Label for="status">Status</Label>
 				<Select class="mb-2 w-full sm:w-1/4" items={datedRequestStatusOptions} bind:value={$form.datedRequests[openSpecialRequestRow].status} />
 			</div>
+			{#if bookingFor($form.datedRequests[openSpecialRequestRow])}
+				<div class="mb-2">Made with the booking for <strong>{bookingText(bookingFor($form.datedRequests[openSpecialRequestRow]))}</strong>. It only appears on that booking's chit.</div>
+			{:else}
+				<div class="mb-2 text-gray-600 dark:text-gray-300">Not tied to a booking: it appears on the chit of every booking while it is active.</div>
+			{/if}
 			<div>
 				Added {formattedDate($form.datedRequests[openSpecialRequestRow].createdAt)} by {page.data.userNames?.[$form.datedRequests[openSpecialRequestRow].createdBy ?? ''] ?? $form.datedRequests[openSpecialRequestRow].createdBy}
 			</div>

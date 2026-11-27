@@ -71,7 +71,7 @@
         <Icon size="md" />{item.name}
       </div>
     {/snippet}
-		<HouseholdSpecialRequests {form} {errors} {constraints} type={item.name}/>
+		<HouseholdSpecialRequests {form} {errors} {constraints} {bookings} type={item.name}/>
   </TabItem>
   {/each}
 

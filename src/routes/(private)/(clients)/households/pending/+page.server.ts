@@ -41,6 +41,22 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     }),
   ]);
 
+  // details of the household each flagged sign-up may repeat
+  const dupIds = [
+    ...new Set(
+      households
+        .map((h) => h.possibleDuplicateOfId)
+        .filter((id): id is string => !!id),
+    ),
+  ];
+  const dupRows = dupIds.length
+    ? await prisma.household.findMany({
+        where: { id: { in: dupIds } },
+        include: { members: { orderBy: { createdAt: "asc" as const } } },
+      })
+    : [];
+  const dupById = new Map(dupRows.map((d) => [d.id, d]));
+
   const person = (m?: {
     firstName: string;
     lastName: string;
@@ -79,6 +95,31 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       ]
         .join("")
         .trim(),
+      duplicate: (() => {
+        const d = h.possibleDuplicateOfId
+          ? dupById.get(h.possibleDuplicateOfId)
+          : undefined;
+        if (!d) return null;
+        const lead =
+          d.members.find((m) => m.relationship === ClientRelationship.PRIMARY) ??
+          d.members[0];
+        return {
+          id: d.id,
+          uniqueId: d.uniqueId ?? "",
+          status: d.status,
+          matchedOn: h.duplicateMatch ?? "",
+          ...person(lead),
+          address: [
+            d.street ?? "",
+            d.city ? `, ${d.city}` : "",
+            d.postalCode ? ` ${d.postalCode}` : "",
+          ]
+            .join("")
+            .trim(),
+          members: d.members.map((m) => `${m.firstName} ${m.lastName}`.trim()),
+          since: d.createdAt,
+        };
+      })(),
       adults: h.adultCount,
       children: h.childCount,
       dietary: h.dietaryRestrictions,
@@ -137,10 +178,15 @@ export const actions: Actions = {
   /** Pending -> Cancelled (the appointment opens up again). */
   declineBooking: async ({ request, locals, url }) => {
     requirePermission(locals?.user?.permissions, url, MANAGE);
-    const bookingId = await idOf(request, "bookingId");
+    const data = await request.formData();
+    const bookingId = String(data.get("bookingId") ?? "");
+    const reason = String(data.get("reason") ?? "").trim().slice(0, 500);
     const { count } = await prisma.appointmentBookings.updateMany({
       where: { id: bookingId, status: AppointmentBookingStatus.PENDING },
-      data: { status: AppointmentBookingStatus.CANCELLED },
+      data: {
+        status: AppointmentBookingStatus.CANCELLED,
+        declineReason: reason || null,
+      },
     });
     return count === 0
       ? fail(409, { message: "That request was already handled." })

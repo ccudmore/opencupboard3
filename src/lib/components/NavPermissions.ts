@@ -4,11 +4,12 @@ import {
   CalendarEditOutline,
   ProfileCardOutline,
   AwardOutline,
+  AddressBookOutline,
   CartOutline,
-  ChartMixedDollarOutline,
-  StoreOutline,
-  MessagesOutline,
-  UserOutline,
+  ChartOutline,
+  SchoolOutline,
+  UsersOutline,
+  DollarOutline,
 } from "flowbite-svelte-icons";
 import { hasPermission } from "#lib/utils.ts";
 
@@ -38,14 +39,21 @@ const availableApps = {
     name: "Volunteers",
     label: "Volunteers",
     href: "/volunteers",
-    icon: UserOutline,
+    icon: UsersOutline,
     subContent: "",
   },
   reports: {
     name: "Reports",
     label: "Reports",
     href: "/reports",
-    icon: ChartPieOutline,
+    icon: ChartOutline,
+    subContent: "",
+  },
+  contacts: {
+    name: "Contacts",
+    label: "Contacts",
+    href: "/contacts",
+    icon: AddressBookOutline,
     subContent: "",
   },
   admin: {
@@ -78,25 +86,18 @@ const availableApps = {
       },
     ],
   },
-  contacts: {
-    name: "Contacts",
-    label: "Contacts",
-    href: "/contacts",
-    icon: MessagesOutline,
-    subContent: "",
-  },
   expenses: {
     name: "Expenses",
     label: "Expenses",
     href: "/expenses",
-    icon: ChartMixedDollarOutline,
+    icon: DollarOutline,
     subContent: "",
   },
   inventory: {
     name: "Inventory",
     label: "Inventory",
     href: "/inventory",
-    icon: StoreOutline,
+    icon: SchoolOutline,
     subContent: "",
   },
   volunteer: {
@@ -124,6 +125,9 @@ export function getPermittedApps(permissions: string[] | null | undefined) {
   if (hasPermission(permissions, ["view-reports"])) {
     apps.push(availableApps.reports);
   }
+  if (hasPermission(permissions, ["manage-contacts"])) {
+    apps.push(availableApps.contacts);
+  }
   if (hasPermission(permissions, ["manage-configuration"])) {
     apps.push(availableApps.admin);
   }
@@ -135,9 +139,6 @@ export function getPermittedApps(permissions: string[] | null | undefined) {
   }
   if (hasPermission(permissions, ["submit-expenses", "manage-expenses"])) {
     apps.push(availableApps.expenses);
-  }
-  if (hasPermission(permissions, ["manage-donors"])) {
-    apps.push(availableApps.contacts);
   }
   if (hasPermission(permissions, ["access-volunteer"])) {
     apps.push(availableApps.volunteer);

@@ -224,6 +224,8 @@ const updateSchema = z.object({
   bookingId: z.string().min(1),
   status: z.enum(AppointmentBookingStatus),
   specialRequest: z.string().trim().max(MAX_REQUEST_LENGTH).optional(),
+  // Why it was cancelled (staff only). Absent = leave as it is.
+  declineReason: z.string().trim().max(500).optional(),
   // Unscheduled bookings only. Present but empty = clear it; absent = leave it alone.
   plannedStart: z.string().trim().optional(),
   plannedSiteId: z.string().trim().optional(),
@@ -305,6 +307,12 @@ export async function updateBooking(
           where: { id: booking.id },
           data: {
             status,
+            // a reason for declining only belongs to a cancelled booking
+            ...(status !== AppointmentBookingStatus.CANCELLED
+              ? { declineReason: null }
+              : parsed.data.declineReason !== undefined
+                ? { declineReason: parsed.data.declineReason || null }
+                : {}),
             ...(completing
               ? size
                 ? (() => {

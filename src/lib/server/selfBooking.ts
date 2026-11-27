@@ -1,6 +1,7 @@
 import { DEFAULT_COUNTRY, DEFAULT_STATE } from "$app/env/public";
 import { randomInt } from "node:crypto";
 import { z } from "zod";
+import { houseNumber, sameAddress } from "#lib/addressMatch.ts";
 import prisma from "#lib/prisma.ts";
 import {
   AppointmentBookingStatus,
@@ -331,7 +332,7 @@ const newId = () =>
     "",
   );
 
-/** Creates a Pending household and tells the household managers. A repeat of someone already on file creates nothing, but looks the same. */
+/** Creates a Pending household and tells the household managers. A repeat of someone already on file is still created, but flagged as a possible duplicate for the reviewer. */
 export async function register(ip: string, data: Record<string, unknown>) {
   // A hidden field that only a bot fills in: act as if it worked
   if (typeof data.website === "string" && data.website.trim() !== "")
@@ -342,7 +343,9 @@ export async function register(ip: string, data: Record<string, unknown>) {
   if (!parsed.success) return fail(400, parsed.error.issues[0].message);
   const d = parsed.data;
 
-  const duplicate = await prisma.client.findFirst({
+  // Someone already on file with the same email, phone number or address? The sign-up is still
+  // kept (as a pending household) but is flagged, so the reviewer sees the possible duplicate.
+  const byPerson = await prisma.client.findFirst({
     where: {
       OR: [
         ...(d.email
@@ -351,17 +354,47 @@ export async function register(ip: string, data: Record<string, unknown>) {
         ...(d.phone ? [{ phone: d.phone }] : []),
       ],
     },
-    select: { id: true },
+    orderBy: { createdAt: "asc" },
+    select: { householdMembershipId: true },
   });
-  if (duplicate) {
-    await notifyPermission(MANAGERS, {
-      subject: "Possible repeat sign-up",
-      body: `${d.firstName} ${d.lastName} signed up online with an email or phone number that is already on file. Nothing was created.`,
-      link: "/households",
-      createdBy: "public-booking",
-    });
-    return { ok: true as const };
+  const number = houseNumber(d.street);
+  const nearby = number
+    ? await prisma.household.findMany({
+        where: { street: { startsWith: number, mode: "insensitive" } },
+        orderBy: { createdAt: "asc" },
+        take: 200,
+        select: {
+          id: true,
+          street: true,
+          city: true,
+          postalCode: true,
+          members: { select: { email: true, phone: true } },
+        },
+      })
+    : [];
+  const sameStreet = nearby.filter((h) => sameAddress(h, d));
+
+  // One household to compare against: the one matched by a person if any, otherwise by address
+  const duplicateOf = byPerson?.householdMembershipId ?? sameStreet[0]?.id ?? null;
+  const reasons: string[] = [];
+  if (duplicateOf) {
+    const other = nearby.find((h) => h.id === duplicateOf);
+    const members =
+      other?.members ??
+      (await prisma.client.findMany({
+        where: { householdMembershipId: duplicateOf },
+        select: { email: true, phone: true },
+      }));
+    if (d.email && members.some((m) => m.email?.toLowerCase() === d.email.toLowerCase()))
+      reasons.push("email");
+    if (d.phone && members.some((m) => m.phone === d.phone)) reasons.push("phone");
+    if (sameStreet.some((h) => h.id === duplicateOf)) reasons.push("address");
   }
+  const duplicateMatch = reasons.length
+    ? reasons.length === 1
+      ? reasons[0]
+      : `${reasons.slice(0, -1).join(", ")} and ${reasons.at(-1)}`
+    : null;
 
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -372,6 +405,8 @@ export async function register(ip: string, data: Record<string, unknown>) {
             create: { status: HouseholdStatus.PENDING, changedBy: "public-signup" },
           },
           uniqueId: newId(),
+          possibleDuplicateOfId: duplicateOf,
+          duplicateMatch,
           createdBy: "public-signup",
           street: d.street,
           city: d.city,
@@ -395,8 +430,12 @@ export async function register(ip: string, data: Record<string, unknown>) {
         },
       });
       await notifyPermission(MANAGERS, {
-        subject: "New household waiting for approval",
-        body: `${d.firstName} ${d.lastName} signed up on the booking page.`,
+        subject: duplicateOf
+          ? "New household waiting for approval (possible duplicate)"
+          : "New household waiting for approval",
+        body: duplicateOf
+          ? `${d.firstName} ${d.lastName} signed up on the booking page and may be a repeat of a household already on file (same ${duplicateMatch}). Check before approving.`
+          : `${d.firstName} ${d.lastName} signed up on the booking page.`,
         link: "/households/pending",
         createdBy: "public-signup",
       });

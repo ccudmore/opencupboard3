@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Service, Site, Appointment } from './types';
-	import { Alert, Badge, Button, Helper, Input, Label, Modal } from 'flowbite-svelte';
+	import { Alert, Badge, Button, Helper, Input, Label, Modal, Textarea } from 'flowbite-svelte';
 	import { callAction } from '#lib/client/callAction.ts';
 	import { toast } from 'svelte-sonner';
 	import { refreshAll } from '$app/navigation';
@@ -69,6 +69,7 @@
 	let clientResults = $state<{ householdId: string; name: string; detail: string }[]>([]);
 	let clientSearched = $state(false);
 	let clientBusy = $state(false);
+	let specialRequest = $state(''); // optional, saved with the booking
 	let taken = $state<{ message: string; householdId: string; name: string; suggestions: { id: string; startTime: Date; endTime: Date }[] } | null>(null);
 
 	function toggleAppointment(a: Appointment) {
@@ -76,6 +77,7 @@
 		clientQuery = '';
 		clientResults = [];
 		clientSearched = false;
+		specialRequest = '';
 		taken = null;
 	}
 
@@ -88,7 +90,7 @@
 	async function book(appointmentId: string, householdId: string, name: string) {
 		runner.busy = `book:${householdId}`;
 		taken = null;
-		const r = await callAction('book', { appointmentId, householdId });
+		const r = await callAction('book', { appointmentId, householdId, specialRequest });
 		runner.busy = '';
 		if (!r.ok) {
 			if (r.code === 'taken') {
@@ -103,6 +105,7 @@
 		openAppointment = '';
 		clientQuery = '';
 		clientResults = [];
+		specialRequest = '';
 		await refreshAll();
 		// The usual prompts: send a confirmation email? customize it?
 		await bookingPrompts?.start(r.data.bookingId, 'confirmation', true);
@@ -126,12 +129,14 @@
 	}
 
 	let cancelBookingTarget = $state<Appointment | null>(null);
+	let cancelReason = $state(''); // optional; kept for staff only
 	async function cancelBooking() {
 		const booking = cancelBookingTarget?.booking;
 		if (!booking) return;
-		const ok = await run('cancel-booking', 'cancelBooking', { bookingId: booking.id }, 'Booking cancelled.');
+		const ok = await run('cancel-booking', 'cancelBooking', { bookingId: booking.id, reason: cancelReason.trim() }, 'Booking cancelled.');
 		if (ok) {
 			cancelBookingTarget = null;
+			cancelReason = '';
 			await bookingPrompts?.start(booking.id, 'cancellation', true);
 		}
 	}
@@ -236,7 +241,7 @@
 								{/each}
 							</div>
 							<div class="mt-3 flex flex-wrap gap-2">
-								{#if !a.past}<Button size="xs" outline color="red" onclick={() => (cancelBookingTarget = a)}>Cancel booking</Button>{/if}
+								{#if !a.past}<Button size="xs" outline color="red" onclick={() => { cancelReason = ''; cancelBookingTarget = a; }}>Cancel booking</Button>{/if}
 							</div>
 						{:else if a.past || cancelled}
 							<p class="hint">{cancelled ? 'This service date is cancelled.' : 'This appointment has passed.'}</p>
@@ -244,6 +249,8 @@
 							<Label for={`client-${a.id}`}>Find a client</Label>
 							<Input id={`client-${a.id}`} placeholder="Name, phone, email, street or postal code" autocomplete="off" bind:value={clientQuery} oninput={() => onClientInput(a.id)} />
 							<Helper class="field-help">Only active clients who are eligible for {service.date} are listed.</Helper>
+							<Label for={`request-${a.id}`} class="mt-3">Special request (optional)</Label>
+							<Textarea id={`request-${a.id}`} rows={2} maxlength={1000} placeholder="" bind:value={specialRequest} />
 
 							{#if taken}
 								<Alert color="yellow" class="mt-3">
@@ -342,10 +349,14 @@
 	{/snippet}
 </Modal>
 
-<Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="xs">
+<Modal title="Cancel this booking?" open={cancelBookingTarget !== null} onclose={() => (cancelBookingTarget = null)} size="sm">
 	<p class="muted">
 		Cancel the booking for {cancelBookingTarget?.booking?.name} at {cancelBookingTarget ? time(cancelBookingTarget.startTime) : ''}? The time becomes open again.
 	</p>
+	<div class="mt-3">
+		<Label for="cancel-reason">Reason for cancelling (optional)</Label>
+		<Textarea id="cancel-reason" rows={2} maxlength={500} placeholder="" bind:value={cancelReason} />
+	</div>
 	{#snippet footer()}
 		<Button color="red" disabled={runner.busy === 'cancel-booking'} onclick={cancelBooking}>Yes, cancel it</Button>
 		<Button outline color="dark" onclick={() => (cancelBookingTarget = null)}>Keep it</Button>

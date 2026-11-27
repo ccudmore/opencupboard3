@@ -4,8 +4,8 @@
 
 export const EVENT_ROLES: Record<string, string[]> = {
   "Service Date": ["Supervisor", "Service Assistant"],
-  Meeting: ["Chair", "Secretary", "Member", "Guest"],
-  Shopping: ["Shopper"],
+  "Meeting": ["Chair", "Secretary", "Member", "Guest"],
+  "Shopping": ["Shopper"],
   "Food Drives & Events": ["Supervisor", "Assistant", "Setup"],
   "Lion Hearts": ["Driver", "Sorter"],
   "COBS Bread": ["Driver", "Sorter"],

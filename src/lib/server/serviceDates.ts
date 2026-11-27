@@ -534,7 +534,10 @@ export async function suggestAlternatives(appointmentId: string, limit = 3) {
 }
 
 /** Cancels a booking (the appointment opens up again). */
-export async function cancelBooking(bookingId: string): Promise<Result> {
+export async function cancelBooking(
+  bookingId: string,
+  reason?: string,
+): Promise<Result> {
   const { count } = await prisma.appointmentBookings.updateMany({
     where: {
       id: bookingId,
@@ -542,7 +545,10 @@ export async function cancelBooking(bookingId: string): Promise<Result> {
         in: [AppointmentBookingStatus.PENDING, AppointmentBookingStatus.ACTIVE],
       },
     },
-    data: { status: AppointmentBookingStatus.CANCELLED },
+    data: {
+      status: AppointmentBookingStatus.CANCELLED,
+      declineReason: reason?.trim().slice(0, 500) || null, // staff only
+    },
   });
   return count === 0
     ? fail(409, "That booking was already cancelled.")

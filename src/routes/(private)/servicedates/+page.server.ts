@@ -151,7 +151,9 @@ export const actions: Actions = {
     if (!household || household.status !== "ACTIVE") return fail(409, { message: "That household is not active." });
 
     const body = new FormData();
-    body.set("appointmentId", appointmentId); // no acknowledgement: only eligible households may be booked here
+    body.set("appointmentId", appointmentId);
+    body.set("specialRequest", f.specialRequest ?? ""); // optional; saved as a request linked to the booking
+    // no acknowledgement: only eligible households may be booked here
     const result = await createBooking(householdId, locals.user?.id, body);
 
     const failure = result as {
@@ -180,9 +182,8 @@ export const actions: Actions = {
 
   cancelBooking: async ({ request, locals, url }) => {
     requirePermission(locals?.user?.permissions, url, APPOINTMENTS);
-    const r = await cancelBooking(
-      fields(await request.formData()).bookingId ?? "",
-    );
+    const f = fields(await request.formData());
+    const r = await cancelBooking(f.bookingId ?? "", f.reason);
     return r.ok ? { success: true } : bad(r);
   },
 
