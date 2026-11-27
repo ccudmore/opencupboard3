@@ -58,8 +58,20 @@
 		if (d) toast(d.emailed?.length ? `Household approved. Its ID was emailed to ${d.emailed.join(', ')}` : 'Household approved. It has no email address on file, so give it its ID yourself.');
 	}
 
-	async function reject(id: string) {
-		if (await run(`r${id}`, 'rejectHousehold', 'householdId', id)) toast('Household archived');
+	// Rejecting asks for a reason first (optional). It is stored and shown on the household's Information tab.
+	let rejectTarget = $state<{ id: string; name: string } | null>(null);
+	let rejectReason = $state('');
+
+	async function reject() {
+		const target = rejectTarget;
+		if (!target) return;
+		busy = `r${target.id}`;
+		const r = await callAction('rejectHousehold', { householdId: target.id, reason: rejectReason.trim() });
+		busy = '';
+		rejectTarget = null;
+		rejectReason = '';
+		await refreshAll();
+		toast(r.ok ? 'Household archived' : r.message);
 	}
 </script>
 
@@ -127,7 +139,7 @@
 					</div>
 					<div class="flex gap-2">
 						<Button size="sm" color="blue" disabled={!!busy} onclick={() => approve(h.id)}>{busy === `a${h.id}` ? 'Approving…' : 'Approve'}</Button>
-						<Button size="sm" outline color="dark" disabled={!!busy} onclick={() => reject(h.id)}>Reject</Button>
+						<Button size="sm" outline color="dark" disabled={!!busy} onclick={() => { rejectReason = ''; rejectTarget = { id: h.id, name: h.name }; }}>Reject</Button>
 					</div>
 				</div>
 			</div>
@@ -135,11 +147,23 @@
 	</section>
 </div>
 
+<Modal title="Reject this household?" open={rejectTarget !== null} onclose={() => (rejectTarget = null)} size="sm">
+	<p>Reject the sign-up from <strong>{rejectTarget?.name}</strong>? It is archived, not deleted.</p>
+	<div class="mt-3">
+		<Label for="reject-reason">Reason (optional)</Label>
+		<Textarea id="reject-reason" rows={3} maxlength={500} placeholder="For your records. It appears on the household's Information tab and is not shown to the household." bind:value={rejectReason} />
+	</div>
+	<div class="mt-4 flex gap-2">
+		<Button color="red" disabled={!!busy} onclick={reject}>{busy.startsWith('r') ? 'Rejecting…' : 'Reject household'}</Button>
+		<Button outline color="dark" onclick={() => (rejectTarget = null)}>Cancel</Button>
+	</div>
+</Modal>
+
 <Modal title="Decline this request?" open={declineTarget !== null} onclose={() => (declineTarget = null)} size="sm">
 	<p>Decline the request from <strong>{declineTarget?.name}</strong>? The appointment opens up again.</p>
 	<div class="mt-3">
 		<Label for="decline-reason">Reason (optional)</Label>
-		<Textarea id="decline-reason" rows={3} maxlength={500} placeholder="" bind:value={declineReason} />
+		<Textarea id="decline-reason" rows={3} maxlength={500} placeholder="For your records. It is not shown to the household on the public booking page." bind:value={declineReason} />
 	</div>
 	<div class="mt-4 flex gap-2">
 		<Button color="red" disabled={!!busy} onclick={decline}>{busy.startsWith('d') ? 'Declining…' : 'Decline request'}</Button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Tags, Textarea, MultiSelect } from "flowbite-svelte";
+	import { Alert, Label, Tags, Textarea, MultiSelect } from "flowbite-svelte";
 
 	import { deliveryTypeOptions, serviceTimeOptions } from '#lib/labels.ts'
 
@@ -7,7 +7,7 @@
 
 	let languagesSpoken = ['English', 'French', 'Arabic', 'Spanish']
 
-	let { form, errors, constraints } = $props()
+	let { form, errors, constraints, rejectionReason = null } = $props()
 
 	// One look for every field on this tab: the same background, border, text colour and chips,
 	// whether it is a tag box, a multi-select or a text area.
@@ -23,6 +23,12 @@
 </script>
 
 <div class="space-y-4">
+	{#if rejectionReason}
+		<Alert color="yellow">
+			<span class="font-medium">Sign-up rejected.</span>
+			<span class="wrap-break-word whitespace-pre-line">Reason: {rejectionReason}</span>
+		</Alert>
+	{/if}
 	<div>
 		<Label for="dietaryRestrictions" class="mb-2">Dietary Restrictions</Label>
 		<Tags id="dietaryRestrictions" class="{box} dark:[&_button]:text-gray-200 dark:[&_ul]:bg-gray-700"

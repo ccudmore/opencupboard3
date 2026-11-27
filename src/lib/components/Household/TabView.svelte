@@ -9,7 +9,7 @@
 	import AddressMap from "#lib/components/Household/AddressMap.svelte";
   import { HeartSolid, UsersGroupSolid, CalendarMonthSolid, MapPinAltSolid, AddressBookSolid, InfoCircleSolid, } from "flowbite-svelte-icons";
 
-	let { form, errors, constraints, validateForm, bookings, services, sites, eligibleDate, emailEnabled, enhance} = $props()
+	let { form, errors, constraints, validateForm, bookings, services, sites, eligibleDate, emailEnabled, enhance, rejectionReason = null} = $props()
 
   // Tabs come from DATED_REQUEST_TYPES. Requests whose type is no longer configured
   // still get a tab, so nothing saved earlier becomes invisible.
@@ -60,7 +60,7 @@
         <InfoCircleSolid size="md" />Information
       </div>
     {/snippet}
-		<HouseholdNotes {form} {errors} {constraints}/>
+		<HouseholdNotes {form} {errors} {constraints} {rejectionReason}/>
   </TabItem>
 
   {#each requestsTypes as item}

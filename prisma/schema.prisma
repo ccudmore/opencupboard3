@@ -362,6 +362,7 @@ model Household {
   // Set on a public sign-up whose email or phone number is already on file: the household it may repeat
   possibleDuplicateOfId String?
   duplicateMatch        String? // what matched: "email", "phone" or "email and phone"
+  rejectionReason       String? // why a pending sign-up was rejected (staff only)
   adultCount            Int?
   childCount            Int?
   datedRequests         DatedRequest[]        @relation("DatedRequestMembership")

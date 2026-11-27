@@ -215,10 +215,15 @@ export const actions: Actions = {
   /** Archived, so it is kept on record but can't book. */
   rejectHousehold: async ({ request, locals, url }) => {
     requirePermission(locals?.user?.permissions, url, MANAGE);
-    const householdId = await idOf(request, "householdId");
+    const data = await request.formData();
+    const householdId = String(data.get("householdId") ?? "");
+    const reason = String(data.get("reason") ?? "").trim().slice(0, 500);
     const { count } = await prisma.household.updateMany({
       where: { id: householdId, status: HouseholdStatus.PENDING },
-      data: { status: HouseholdStatus.ARCHIVED },
+      data: {
+        status: HouseholdStatus.ARCHIVED,
+        rejectionReason: reason || null,
+      },
     });
     if (count === 0)
       return fail(409, { message: "That household was already handled." });

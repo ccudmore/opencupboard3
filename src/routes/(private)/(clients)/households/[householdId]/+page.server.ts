@@ -66,6 +66,9 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
   return {
     form,
     userNames, // user id -> name, for the "created by" lines
+    // why a pending sign-up was rejected; only meaningful while the household is archived
+    rejectionReason:
+      householdAll.status === "ARCHIVED" ? (householdAll.rejectionReason ?? null) : null,
     bookings, // newest first, including "unscheduled" ones
     services, // future service dates with open appointments
     sites, // locations for unscheduled bookings
@@ -97,6 +100,10 @@ export const actions: Actions = {
         },
         data: {
           ...householdWithoutIds,
+          // a rejection reason only belongs to an archived household
+          ...(householdWithoutIds.status !== "ARCHIVED"
+            ? { rejectionReason: null }
+            : {}),
           datedRequests: {
             deleteMany: {
               householdId: params.householdId,
